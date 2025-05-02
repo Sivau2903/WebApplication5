@@ -1,0 +1,347 @@
+﻿@model List<WebApplication5.Models.TempSelectedMaterial>
+
+@{
+    Layout = "~/Views/Shared/_LocalPDLayout.cshtml";
+
+    ViewBag.Title = "MyRequests";
+}
+
+<div class="d-flex justify-content-between align-items-center">
+    <h2>Requests Received</h2>
+    <div class="p-3 bg-warning text-dark rounded" id="budget-block">
+        <strong>Available Budget: </strong> <span id="availableBudget">Loading...</span>
+    </div>
+</div>
+
+<!-- Generate PO Button for Vendor -->
+<div class="text-end mb-3">
+    <button class="btn btn-primary" id="generateGroupedPOBtn">Generate PO for Vendor</button>
+</div>
+
+@*@{
+        var selectedMaterials = Session["SelectedMaterials"] as List<string> ?? new List<string>();
+    }*@
+
+@if (Model.Any())
+{
+    <h4 class="mt-4">Newly Added Materials</h4>
+    <table class="table table-bordered">
+        <thead class="table-secondary">
+            <tr>
+                <th>Select</th>
+                <th>Material</th>
+                <th>Order Quantity</th>
+                <th>Request Type</th>
+                <th>Vendor ID</th>
+                <th>Email ID</th>
+                <th>Price Per Quantity</th>
+                <th>Cost</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                var item = Model[i];
+                <tr>
+                    <td class="text-center">
+                        <input type="checkbox" class="materialCheckbox" />
+                    </td>
+                    <td>
+                        <input type="text" class="form-control materialName" value="@item.MaterialSubCategory" readonly />
+                    </td>
+                    <td>
+                        <input type="number" class="form-control orderQuantity" min="1" />
+                    </td>
+                    <td>
+                        <select class="form-control requestTypeSelect">
+                            <option value="">--Select--</option>
+                            <option value="Central">Central</option>
+                            <option value="Local">Local</option>
+                        </select>
+                    </td>
+                    <td class="vendorIDCell">-</td>
+                    <td class="emailCell">-</td>
+                    <td class="priceCell">-</td>
+                    <td class="costCell">-</td>
+                    <td>
+                        <input type="file" name="certificateUpload" class="form-control certificateUpload d-none" accept=".pdf,.doc,.docx" />
+                        <button class="btn btn-success sendCentral d-none">Send Request</button>
+                        <button class="btn btn-info viewLocal d-none" data-material="@item.MaterialSubCategory">View Vendors</button>
+                        @*<button class="btn btn-primary" id="generateGroupedPOBtn">Generate PO</button>*@
+                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+}
+
+
+
+<!-- Vendor Modal -->
+<div class="modal fade" id="vendorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Vendor</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body" id="vendorModalBody"></div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    let isMessageListenerAttached = false;
+
+    $(document).ready(function () {
+        // Show/Hide Buttons Based on Selection
+        $('.requestTypeSelect').on('change', function () {
+            var row = $(this).closest('tr');
+            var selectedType = $(this).val();
+
+            row.find('.sendCentral').toggleClass('d-none', selectedType !== 'Central');
+            row.find('.certificateUpload').toggleClass('d-none', selectedType !== 'Central');
+            row.find('.viewLocal').toggleClass('d-none', selectedType !== 'Local');
+        });
+
+
+        // Fetch available budget
+        $.get("/LocalPurchaseDepartment/GetAvailableBudget", function (data) {
+            $("#availableBudget").text(data);
+        }).fail(function () {
+            $("#availableBudget").text("Error fetching budget");
+        });
+
+
+
+        // Open vendor modal
+        $(document).on('click', '.viewLocal', function () {
+            var materialSubCategory = $(this).data("material");
+
+            $.get("/LocalPurchaseDepartment/GetVendors", { materialSubCategory: materialSubCategory }, function (data) {
+                $("#vendorModalBody").html(data);
+                $("#vendorModal").modal("show").removeAttr("aria-hidden").removeAttr("inert");
+            }).fail(function () {
+                alert("Error fetching vendor details.");
+            });
+        });
+
+
+
+        // Close vendor modal
+        $("#vendorModal").on("hidden.bs.modal", function () {
+            $(this).attr("inert", "true");
+        });
+
+
+
+
+        // Handle Vendor Selection from Modal
+        $(document).on('click', '.selectVendorBtn', function () {
+            var vendorId = $(this).data("vendorid");
+            var emailId = $(this).data("emailId");
+            var pricePerQuantity = parseFloat($(this).data("price"));
+            var material = $(this).data("material");
+
+            selectVendor(vendorId, emailId, pricePerQuantity, material);
+        });
+
+
+        // Send Request Button (Central)
+        $('.sendCentral').on('click', function () {
+            alert('Sending to Central!');
+            // Here you’d collect and submit data via AJAX
+        });
+
+        $('.sendCentral').on('click', function () {
+            var row = $(this).closest('tr');
+            var material = row.find('input.materialName').val();
+            var qty = parseInt(row.find('input.orderQuantity').val());
+            var fileInput = row.find('input.certificateUpload')[0];
+
+            if (!qty || qty <= 0) {
+                alert("Enter valid quantity.");
+                return;
+            }
+
+            if (!fileInput || fileInput.files.length === 0) {
+                alert("Please upload the certificate file.");
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append("materialName", material);
+            formData.append("quantity", qty);
+            formData.append("certificateUpload", fileInput.files[0]);
+
+            $.ajax({
+                url: "/LocalPurchaseDepartment/SendToCentral",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    if (res.success) {
+                        alert(res.message);
+                        row.remove();
+                    } else {
+                        alert(res.message);
+                    }
+                }
+            });
+        });
+
+
+
+
+    });
+
+
+
+    $(document).on('input', '.orderQty', function () {
+        var row = $(this).closest('tr');
+        var price = parseFloat(row.find('.priceCell').text());
+        var qty = parseInt($(this).val()) || 0;
+
+        if (!isNaN(price) && qty > 0) {
+            var cost = (qty * price).toFixed(1);
+            row.find('.costCell').text(cost);
+        } else {
+            row.find('.costCell').text('-');
+        }
+    });
+
+    function selectVendor(vendorId, emailId, pricePerQuantity, materialName) {
+        var row = $("tr").filter(function () {
+            return $(this).find('input.materialName').val() === materialName;
+        });
+
+        var orderQty = parseInt(row.find('input.orderQuantity').val()) || 0;
+        var totalCost = (orderQty * pricePerQuantity).toFixed(1);
+
+        row.find('.vendorIDCell').text(vendorId);
+        row.find('.emailCell').text(emailId);
+        row.find('.priceCell').text(pricePerQuantity);
+        row.find('.costCell').text(totalCost);
+
+        row.find('.sendLocalRequest').removeClass('d-none');
+        row.find('.generatePOBtn').removeClass('d-none'); // Show Generate PO button
+
+        $('#vendorModal').on('hide.bs.modal', function () {
+            document.activeElement.blur(); // remove focus from current element
+        });
+    }
+
+
+    function postToGeneratePO(vendorId, email, materials) {
+        console.log(`Posting PO for Vendor ID: ${vendorId}`);
+        console.log(`Vendor Email: ${email}`);
+        console.log(`Materials:`);
+        console.log(materials); // Debugging materials
+
+        const form = $('<form>', {
+            method: 'POST',
+            action: '/LocalPurchaseDepartment/GeneratePO',
+            //target: '_blank'
+        });
+
+        form.append($('<input>', { type: 'hidden', name: 'vendorId', value: vendorId }));
+        form.append($('<input>', { type: 'hidden', name: 'email', value: email }));
+        form.append($('<input>', { type: 'hidden', name: 'materials', value: JSON.stringify(materials) }));
+
+        $('body').append(form);
+        form.submit();
+        form.remove();
+    }
+
+
+
+    $('#generateGroupedPOBtn').on('click', function () {
+        var groupedData = {};
+        var hasError = false;
+
+        $('tbody tr').each(function () {
+            var row = $(this);
+            if (row.find('input.materialCheckbox').is(':checked')) {
+                var material = row.find('input.materialName').val();
+                var qty = row.find('input.orderQuantity').val();
+                var price = row.find('.priceCell').text().trim();
+                var cost = row.find('.costCell').text().trim();
+                var vendorId = row.find('.vendorIDCell').text().trim();
+                var email = row.find('.emailCell').text().trim();
+
+                if (!vendorId || vendorId === '-') {
+                    alert(`Please select a vendor for material: ${material}`);
+                    hasError = true;
+                    return;
+                }
+
+                if (!groupedData[vendorId]) {
+                    groupedData[vendorId] = { email: email, materials: [] };
+                }
+
+                groupedData[vendorId].materials.push({
+                    MaterialName: material,
+                    QtyOrdered: qty,
+                    UnitPrice: price,
+                    Total: cost
+                });
+            }
+        });
+
+        // Debug: Log grouped data to see how many materials are passing
+        console.log('Grouped Data:');
+        console.log(groupedData);
+
+        if (hasError) return;
+
+        Object.keys(groupedData).forEach(vendorId => {
+            const group = groupedData[vendorId];
+            console.log(`Sending PO for Vendor: ${vendorId}`);
+            console.log(`Email: ${group.email}`);
+            console.log(`Number of Materials: ${group.materials.length}`);
+            console.log('Material Details:');
+            group.materials.forEach((material, index) => {
+                console.log(`Material ${index + 1}:`);
+                console.log(`- Name: ${material.MaterialName}`);
+                console.log(`- Quantity Ordered: ${material.QtyOrdered}`);
+                console.log(`- Unit Price: ${material.UnitPrice}`);
+                console.log(`- Total: ${material.Total}`);
+            });
+            postToGeneratePO(vendorId, group.email, group.materials);
+        });
+    });
+
+
+
+
+
+
+
+
+
+    //$(document).on('click', '.generatePOBtn', function () {
+    //    var row = $(this).closest('tr');
+
+    //    var material = row.find('input[name="MaterialName"]').val();
+    //    var qty = row.find('input[name="OrderQuantity"]').val();
+    //    var vendorId = row.find('.vendorIDCell').text();
+    //    var email = row.find('.emailCell').text();
+    //    var price = row.find('.priceCell').text();
+    //    var cost = row.find('.costCell').text();
+
+    //    // Redirect to GeneratePO view with query parameters
+    //    window.location.href = `/LocalPurchaseDepartment/GeneratePO?material=${encodeURIComponent(material)}&qty=${qty}&vendorId=${vendorId}&email=${email}&price=${price}&cost=${cost}`;
+    //});
+
+
+</script>
+
+

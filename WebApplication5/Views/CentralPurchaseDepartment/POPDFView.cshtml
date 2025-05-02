@@ -1,0 +1,179 @@
+﻿
+
+
+@model WebApplication5.Models.CentralGeneratePOViewModel
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Order - @Model.PONumber</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .po-container {
+            border: 2px solid black;
+            padding: 30px;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .po-title {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .company-header {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 6px;
+            text-align: left;
+        }
+
+        .no-border {
+            border: none;
+        }
+
+        .signature {
+            margin-top: 50px;
+            text-align: right;
+        }
+
+        .input-no-border {
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <div class="po-container">
+        <div class="d-flex justify-content-between">
+            @if (!string.IsNullOrEmpty(Model.CentralDepartmentName))
+            {
+                <div class="company-header">@Model.CentralDepartmentName</div>
+                <div>@Model.CentralDepartmentAddress</div>
+                <div>Phone: @Model.CentralDepartmentPhone</div>
+                <div>Email: @Model.CentralDepartmentEmail</div>
+            }
+            else
+            {
+                <div class="text-danger">Central Department details are missing.</div>
+            }
+
+
+            <div class="po-title">
+                Purchase Order<br />
+                <span style="font-size: 14px;">PO No: @Model.PONumber</span>
+            </div>
+        </div>
+
+        <!-- Hidden fields for dynamic values -->
+        @Html.HiddenFor(m => m.PONumber)
+
+        <!-- Hidden fields for dynamic university data -->
+        @Html.Hidden("VendorEmail", (string)ViewBag.VendorEmail)
+        @Html.Hidden("CentralDepartmentName", (string)ViewBag.University?.CentralDepartmentName)
+        @Html.Hidden("CentralDepartmentAddress", (string)ViewBag.University?.CentralDepartmentAddress)
+        @Html.Hidden("CentralDepartmentEmail", (string)ViewBag.University?.CentralDepartmentEmail)
+        @Html.Hidden("CentralDepartmentPhone", (string)ViewBag.University?.CentralDepartmentPhone)
+
+        <!-- Purchase Order Table -->
+        <table>
+            <tr>
+                <td><strong>Date:</strong> @DateTime.Now.ToString("dd-MM-yyyy")</td>
+                <td>
+                    <strong>Requisition No:</strong>
+                    @Model.RequisitionNo
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <strong>Ship To:</strong> @Model.ShipTo
+                </td>
+            </tr>
+        </table>
+
+        <!-- Order Details Table -->
+        <table>
+            <tr>
+                <th>Requisitioned By</th>
+                <th>When Ship</th>
+                <th>Ship Via</th>
+                <th>F.O.B. Point</th>
+                <th>Terms</th>
+            </tr>
+            <tr>
+                <td>@Model.RequisitionedBy</td>
+                <td>@Model.WhenShip</td>
+                <td>@Model.ShipVia</td>
+                <td>@Model.FOBPoint</td>
+                <td>@Model.Terms</td>
+            </tr>
+        </table>
+
+        <!-- Order Items Table -->
+        <table>
+            <tr>
+                <th>QTY ORDERED</th>
+                @*<th>QTY RECEIVED</th>*@
+                <th>STOCK NO. / DESCRIPTION</th>
+                <th>UNIT PRICE</th>
+                <th>TOTAL</th>
+            </tr>
+            @foreach (var item in Model.CentralPurchaseOrderItems)
+            {
+                <tr>
+                    <td>@item.QtyOrdered</td>
+                    @*<td>0</td>*@
+                    <td>@item.Description</td>
+                    <td>@item.UnitPrice</td>
+                    <td>@item.Total</td>
+
+                </tr>
+            }
+        </table>
+
+        
+
+        <div class="form-group">
+           
+            <span>Certification Document: @Model.PurchaseDepartmentUploads</span>   
+        </div>
+
+        <!-- Footer Section with Terms and Signature -->
+        <div style="font-size: 13px; margin-top: 10px;">
+            <p>1. Please send <strong>@Model.CopiesOfInvoice</strong> copies of your invoice.</p>
+            <p>2. Order is to be entered in accordance with prices, delivery and specifications shown above.</p>
+            <p>3. Notify us immediately if you are unable to ship as specified.</p>
+        </div>
+
+
+        <div class="signature">
+            <strong>AUTHORIZED BY</strong><br />
+            @Model.AuthorizedBy
+            <br /><br />
+            ___________________________
+        </div>
+    </div>
+</body>
+</html>

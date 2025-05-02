@@ -1,0 +1,103 @@
+﻿@model List<WebApplication5.Models.CentralVendorDetail>
+
+@if (Model.Any())
+{
+    <table class="table table-bordered table-hover" id="vendorTable">
+        <thead class="table-dark">
+            <tr>
+                <th>Select</th>
+                <th>Name</th>
+                <th>Email ID</th>
+                @*<th>Phone Number</th>*@
+                <th>Material</th>
+                <th>Price Per Unit</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var vendor in Model)
+            {
+                <tr class="vendor-row" data-vendorid="@vendor.VendorID" data-price="@vendor.PricePerUnit">
+                    <td>
+                        <input type="radio" name="selectedVendor" class="select-vendor">
+                    </td>
+                    <td>@vendor.FirstName</td>
+                    <td>@vendor.EmailID</td>
+                    @*<td>@vendor.PhoneNumber</td>*@
+                    <td>@vendor.Material</td>
+                    <td>@vendor.PricePerUnit</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button class="btn btn-primary mt-2" id="confirmVendorSelection">Confirm Selection</button>
+}
+else
+{
+    <p class="text-danger">No vendors found for this material.</p>
+}
+
+@*<script>
+        $(document).ready(function () {
+            $("#confirmVendorSelection").click(function () {
+                var selectedRow = $("#vendorTable .select-vendor:checked").closest("tr");
+
+                if (selectedRow.length === 0) {
+                    alert("Please select a vendor.");
+                    return;
+                }
+
+                var vendorId = selectedRow.data("vendorid");
+                var pricePerQuantity = selectedRow.data("price");
+
+                // Send data to the main view
+                window.parent.postMessage({ vendorId: vendorId, pricePerQuantity: pricePerQuantity }, "*");
+
+                // Close the modal
+                $("#vendorModal").modal("hide");
+            });
+        });
+    </script>*@
+
+
+<script>
+    $(document).ready(function () {
+        // Handle Confirm button if using "Confirm Vendor" pattern (Optional)
+        $("#confirmVendorSelection").click(function () {
+            var selectedRow = $("#vendorTable .select-vendor:checked").closest("tr");
+
+            if (selectedRow.length === 0) {
+                alert("Please select a vendor.");
+                return;
+            }
+
+            var vendorId = selectedRow.data("vendorid");
+            var emailId = selectedRow.find("td:eq(2)").text();
+            var pricePerQuantity = parseFloat(selectedRow.data("price"));
+            var material = selectedRow.find("td:eq(3)").text();
+
+            if (typeof selectVendor === "function") {
+                selectVendor(vendorId, emailId, pricePerQuantity, material);
+            } else {
+                console.error("selectVendor function not found in parent view.");
+            }
+
+            $("#vendorModal").modal("hide");
+        });
+
+        // Handle individual select button (preferred)
+        $(document).on("click", ".selectVendorBtn", function () {
+            var vendorId = $(this).data("vendorid");
+            var emailId = $(this).data("emailid");
+            var pricePerQuantity = parseFloat($(this).data("price"));
+            var material = $(this).data("material");
+
+            if (typeof selectVendor === "function") {
+                selectVendor(vendorId, emailId, pricePerQuantity, material);
+                $("#vendorModal").modal("hide");
+            } else {
+                console.error("selectVendor function not found in main view.");
+            }
+        });
+    });
+</script>

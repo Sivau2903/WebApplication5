@@ -1,0 +1,288 @@
+﻿@model List<WebApplication5.Models.CentralRequestViewModel>
+@{
+    Layout = "~/Views/Shared/_CentralPDLayout.cshtml";
+    ViewBag.Title = "MyRequests";
+}
+
+<h2>Requests Received</h2>
+
+<form id="bulkPOForm">
+    <div class="accordion" id="requestAccordion">
+        @{
+            var grouped = Model.GroupBy(m => m.MaterialName);
+            int index = 0;
+        }
+
+        @foreach (var group in grouped)
+        {
+            var groupId = $"collapse{index}";
+            var totalQuantity = group.Sum(g => g.OrderQuantity);
+            <div class="card mb-2 material-group" data-material="@group.Key.Trim().ToLower()">
+
+                <div class="card-header">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        <div class="form-check">
+                            <input class="form-check-input material-checkbox" type="checkbox" name="materialSelect" value="@group.Key" />
+                            <label class="form-check-label">📦 Material: <strong>@group.Key</strong></label>
+                        </div>
+                        <button class="btn btn-link text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#@groupId">
+                            View Requests
+                        </button>
+                    </h5>
+                </div>
+
+                <div id="@groupId" class="collapse" data-bs-parent="#requestAccordion">
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead class="table-secondary">
+                                <tr>
+                                    <th>Requested Date</th>
+                                    <th>University</th>
+                                    <th>Order Quantity</th>
+                                    <th>Certificate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in group)
+                                {
+                                    <tr>
+                                        <td>@item.RequestedDate.ToShortDateString()</td>
+                                        <td>@item.UniversityName</td>
+                                        <td>
+                                            <input type="number" name="OrderQuantity" class="form-control orderQty" min="1" value="@item.OrderQuantity" />
+                                        </td>
+                                        @*<td>@item.PurchaseDepartmentUploads</td>*@
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.PurchaseDepartmentUploads))
+                                        {
+                                            <a href="@Url.Content(item.PurchaseDepartmentUploads)" target="_blank">View File</a>
+
+
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No file</span>
+                                        }
+                                    </td>
+                                    </tr>
+                                }
+
+                                <tr class="table-info summaryRow">
+                                    <td colspan="3">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-2"><strong>Vendor ID:</strong> <span class="vendorID">-</span></div>
+                                            <div class="col-md-3"><strong>Email:</strong> <span class="vendorEmail">-</span></div>
+                                            <div class="col-md-2"><strong>Unit Price:</strong> ₹<span class="pricePerUnit">0</span></div>
+                                            <div class="col-md-3"><strong>🧮 Total Quantity:</strong> <span class="totalQty">@totalQuantity</span></div>
+                                            <div class="col-md-2"><strong>Total Cost:</strong> ₹<span class="totalCost">0</span></div>
+                                            <div class="col-md-2">
+                                                <button class="btn btn-sm btn-info viewLocal" type="button" data-material="@group.Key">View Vendors</button>
+                                            </div>
+                                            
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr class="generateRow d-none">
+                                    <td colspan="3" class="text-end">
+                                        <button class="btn btn-success generatePOBtn" type="button">Generate PO</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            index++;
+        }
+    </div>
+
+    <div class="mt-3 text-end">
+        <button type="button" class="btn btn-primary" id="generateBulkPO">Generate Consolidated PO</button>
+    </div>
+</form>
+
+<!-- Vendor Modal -->
+<div class="modal fade" id="vendorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Vendor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="vendorModalBody"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Vendor selection
+        $(document).on('click', '.viewLocal', function () {
+            var material = $(this).data("material");
+            $.get("/CentralPurchaseDepartment/GetVendors", { material: material }, function (data) {
+                $("#vendorModalBody").html(data);
+                $("#vendorModal").modal("show");
+            });
+        });
+
+        // Select vendor from modal
+        $(document).on('click', '.selectVendorBtn', function () {
+            var vendorId = $(this).data("vendorID");
+            var emailId = $(this).data("vendorEmail");
+            var pricePerQuantity = parseFloat($(this).data("pricePerUnit"));
+            var material = $(this).data("material");
+            console.log({
+                vendorId,
+                emailId,
+                pricePerQuantity,
+                material
+            });
+
+            selectVendor(vendorId, emailId, pricePerQuantity, material);
+        });
+
+        // Apply vendor selection to summary row
+        function selectVendor(vendorId, emailId, pricePerQuantity, material) {
+            var materialKey = material.trim().toLowerCase();
+            var card = $('.material-group[data-material="' + materialKey + '"]');
+            var summary = card.find('.summaryRow');
+            var qty = parseInt(summary.find('.totalQty').text()) || 0;
+            var cost = (pricePerQuantity * qty).toFixed(2);
+
+            console.log("Vendor selected for:", materialKey);
+            console.log("Qty:", qty, "Price:", pricePerQuantity, "Cost:", cost);
+
+            // ✅ Correct class names here
+            summary.find('.vendorID').text(vendorId);
+            summary.find('.vendorEmail').text(emailId);
+            summary.find('.pricePerUnit').text(pricePerQuantity);
+            summary.find('.totalCost').text(cost);
+
+            card.find('.generateRow').removeClass('d-none');
+            $("#vendorModal").modal("hide");
+        }
+
+
+
+
+        // Individual Generate PO
+        $(document).on('click', '.generatePOBtn', function () {
+            var card = $(this).closest('.material-group');
+            generatePO(card);
+        });
+
+        $('#generateBulkPO').click(function () {
+            var selectedCards = $('.material-checkbox:checked').map(function () {
+                return $(this).closest('.material-group');
+            }).get();
+
+            if (selectedCards.length === 0) {
+                alert("Please select at least one material.");
+                return;
+            }
+
+            var groupedData = {};
+            var hasError = false;
+
+            selectedCards.forEach(function (card) {
+                var material = card.data("material");
+                var summary = card.find('.summaryRow');
+                var vendorId = summary.find('.vendorID').text().trim();
+                var email = summary.find('.vendorEmail').text().trim();
+                var qty = summary.find('.totalQty').text().trim();
+                var price = summary.find('.pricePerUnit').text().trim();
+                var cost = summary.find('.totalCost').text().trim();
+
+                if (!vendorId || vendorId === "-") {
+                    alert(`Please select a vendor for material: ${material}`);
+                    hasError = true;
+                    return;
+                }
+
+                if (!groupedData[vendorId]) {
+                    groupedData[vendorId] = { email: email, materials: [] };
+                }
+
+                groupedData[vendorId].materials.push({
+                    MaterialName: material,
+                    QtyOrdered: qty,
+                    UnitPrice: price,
+                    Total: cost
+                });
+            });
+
+            if (hasError) return;
+
+            // Send one POST per vendor group
+            Object.keys(groupedData).forEach(vendorId => {
+                const group = groupedData[vendorId];
+                console.log(`Posting PO for Vendor: ${vendorId}`);
+                postToGeneratePO(vendorId, group.email, group.materials);
+            });
+        });
+
+        function postToGeneratePO(vendorId, email, materials) {
+            console.log(`Posting PO for Vendor ID: ${vendorId}`);
+            console.log(`Vendor Email: ${email}`);
+            console.log(`Materials:`);
+            console.log(materials); // Debugging materials
+
+            const form = $('<form>', {
+                method: 'POST',
+                action: '/CentralPurchaseDepartment/GenerateBulkPO' // Make sure this points to the correct controller/action
+            });
+
+            form.append($('<input>', { type: 'hidden', name: 'vendorId', value: vendorId }));
+            form.append($('<input>', { type: 'hidden', name: 'email', value: email }));
+            form.append($('<input>', { type: 'hidden', name: 'materials', value: JSON.stringify(materials) }));
+
+            $('body').append(form);
+            form.submit();
+            form.remove();
+        }
+
+
+
+
+        function generatePO(card) {
+            var material = card.data('material');
+            var summary = card.find('.summaryRow');
+            var vendorId = summary.find('.vendorID').text();
+            var email = summary.find('.vendorEmail').text();
+            var qty = summary.find('.totalQty').text();
+            var price = summary.find('.pricePerUnit').text();
+            var cost = summary.find('.totalCost').text();
+
+            window.location.href = `/CentralPurchaseDepartment/CentralGeneratePO?material=${material}&qty=${qty}&vendorId=${vendorId}&email=${email}&price=${price}&cost=${cost}`;
+        }
+    });
+</script>
+<script>
+    // Move this function out of document.ready
+    function selectVendor(vendorId, emailId, pricePerQuantity, material) {
+        var materialKey = material.trim().toLowerCase();
+        var card = $('.material-group[data-material="' + materialKey + '"]');
+        var summary = card.find('.summaryRow');
+        var qty = parseInt(summary.find('.totalQty').text()) || 0;
+        var cost = (pricePerQuantity * qty).toFixed(2);
+
+        console.log("Vendor selected for:", materialKey);
+        console.log("Qty:", qty, "Price:", pricePerQuantity, "Cost:", cost);
+
+        summary.find('.vendorID').text(vendorId);
+        summary.find('.vendorEmail').text(emailId);
+        summary.find('.pricePerUnit').text(pricePerQuantity);
+        summary.find('.totalCost').text(cost);
+
+        card.find('.generateRow').removeClass('d-none');
+        $("#vendorModal").modal("hide");
+    }
+
+    // Keep everything else inside document.ready
+    $(document).ready(function () {
+        // Your existing code here...
+    });
+</script>
