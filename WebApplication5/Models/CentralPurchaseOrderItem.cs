@@ -23,6 +23,8 @@ namespace WebApplication5.Models
         public Nullable<decimal> Total { get; set; }
         public string VendorEmail { get; set; }
         public string Remarks { get; set; }
+        public Nullable<int> AcceptedQty { get; set; }
+        public Nullable<int> RejectedQty { get; set; }
     
         public virtual CentralPurchaseOrder CentralPurchaseOrder { get; set; }
     }

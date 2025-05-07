@@ -13,7 +13,7 @@ namespace WebApplication5.Controllers
 {
     public class LoginController : Controller
     {
-        private readonly ASPEntities _db = new ASPEntities();
+        private readonly ASPEntities2 _db = new ASPEntities2();
         // GET: Login
         public ActionResult Loginpage()
         {

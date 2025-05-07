@@ -13,10 +13,10 @@ namespace WebApplication5.Models
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class ASPEntities : DbContext
+    public partial class ASPEntities2 : DbContext
     {
-        public ASPEntities()
-            : base("name=ASPEntities")
+        public ASPEntities2()
+            : base("name=ASPEntities2")
         {
         }
     

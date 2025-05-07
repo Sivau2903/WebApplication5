@@ -128,7 +128,7 @@
                 <ul class="navbar-nav ">
                     <li class="nav-item"><a class="nav-link" href="@Url.Action("StoreAdminDasBoard", "Home")">Home</a></li>
 
-                    <li class="nav-item"><a class="nav-link" href="@Url.Action("MRV", "Home")">Home</a></li>
+                    @*<li class="nav-item"><a class="nav-link" href="@Url.Action("MRV", "Home")">Home</a></li>*@
 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="requestsMenu"
@@ -167,12 +167,12 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="typesMaterialsMenu"
                            role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Types &amp; Materials
+                            @*Types &amp; Materials*@Stock Alert
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="typesMaterialsMenu">
                             <li>
                                 <a class="dropdown-item" href="@Url.Action("MaterialMasterList", "Home")">
-                                    MaterialMasterList
+                                    Set Alert Limit
                                 </a>
                             </li>
                             <li class="dropend">
@@ -206,14 +206,14 @@
 
 
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="PODetails" role="button">PODetails</a>
+                        <a class="nav-link dropdown-toggle" href="#" id="PODetails" role="button">MRV Reports</a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="@Url.Action("PODetails", "Home")">Local PODetails</a></li>
-                            <li><a class="dropdown-item" href="@Url.Action("CentralPODetails", "Home")">Central PODetails</a></li>
-
+                            <li><a class="dropdown-item" href="@Url.Action("PODetails", "Home")">LocalMRVReport</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("CentralPODetails", "Home")">Central MRVReport</a></li>
+                            @*<li><a class="dropdown-item" href="@Url.Action("Report", "Home")">Issue Report</a></li>*@
                         </ul>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Report", "Home")">Report</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Report", "Home")">IssueReport</a></li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="icfaiLifeMenu" role="button">My Profile</a>
                         <ul class="dropdown-menu">

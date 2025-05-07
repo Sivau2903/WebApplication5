@@ -27,7 +27,7 @@
 </head>
 <body>
     <div class="container mt-3 p-3" style="background: #f9f9f9; border: 1px solid #ddd;">
-        <h2 class="text-center mb-3">Material Master</h2>
+        <h2 class="text-center mb-3">Reordering Point</h2>
 
         @if (TempData["SuccessMessage"] != null)
         {
@@ -45,57 +45,62 @@
             @Html.Hidden("MaterialCategory", "")
             @Html.Hidden("MaterialSubCategory", "")
 
-            <div class="row material-row mb-2 align-items-end">
-                <div class="col-md-2">
-                    <label for="assetType">Asset Type</label>
-                    <select id="assetType" class="form-control" required>
-                        <option value="">Select Asset Type</option>
-                        @foreach (var item in ViewBag.AssetType)
-                        {
-                            <option value="@item.Value">@item.Text</option>
-                            <!-- Pass Text directly -->
-                        }
-                    </select>
-                </div>
+    <div class="row material-row mb-2 align-items-end">
+        <div class="col-md-2">
+            <label for="assetType">Asset Type</label>
+            <select id="assetType" class="form-control" required>
+                <option value="">Select Asset Type</option>
+                @foreach (var item in ViewBag.AssetType)
+                {
+                    <option value="@item.Value">@item.Text</option>
+                    <!-- Pass Text directly -->
+                }
+            </select>
+        </div>
 
-                <div class="col-md-2">
-                    <label for="materialCategory">Material Category</label>
-                    <select id="materialCategory" class="form-control" required>
-                        <option value="">Select Category</option>
-                    </select>
-                </div>
+        <div class="col-md-2">
+            <label for="materialCategory">Material Category</label>
+            <select id="materialCategory" class="form-control" required>
+                <option value="">Select Category</option>
+            </select>
+        </div>
 
-                <div class="col-md-2">
-                    <label for="materialSubCategory">Subcategory</label>
-                    <select id="materialSubCategory" class="form-control" required>
-                        <option value="">Select Subcategory</option>
-                    </select>
-                </div>
+        <div class="col-md-2">
+            <label for="materialSubCategory">Subcategory</label>
+            <select id="materialSubCategory" class="form-control" required>
+                <option value="">Select Subcategory</option>
+            </select>
+        </div>
 
-                <div class="col-md-2">
-                    <label for="availableQuantity">Available Quantity</label>
-                    <input type="number" id="availableQuantity" class="form-control" name="AvailableQuantity" required>
-                </div>
+        <div class="col-md-2">
+            <label for="availableQuantity">Available Quantity</label>
+            <input type="number" id="availableQuantity" class="form-control" name="AvailableQuantity" required>
+        </div>
 
-                <div class="col-md-2">
-                    <label for="units">Unit</label>
-                    <input type="text" id="units" class="form-control" name="Units" required>
-                </div>
+        <div class="col-md-2">
+            <label for="units">Unit</label>
+            <input type="text" id="units" class="form-control" name="Units" required>
+        </div>
 
-                <div class="col-md-2">
-                    <label for="make">Make</label>
-                    <input type="text" id="make" class="form-control" name="Make">
-                </div>
+        <div class="col-md-2">
+            <label for="make">Make</label>
+            <input type="text" id="make" class="form-control" name="Make">
+        </div>
 
-                <div class="col-md-2">
-                    <label for="expiryDate">Expiry Date</label>
-                    <input type="date" id="expiryDate" class="form-control" name="ExpiryDate">
-                </div>
+        <div class="col-md-2">
+            <label for="expiryDate">Expiry Date</label>
+            <input type="date" id="expiryDate" class="form-control" name="ExpiryDate">
+        </div>
 
-                <div class="col-md-12 text-end mt-2">
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </div>
+        <div class="col-md-2">
+            <label for="MinimumLimit">Minimum Limit</label>
+            <input type="number" id="minimumLimit" class="form-control" name="MinimumLimit">
+        </div>
+
+        <div class="col-md-12 text-end mt-2">
+            <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+    </div>
         }
     </div>
 
@@ -165,11 +170,13 @@
                                 $("#make").val(response.make);
                                 $("#units").val(response.unit);
                                 $("#expiryDate").val(response.expiryDate);
+                                $("#minimumLimit").val(response.minimumLimit);
                             } else {
                                 $("#availableQuantity").val('');
                                 $("#make").val('');
                                 $("#units").val('');
                                 $("#expiryDate").val('');
+                                $("#minimumLimit").val('');
                             }
                         }
                     });

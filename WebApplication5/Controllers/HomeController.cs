@@ -16,7 +16,7 @@ namespace WebApplication5.Controllers
     
     public class HomeController : BaseController
     {
-        private readonly ASPEntities _db = new ASPEntities();
+        private readonly ASPEntities2 _db = new ASPEntities2();
         private List<HODRequestGroupedViewModel> pagedrequests;
 
         public ActionResult StoreAdminDasBoard(DateTime? fromDate, DateTime? toDate, string requestType = "Employee", int page = 1, int pageSize = 10)
@@ -711,6 +711,7 @@ public JsonResult GetMaterialSubCategories(string categoryName)
                     availableQuantity = item.AvailableQuantity,
                     make = item.Make,
                     unit = item.Units,
+                    minimumLimit = item.MinimumLimit,
                     expiryDate = item.ExpiryDate?.ToString("yyyy-MM-dd")
                 }, JsonRequestBehavior.AllowGet);
             }
@@ -740,6 +741,7 @@ public JsonResult GetMaterialSubCategories(string categoryName)
                 existing.Make = model.Make;
                 existing.Units = model.Units;
                 existing.ExpiryDate = model.ExpiryDate;
+                existing.MinimumLimit = model.MinimumLimit;
                 existing.MaterialUpdatedDate = DateTime.Now;
                 existing.UpdatedBy = "StoreAdmin"; // or from session
 
@@ -1177,8 +1179,8 @@ public ActionResult AddMaterialCategory()
                     QtyOrdered = item.QtyOrdered ?? 0,
                     QtyReceived = item.QtyReceived,
                     Description = item.Description,
-                    UnitPrice = item.UnitPrice ?? 0,
-                    Total = (item.QtyOrdered ?? 0) * (item.UnitPrice ?? 0),
+                    //UnitPrice = item.UnitPrice ?? 0,
+                    //Total = (item.QtyOrdered ?? 0) * (item.UnitPrice ?? 0),
                     Remarks = item.Remarks,
                     AcceptedQty = item.AcceptedQty,
                     RejectedQty = item.RejectedQty,
@@ -1201,17 +1203,20 @@ public ActionResult AddMaterialCategory()
                     {
                         existingItem.QtyReceived = item.QtyReceived;
                         existingItem.Remarks = item.Remarks;
+                        existingItem.RejectedQty = item.RejectedQty;
+                        existingItem.AcceptedQty = item.AcceptedQty;
 
                         // Update TotalCost based on ReceivedQty * UnitPrice
-                        existingItem.Total = (item.QtyReceived ?? 0) * (existingItem.UnitPrice ?? 0);
+                        existingItem.Total = (item.AcceptedQty) * (existingItem.UnitPrice);
 
                         // ✅ Update AvailableQuantity for each unique material in the PO
                         var material = _db.MaterialMasterLists
                             .FirstOrDefault(m => m.MaterialSubCategory == existingItem.Description);
 
-                        if (material != null && item.QtyReceived.HasValue)
+                        if (material != null && item.AcceptedQty.HasValue)
                         {
-                            material.AvailableQuantity += item.QtyReceived.Value;
+                            material.AvailableQuantity += item.AcceptedQty.Value;
+                            material.IsLowStockAlertSent = false; // allow future alerts
                             System.Diagnostics.Debug.WriteLine($"[DEBUG] Updated Material: {material.MaterialSubCategory}, New AvailableQty: {material.AvailableQuantity}");
                         }
                     }
@@ -1247,7 +1252,7 @@ public ActionResult AddMaterialCategory()
 
                 foreach (var item in model.PurchaseOrderItems)
                 {
-                    System.Diagnostics.Debug.WriteLine($"POItemID: {item.POItemID}, Received: {item.QtyReceived}, Remarks: {item.Remarks}");
+                    System.Diagnostics.Debug.WriteLine($"POItemID: {item.POItemID}, Received: {item.QtyReceived}, Remarks: {item.Remarks},Accepted: {item.AcceptedQty},Rejected: {item.RejectedQty}");
                 }
 
                 _db.SaveChanges();
@@ -1314,9 +1319,11 @@ public ActionResult AddMaterialCategory()
                     POItemID = item.POItemID,
                     QtyOrdered = item.QtyOrdered ?? 0,
                     QtyReceived = item.QtyReceived,
+                    AcceptedQty = item.AcceptedQty,
+                    RejectedQty = item.RejectedQty,
                     Description = item.Description,
-                    UnitPrice = item.UnitPrice ?? 0,
-                    Total = (item.QtyOrdered ?? 0) * (item.UnitPrice ?? 0),
+                    //UnitPrice = item.UnitPrice ?? 0,
+                    //Total = (item.QtyOrdered ?? 0) * (item.UnitPrice ?? 0),
                     Remarks = item.Remarks,
                     VendorEmail = item.VendorEmail
                 }).ToList()
@@ -1337,19 +1344,22 @@ public ActionResult AddMaterialCategory()
                     {
                         existingItem.QtyReceived = item.QtyReceived;
                         existingItem.Remarks = item.Remarks;
+                        existingItem.RejectedQty = item.RejectedQty;
+                        existingItem.AcceptedQty = item.AcceptedQty;
 
 
                         // Update TotalCost based on ReceivedQty * UnitPrice
-                        existingItem.Total = (item.QtyReceived ?? 0) * (existingItem.UnitPrice ?? 0);
+                        existingItem.Total = (item.AcceptedQty ?? 0) * (existingItem.UnitPrice ?? 0);
 
                         // ✅ Update AvailableQuantity for each unique material in the PO
                         var material = _db.MaterialMasterLists
                             .FirstOrDefault(m => m.MaterialSubCategory == existingItem.Description);
 
-                        if (material != null && item.QtyReceived.HasValue)
+                        if (material != null && item.AcceptedQty.HasValue)
                         {
-                            material.AvailableQuantity += item.QtyReceived.Value;
-                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Updated Material: {material.MaterialSubCategory}, New AvailableQty: {material.AvailableQuantity}");
+                            material.AvailableQuantity += item.AcceptedQty.Value;
+                            material.IsLowStockAlertSent = false; // allow future alerts
+                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Updated Material: {material.MaterialSubCategory}, New AvailableQty: {material.AvailableQuantity}Accepted: {item.AcceptedQty},Rejected: {item.RejectedQty}");
                         }
                     }
                     else
@@ -1463,10 +1473,10 @@ public ActionResult AddMaterialCategory()
             return View(model);
         }
 
-        public ActionResult MRV()
-        {
-            return View();
-        }
+        //public ActionResult MRV()
+        //{
+        //    return View();
+        //}
 
     }
 }

@@ -24,5 +24,7 @@ namespace WebApplication5.Models
         public Nullable<System.DateTime> ExpiryDate { get; set; }
         public System.DateTime MaterialUpdatedDate { get; set; }
         public string UpdatedBy { get; set; }
+        public int MinimumLimit { get; set; }
+        public bool IsLowStockAlertSent { get; set; }
     }
 }

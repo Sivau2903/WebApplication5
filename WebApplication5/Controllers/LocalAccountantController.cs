@@ -10,7 +10,7 @@ namespace WebApplication5.Controllers
 {
     public class LocalAccountantController : BaseController
     {
-        private readonly ASPEntities _db = new ASPEntities();
+        private readonly ASPEntities2 _db = new ASPEntities2();
         // GET: LocalAccountant
         public ActionResult LADashBoard()
         {

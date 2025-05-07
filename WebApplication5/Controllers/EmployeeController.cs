@@ -11,7 +11,7 @@ namespace WebApplication5.Controllers
 {
     public class EmployeeController : BaseController
     {
-        private readonly ASPEntities db = new ASPEntities();
+        private readonly ASPEntities2 db = new ASPEntities2();
 
         public ActionResult EmployeeDashBoard()
         {

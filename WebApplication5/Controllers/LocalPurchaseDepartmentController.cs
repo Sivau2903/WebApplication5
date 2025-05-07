@@ -18,7 +18,7 @@ namespace WebApplication5.Controllers
 {
     public class LocalPurchaseDepartmentController : BaseController
     {
-        private readonly ASPEntities _db = new ASPEntities();
+        private readonly ASPEntities2 _db = new ASPEntities2();
         private readonly EmailService _emailService = new EmailService();  // Injecting EmailService
         // GET: LocalPurchaseDepartment
         public ActionResult LPDDashBoard()
