@@ -256,6 +256,7 @@
     <Compile Include="Models\MaterialSubCategory.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\MaterialSummaryViewModel.cs" />
     <Compile Include="Models\Model1.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -284,6 +285,7 @@
     </Compile>
     <Compile Include="Models\PurchaseOrderItemViewModel.cs" />
     <Compile Include="Models\RaiseRequestModel.cs" />
+    <Compile Include="Models\ReportViewModel.cs" />
     <Compile Include="Models\Request.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
@@ -481,6 +483,7 @@
     <Content Include="Views\Login\ResetPassword.cshtml" />
     <Content Include="Views\Login\ForgotPassword.cshtml" />
     <Content Include="Views\Shared\_ResetLayout.cshtml" />
+    <Content Include="Views\Home\MRV.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

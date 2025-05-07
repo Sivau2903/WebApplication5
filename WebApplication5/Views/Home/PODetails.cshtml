@@ -19,14 +19,14 @@
     }
 
     .po-title {
-        font-size: 28px;
-        font-weight: bold;
-        text-align: right;
+
+        font-weight: normal;
+
     }
 
     .company-header {
-        font-size: 16px;
-        font-weight: bold;
+
+        font-weight: normal;
     }
 
     table {
@@ -57,16 +57,9 @@
         background-color:blue;
     }
 
-    .company-header {
-        font-weight: bold;
-        font-size: 18px;
-        margin-bottom: 5px;
-    }
 
-    .po-title {
-        font-size: 18px;
-        font-weight: bold;
-    }
+
+
     footer{
         position:fixed;
     }
@@ -75,6 +68,28 @@
         border: none;
         border-bottom: 1px solid black;
     }
+
+    @@media print {
+        body * {
+            visibility: hidden;
+        }
+
+        .po-map, .po-map * {
+            visibility: visible;
+        }
+
+        .po-map {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        .btn-secondary {
+            display: none;
+        }
+    }
+
 </style>
 @if (ViewBag.SuccessMessage != null)
 {
@@ -107,28 +122,38 @@
 
     @if (Model != null)
     {
+        <div class="po-map">
 
-
-        <div class="d-flex justify-content-between">
+        <div class="po-title text-center">
             <!-- Left side: University details stacked vertically -->
             <div>
-
-                <div class="company-header">@Model.UniversityName</div>
+                @*<div class="company-header" font-size="100px"><strong>@Model.UniversityName</strong></div>*@
+                <h3 font-weight="bold">@Model.UniversityName</h3>
                 <div>@Model.UniversityAddress</div>
-                <div>Email: @Model.UniversityEmail</div>
-                <div>Phone: @Model.UniversityPhone</div>
-
+                <div>Email: @Model.UniversityEmail, Phone: @Model.UniversityPhone</div>
             </div>
 
             <!-- Right side: PO title -->
-            <div class="po-title text-end">
-                <div>Purchase Order</div>
-                <div style="font-size: 14px;">PO No: @Model.PONumber</div>
-            </div>
+            @*<div class="po-title text-end">
+                    <div>Purchase Order</div>
+                    <div style="font-size: 14px;">PO No: @Model.PONumber</div>
+                    <div style="font-size: 14px;">Date: @Model.PODate</div>
+                </div>*@
         </div>
+        <h3 class="my-0 text-center mx-lg-5">Material Receipt Vocher</h3>
+        <table>
+            <tr>
+                <td>Purchase Order No.:</td>
+                <td colspan="2"><input type="text" name="PONumber" value="@Model.PONumber" style="width:100%;" /></td>
+
+                <td>Date:</td>
+                <td><input type="date" name="PODate" value="@Model.PODate.ToString("yyyy-MM-dd")" style="width:100%;" /></td>
+            </tr>
+
+        </table>
 
         <!-- Displaying the PO details -->
-        <table>
+        <!--<table>
             <tr>
                 <td><strong>Date:</strong> @Model.PODate</td>
                 <td><strong>Requisition No:</strong> @Model.RequisitionNo</td>
@@ -156,26 +181,31 @@
                 <td>@Model.FOBPoint</td>
                 <td>@Model.Terms</td>
             </tr>
-        </table>
+        </table>-->
 
 
 
 
-        using (Html.BeginForm("UpdatePOItems", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        @using (Html.BeginForm("UpdatePOItems", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
         {
             @Html.HiddenFor(m => m.PONumber)
 
             <table class="table">
                 <tr>
-                    <th>Order Qty</th>
-                    <th>Received Qty</th>
-                    <th>Description</th>
-                    <th>Remarks</th>
+                    <th style="width: 45%;">Material Description</th>
+                    <th style="width: 10%;">Ordered Qty</th>
+                    <th style="width: 10%;">Received</th>
+                    <th style="width: 10%;">Accepted</th>
+                    <th style="width: 10%;">Rejected</th>
+                    <th style="width: 10%;">Remarks</th>
                 </tr>
 
                 @for (int i = 0; i < Model.PurchaseOrderItems.Count; i++)
                 {
                     <tr>
+                        <td>
+                            @Html.DisplayFor(m => m.PurchaseOrderItems[i].Description)
+                        </td>
                         <td>
                             @Html.DisplayFor(m => m.PurchaseOrderItems[i].QtyOrdered)
                         </td>
@@ -186,8 +216,18 @@
                                    value="@Model.PurchaseOrderItems[i].POItemID" />
                         </td>
                         <td>
-                            @Html.DisplayFor(m => m.PurchaseOrderItems[i].Description)
+                            <input type="number" class="form-control" name="PurchaseOrderItems[@i].QtyReceived"
+                                   value="@Model.PurchaseOrderItems[i].AcceptedQty" min="0" />
+                            <input type="hidden" name="PurchaseOrderItems[@i].POItemID"
+                                   value="@Model.PurchaseOrderItems[i].POItemID" />
                         </td>
+                        <td>
+                            <input type="number" class="form-control" name="PurchaseOrderItems[@i].QtyReceived"
+                                   value="@Model.PurchaseOrderItems[i].RejectedQty" min="0" />
+                            <input type="hidden" name="PurchaseOrderItems[@i].POItemID"
+                                   value="@Model.PurchaseOrderItems[i].POItemID" />
+                        </td>
+
                         <td>
                             <input type="text" class="form-control" name="PurchaseOrderItems[@i].Remarks"
                                    value="@Model.PurchaseOrderItems[i].Remarks" />
@@ -223,7 +263,7 @@
         }
 
 
-        <div style="font-size: 13px; margin-top: 10px;">
+        <!--<div style="font-size: 13px; margin-top: 10px;">
             <p>
                 1. Please send @Model.CopiesOfInvoice copies of your invoice.
             </p>
@@ -237,14 +277,16 @@
 
             <strong>AUTHORIZED BY</strong><br />
             @Model.AuthorizedBy
-            <br /><br />
+            <br /><br />-->
 
-            @*<div class="text-lg-center mt-3">
-                    <button type="button" class="btn btn-secondary" onclick="window.print()">Print PO</button>
-                </div>*@
+        @*<div class="text-lg-center mt-3">
+                <button type="button" class="btn btn-secondary" onclick="window.print()">Print PO</button>
+            </div>*@
 
-        </div>
+        <!--</div>-->
+            </div>
     }
+           
 
 </div>
 

@@ -441,6 +441,8 @@
           <Property Name="VendorID" Type="int" />
           <Property Name="Remarks" Type="nvarchar(max)" />
           <Property Name="VendorEmail" Type="nvarchar" MaxLength="500" />
+          <Property Name="AcceptedQty" Type="int" />
+          <Property Name="RejectedQty" Type="int" />
         </EntityType>
         <EntityType Name="PurchaseOrders">
           <Key>
@@ -1474,6 +1476,8 @@
           <Property Name="Remarks" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="VendorEmail" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="PurchaseOrder" Relationship="Self.FK__PurchaseO__PONum__3BFFE745" FromRole="PurchaseOrderItems" ToRole="PurchaseOrders" />
+          <Property Name="AcceptedQty" Type="Int32" />
+          <Property Name="RejectedQty" Type="Int32" />
         </EntityType>
         <EntityType Name="PurchaseOrder">
           <Key>
@@ -2579,6 +2583,8 @@
           <EntitySetMapping Name="PurchaseOrderItems">
             <EntityTypeMapping TypeName="ASPModel.PurchaseOrderItem">
               <MappingFragment StoreEntitySet="PurchaseOrderItems">
+                <ScalarProperty Name="RejectedQty" ColumnName="RejectedQty" />
+                <ScalarProperty Name="AcceptedQty" ColumnName="AcceptedQty" />
                 <ScalarProperty Name="POItemID" ColumnName="POItemID" />
                 <ScalarProperty Name="PONumber" ColumnName="PONumber" />
                 <ScalarProperty Name="QtyOrdered" ColumnName="QtyOrdered" />

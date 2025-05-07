@@ -580,6 +580,7 @@ namespace WebApplication5.Controllers
 
                 return RedirectToAction("InitiatePOEmail", new { PONumber = purchaseOrder.PONumber });
             }
+
             catch (Exception ex)
             {
                 ModelState.AddModelError("", "Error: " + ex.Message);

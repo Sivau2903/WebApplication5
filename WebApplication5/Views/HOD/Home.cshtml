@@ -12,7 +12,7 @@
     .dashboard-content {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background-color: #f9f9f9; /* Light background for content area */
-        padding: 30px;
+        padding: 70px;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         text-align: center;
@@ -39,6 +39,13 @@
     }
     footer {
         position: fixed;
+    }
+    .dashboard-wrapper {
+        display: flex;
+        justify-content: center; /* Horizontal center */
+        align-items: center; /* Vertical center */
+        height: 50vh; /* Full viewport height */
+        /*background-color: #eaeaea;*/ /* Optional background */
     }
     .system-name {
         color: #555;
@@ -83,6 +90,7 @@
     }
 </style>
 
+<div class="dashboard-wrapper">
 <div class="dashboard-content">
     <h1 class="greeting-text">
         Hello, <span class="highlight">Welcome</span> to the
@@ -91,4 +99,5 @@
     <p class="system-name">
         of the Asset Management System
     </p>
+</div>
 </div>

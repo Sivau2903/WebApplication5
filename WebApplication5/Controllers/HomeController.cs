@@ -21,118 +21,7 @@ namespace WebApplication5.Controllers
 
         public ActionResult StoreAdminDasBoard(DateTime? fromDate, DateTime? toDate, string requestType = "Employee", int page = 1, int pageSize = 10)
         {
-            //// Validate session
-            //string userID = Session["UserID"] as string;
-            //string userRole = Session["UserRole"] as string;
-
-            //if (string.IsNullOrEmpty(userID) || userRole != "Admin")
-            //{
-            //    TempData["ErrorMessage"] = "Unauthorized access.";
-            //    return RedirectToAction("StoreAdminDasBoard", "Home");
-            //}
-
-            //// Find the StoreAdmin
-            //var storeadmin = _db.StoreAdmins.FirstOrDefault(e => e.StoreAdminID.ToString() == userID);
-            //if (storeadmin == null)
-            //{
-            //    TempData["ErrorMessage"] = "StoreAdmin details not found.";
-            //    return RedirectToAction("StoreAdminDasBoard", "Home");
-            //}
-
-            //int storeadminID = storeadmin.StoreAdminID;
-
-            //List<RequestGroupedViewModel> requests;
-
-            //if (requestType == "Employee")
-            //{
-            //    // Fetch Employee Requests
-            //    requests = _db.Requests
-            //        .Where(r => r.StoreAdminID == storeadminID && (r.Status == "Approved" || r.Status == "Ongoing"))
-            //        .OrderByDescending(r => r.RequestDate)
-            //        .ToList()
-            //        .GroupBy(r => r.RequestID)
-            //        .Select((group, index) => new RequestGroupedViewModel
-            //        {
-            //            SNo = index + 1,
-            //            RequestID = group.Key ?? 0,
-            //            EmpID = group.First().EmpID,
-            //            RequestDate = group.First().RequestDate ?? DateTime.Now,
-            //            Status = group.First().Status ?? "Unknown",
-            //            AssetDetails = group.Select(r => new RequestViewModel
-            //            {
-            //                AssetType = r.AssetType ?? "N/A",
-            //                MaterialCategory = r.MaterialCategory ?? "N/A",
-            //                MSubCategory = r.MSubCategory ?? "N/A",
-            //                AvailableQuantity = r.AvailableQuantity ?? 0,
-            //                RequestingQuantity = r.RequestingQuantity,
-            //                ApprovedQuantity = r.ApprovedQuantity ?? 0,
-            //                PendingQuantity = r.PendingQuantity ?? 0
-            //            }).ToList()
-            //        })
-            //        .ToList();
-            //}
-            //else if (requestType == "HOD")
-            //{
-            //    // Fetch HOD Requests
-            //    requests = _db.HODRequests
-            //        .Where(r => r.StoreAdminID == storeadminID && (r.Status == "Approved" || r.Status == "Ongoing"))
-            //        .OrderByDescending(r => r.RequestedDate)
-            //        .ToList()
-            //        .GroupBy(r => r.HODRequestID)
-            //        .Select((group, index) => new RequestGroupedViewModel
-            //        {
-            //            SNo = index + 1,
-            //            RequestID = group.Key ?? 0,
-            //            HODID = group.First().HODID,
-            //            RequestedDate = group.First().RequestedDate ?? DateTime.Now,
-            //            Status = group.First().Status ?? "Unknown",
-            //            AssetDetails = group.Select(r => new RequestViewModel
-            //            {
-            //                AssetType = r.AssetType ?? "N/A",
-            //                MaterialCategory = r.MaterialCategory ?? "N/A",
-            //                MSubCategory = r.MSubCategory ?? "N/A",
-            //                AvailableQuantity = r.AvailableQuantity ?? 0,
-            //                RequestingQuantity = r.RequestingQuantity,
-            //                PendingQuantity = string.IsNullOrEmpty(r.PendingQuantity) ? 0 : Convert.ToInt32(r.PendingQuantity)
-            //            }).ToList()
-            //        })
-            //        .ToList();
-            //}
-            //else
-            //{
-            //    // Handle invalid requestType
-            //    TempData["ErrorMessage"] = "Invalid request type."; 
-            //    return RedirectToAction("StoreAdminDasBoard", "Home");
-            //}
-
-            //// Apply filters
-            //if (fromDate.HasValue)
-            //{
-            //    requests = requests.Where(r => r.RequestDate >= fromDate.Value).ToList();
-            //}
-            //if (toDate.HasValue)
-            //{
-            //    requests = requests.Where(r => r.RequestDate <= toDate.Value).ToList();
-            //}
-
-            //// Pagination
-            //int totalRequests = requests.Count();
-            //var pagedRequests = requests
-            //    .Skip((page - 1) * pageSize)
-            //    .Take(pageSize)
-            //    .ToList();
-
-            //// Create the wrapper ViewModel
-            //var model = new HODDashboardViewModel
-            //{
-            //    Requests = pagedRequests,
-            //    CurrentPage = page,
-            //    PageSize = pageSize,
-            //    TotalCount = totalRequests,
-            //    RequestType = requestType // Pass the requestType to the view
-
-            //};
-
+          
             return View();
         }
 
@@ -1291,6 +1180,8 @@ public ActionResult AddMaterialCategory()
                     UnitPrice = item.UnitPrice ?? 0,
                     Total = (item.QtyOrdered ?? 0) * (item.UnitPrice ?? 0),
                     Remarks = item.Remarks,
+                    AcceptedQty = item.AcceptedQty,
+                    RejectedQty = item.RejectedQty,
                     VendorEmail = item.VendorEmail
                 }).ToList()
             };
@@ -1512,45 +1403,69 @@ public ActionResult AddMaterialCategory()
             if (startDate == null || endDate == null)
             {
                 TempData["Error"] = "Please select both start and end dates.";
-                return View(new List<MaterialIssueReportViewModel>());
+                return View(new ReportViewModel()); // empty model
             }
 
-            var employeeData = _db.EmployeeIssueMaterials
-     .Where(e => e.IssuedDate >= startDate && e.IssuedDate <= endDate)
-     .Select(e => new {
-         MaterialName = e.MaterialSubCategory,
-         IssuedDate = DbFunctions.TruncateTime(e.IssuedDate).Value,
-         IssuingQuantity = e.IssuingQuantity,                     // Make name consistent
-         OpeningQuantity = e.AvailableQuantity,              // Ensure int
-         ClosingQuantity = e.ClosingQuantity                      // Already int
-     });
+            DateTime fromDate = startDate.Value.Date;
+            DateTime toDate = endDate.Value.Date.AddDays(1).AddSeconds(-1);
 
-            var hodData = _db.HODIssueMaterials
-                .Where(h => h.IssuedDate >= startDate && h.IssuedDate <= endDate)
-                .Select(h => new {
-                    MaterialName = h.MaterialSubCategory,
-                    IssuedDate = DbFunctions.TruncateTime(h.IssuedDate).Value,
-                    IssuingQuantity = h.IssuingQuantity ?? 0,                // Same property name
-                    OpeningQuantity = h.AvailableQuantity ?? 0,              // Ensure int
-                    ClosingQuantity = h.ClosingQuantity ?? 0
+            // Fetch detailed data
+            var employeeData = _db.EmployeeIssueMaterials
+                .Where(e => e.IssuedDate >= fromDate && e.IssuedDate <= toDate)
+                .Select(e => new MaterialIssueReportViewModel
+                {
+                    MaterialName = e.MaterialSubCategory,
+                    IssuedDate = e.IssuedDate,
+                    RequestedQuantity = e.RequestingQuantity,
+                    IssuedQuantity = e.IssuingQuantity,
+                    ClosingQuantity = e.ClosingQuantity,
+                    IssuedTo = e.EmpID,
+                    Role= "Employee"
                 });
 
-            // Now both have same structure, Union will work
-            var combined = employeeData
-          .Concat(hodData)
-          .ToList() // Ensure it's materialized before grouping
-          .GroupBy(x => x.MaterialName)
-          .Select(g => new MaterialIssueReportViewModel
-          {
-              MaterialName = g.Key,
-              TotalIssued = g.Sum(x => x.IssuingQuantity),
-              OpeningQuantity = g.OrderBy(x => x.IssuedDate).First().OpeningQuantity,
-              ClosingQuantity = g.OrderByDescending(x => x.IssuedDate).First().ClosingQuantity
-          })
-          .OrderBy(r => r.MaterialName)
-          .ToList();
+            var hodData = _db.HODIssueMaterials
+                .Where(h => h.IssuedDate >= fromDate && h.IssuedDate <= toDate)
+                .Select(h => new MaterialIssueReportViewModel
+                {
+                    MaterialName = h.MaterialSubCategory,
+                    IssuedDate = (DateTime)h.IssuedDate,
+                    RequestedQuantity = h.RequestingQuantity ?? 0,
+                    IssuedQuantity = h.IssuingQuantity ?? 0,
+                    ClosingQuantity = h.ClosingQuantity ?? 0,
+                    IssuedTo = h.HODID,
+                    Role ="HOD"
+                });
 
-            return View(combined);
+            var detailedList = employeeData
+                .Concat(hodData)
+                .OrderBy(x => x.IssuedDate)
+                .ThenBy(x => x.MaterialName)
+                .ToList();
+
+            // Generate summary
+            var summaryList = detailedList
+                .GroupBy(x => x.MaterialName)
+                .Select(g => new MaterialSummaryViewModel
+                {
+                    MaterialName = g.Key,
+                    TotalIssuedQuantity = g.Sum(x => x.IssuedQuantity),
+                    ClosingQuantity = g.OrderByDescending(x => x.IssuedDate).First().ClosingQuantity
+                })
+                .OrderBy(x => x.MaterialName)
+                .ToList();
+
+            var model = new ReportViewModel
+            {
+                DetailedReports = detailedList,
+                SummaryReports = summaryList
+            };
+
+            return View(model);
+        }
+
+        public ActionResult MRV()
+        {
+            return View();
         }
 
     }
