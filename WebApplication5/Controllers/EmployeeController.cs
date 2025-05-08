@@ -5,6 +5,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
+using PagedList;
 using WebApplication5.Models;
 
 namespace WebApplication5.Controllers
@@ -102,86 +103,6 @@ namespace WebApplication5.Controllers
                 return Json(new { success = false, message = "Error retrieving data." }, JsonRequestBehavior.AllowGet);
             }
         }
-
-        //public PartialViewResult RequestMaterial()
-        //{
-        //    return PartialView("_RequestMaterial");
-        //}
-
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public JsonResult SubmitRequestMaterial(string assetType, string materialCategory, string materialSubCategory, int requestingQuantity)
-        //{
-        //    if (string.IsNullOrEmpty(assetType) || string.IsNullOrEmpty(materialCategory) || string.IsNullOrEmpty(materialSubCategory) || requestingQuantity <= 0)
-        //    {
-        //        return Json(new { success = false, message = "Invalid input data!" });
-        //    }
-
-        //    string userID = Session["UserID"] as string;
-        //    string userRole = Session["UserRole"] as string;
-
-        //    Debug.WriteLine($"Session UserID: {userID}, Role: {userRole}");
-
-        //    if (string.IsNullOrEmpty(userID) || string.IsNullOrEmpty(userRole))
-        //    {
-        //        return Json(new { success = false, message = "Unauthorized access!" });
-        //    }
-
-        //    int storeAdminID = 0;
-
-        //     if (userRole == "Employee")
-        //        {
-        //            var employee = db.Employees.FirstOrDefault(e => e.EmpID.ToString() == userID);
-        //            if (employee == null)
-        //            {
-        //                return Json(new { success = false, message = "Employee not found!" });
-        //            }
-
-        //            // Fetch StoreAdminID by matching UniversityID
-        //            storeAdminID = db.StoreAdmins
-        //                            .Where(sa => sa.UniversityID == employee.UniversityID)
-        //                            .Select(sa => sa.StoreAdminID)
-        //                            .FirstOrDefault();
-        //        }
-        //        else if (userRole == "HOD")
-        //        {
-        //            var hod = db.HODs.FirstOrDefault(h => h.HODID.ToString() == userID);
-        //            if (hod == null)
-        //            {
-        //                return Json(new { success = false, message = "HOD not found!" });
-        //            }
-
-        //            // Fetch StoreAdminID by matching UniversityID
-        //            storeAdminID = db.StoreAdmins
-        //                            .Where(sa => sa.UniversityID == hod.UniversityID)
-        //                            .Select(sa => sa.StoreAdminID)
-        //                            .FirstOrDefault();
-        //        }
-        //        else
-        //        {
-        //            return Json(new { success = false, message = "Invalid role!" });
-        //        }
-
-        //        RequiredMaterial newRequest = new RequiredMaterial
-        //        {
-        //            AssetType = assetType,
-        //            MaterialCategory = materialCategory,
-        //            MaterialSubCategory = materialSubCategory,
-        //            RequiredQuantity = requestingQuantity,
-        //            UserID = int.Parse(userID),
-        //            Role = userRole,
-        //            StoreAdminID = storeAdminID,
-        //            RequestedDate = DateTime.Now,
-        //            Status = "New"
-        //        };
-
-        //        db.RequiredMaterials.Add(newRequest);
-        //        db.SaveChanges();
-            
-
-        //    return Json(new { success = true, message = "Material request submitted successfully!" });
-        //}
-
 
 
         [HttpPost]
@@ -318,7 +239,7 @@ namespace WebApplication5.Controllers
             }
         }
 
-        public ActionResult MyRequests()
+        public ActionResult MyRequests(int? page)
         {
             string userID = Session["UserID"] as string;
 
@@ -334,8 +255,6 @@ namespace WebApplication5.Controllers
                 TempData["ErrorMessage"] = "Employee details not found.";
                 return RedirectToAction("EmployeeDashboard");
             }
-
-            // Grouping requests by RequestID
 
             string empID = employee.EmpID;
             var myrequests = db.Requests
@@ -361,12 +280,14 @@ namespace WebApplication5.Controllers
                         PendingQuantity = r.PendingQuantity ?? 0,
                         Remarks = r.Remarks
                     }).ToList()
-                })
-                .ToList();
+                }).ToList();
 
+            int pageSize = 5;
+            int pageNumber = page ?? 1;
 
-            return View(myrequests);
+            return View(myrequests.ToPagedList(pageNumber, pageSize));
         }
+
 
         protected override void OnActionExecuting(ActionExecutingContext filterContext)
         {

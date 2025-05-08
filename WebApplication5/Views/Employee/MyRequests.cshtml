@@ -1,6 +1,8 @@
 ﻿
 
-@model List<WebApplication5.Models.RequestGroupedViewModel>
+@model PagedList.IPagedList<WebApplication5.Models.RequestGroupedViewModel>
+@using PagedList.Mvc;
+
 
 @{
     Layout = "~/Views/Shared/_EmpLayout.cshtml";
@@ -73,7 +75,12 @@
                     </tr>
                 }
             </tbody>
+
         </table>
+        <div class="text-center">
+            @Html.PagedListPager(Model, page => Url.Action("MyRequests", new { page }))
+        </div>
+
     </div>
 
     <script>

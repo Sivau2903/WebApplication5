@@ -1478,5 +1478,20 @@ public ActionResult AddMaterialCategory()
         //    return View();
         //}
 
+        public ActionResult ExpiredMaterials()
+        {
+            using (var db = new ASPEntities2())
+            {
+                DateTime today = DateTime.Today;
+
+                var expiredMaterials = db.MaterialMasterLists
+                    .Where(m => m.ExpiryDate != null && m.ExpiryDate < today)
+                    .ToList();
+
+                return View(expiredMaterials);
+            }
+        }
+
+
     }
 }

@@ -29,7 +29,7 @@ namespace WebApplication5
                 "low-stock-check",
                 x => x.CheckLowStock(),
                  //Cron.Hourly // or Cron.Minutely
-                 "40 15 * * *"
+                 "0 10 * * *"
             );
         }
     }
