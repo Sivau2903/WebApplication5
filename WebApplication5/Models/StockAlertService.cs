@@ -16,7 +16,19 @@ namespace WebApplication5.Models
             try
             {
                 using (ASPEntities2 db = new ASPEntities2())
-                {
+                {               
+                    
+                    // Step 1: Reset the alert flags for all materials
+                    var previouslyAlerted = db.MaterialMasterLists
+                        .Where(m => m.IsLowStockAlertSent)
+                        .ToList();
+
+                    foreach (var item in previouslyAlerted)
+                    {
+                        item.IsLowStockAlertSent = false;
+                    }
+                    db.SaveChanges();
+
                     var lowStockMaterials = db.MaterialMasterLists
                         .Where(m => m.AvailableQuantity < m.MinimumLimit && !m.IsLowStockAlertSent)
                         .ToList();

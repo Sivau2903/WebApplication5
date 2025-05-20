@@ -173,9 +173,11 @@
 
         <table class="table">
             <tr>
+                <th>Description</th>
                 <th>Order Qty</th>
                 <th>Received Qty</th>
-                <th>Description</th>
+                <th>Accepted Qty</th>
+                <th>Rejected Qty</th>
                 <th>Unit Price</th>
                 <th>Total</th>
                 <th>Remarks</th>
@@ -185,16 +187,22 @@
             {
                 <tr>
                     <td>
+                        @Html.DisplayFor(m => m.CentralPurchaseOrderItems[i].Description)
+                    </td>
+                    <td>
                         @Html.DisplayFor(m => m.CentralPurchaseOrderItems[i].QtyOrdered)
                     </td>
 
                     <td>
                         @Html.DisplayFor(m => m.CentralPurchaseOrderItems[i].QtyReceived)
                     </td>
-
                     <td>
-                        @Html.DisplayFor(m => m.CentralPurchaseOrderItems[i].Description)
+                        @Html.DisplayFor(m => m.CentralPurchaseOrderItems[i].AcceptedQty)
                     </td>
+                    <td>
+                        @Html.DisplayFor(m => m.CentralPurchaseOrderItems[i].RejectedQty)
+                    </td>
+
                     <td>
                         @Html.DisplayFor(m => m.CentralPurchaseOrderItems[i].UnitPrice)
                     </td>

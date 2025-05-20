@@ -1,25 +1,8 @@
 ﻿@model List<WebApplication5.Models.MaterialMasterList>
-
 @{
-    ViewBag.Title = "Materials List";
-    Layout = "~/Views/Shared/_LocalPDLayout.cshtml";
+    Layout = "~/Views/Shared/_StoreAdminLayout.cshtml";
+    ViewBag.Title = "Materials";
 }
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-        @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
-@if (TempData["InfoMessage"] != null)
-{
-    <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
-        @TempData["InfoMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
-
 
 <div class="container-fluid materials-container">
     <h2 class="mb-4 text-center fw-bold text-primary">Materials Inventory</h2>
@@ -47,10 +30,10 @@
                                         <th scope="col">S.No</th>
                                         <th scope="col">Material Subcategory</th>
                                         <th scope="col">Available Quantity</th>
-                                        @*<th scope="col">Make</th>
-                                            <th scope="col">Units</th>*@
+                                        <th scope="col">Make</th>
+                                            <th scope="col">Units</th>
                                         <th scope="col">Expiry Date</th>
-                                        <th scope="col">Action</th>
+                                       
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -63,15 +46,10 @@
                                             <td>@sno</td>
                                             <td>@item.MaterialSubCategory</td>
                                             <td>@item.AvailableQuantity</td>
-                                            @*<td>@item.Make</td>
-                                                <td>@item.Units</td>*@
+                                            <td>@item.Make</td>
+                                                <td>@item.Units</td>
                                             <td>@(item.ExpiryDate != null ? item.ExpiryDate.Value.ToString("dd-MMM-yyyy") : "N/A")</td>
-                                            <td>
-                                                <form method="post" action="@Url.Action("AddToReceivedRequests", "LocalPurchaseDepartment")" class="d-inline">
-                                                    <input type="hidden" name="materialSubCategory" value="@item.MaterialSubCategory" />
-                                                    <button type="submit" class="btn btn-primary btn-sm px-3">Add</button>
-                                                </form>
-                                            </td>
+                                          
                                         </tr>
                                         sno++;
                                     }
@@ -207,15 +185,3 @@
             }
     }
 </style>
-
-@section Scripts {
-    <script>
-        setTimeout(function () {
-            var alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function (alert) {
-                var bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
-                bsAlert.close();
-            });
-        }, 4000); // 4 seconds
-    </script>
-}

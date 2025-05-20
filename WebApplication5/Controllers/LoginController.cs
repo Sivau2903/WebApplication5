@@ -15,10 +15,13 @@ namespace WebApplication5.Controllers
     {
         private readonly ASPEntities2 _db = new ASPEntities2();
         // GET: Login
+
+        [OutputCache(NoStore = true, Duration = 0, VaryByParam = "*")]
         public ActionResult Loginpage()
         {
             return View();
         }
+
 
         [HttpPost]
         public ActionResult Login(Loginviewmodel model)
@@ -105,6 +108,7 @@ namespace WebApplication5.Controllers
                     return View("Loginpage");
                 }
             }
+
             else
             {
                 Debug.WriteLine("ModelState is not valid.");
@@ -115,32 +119,47 @@ namespace WebApplication5.Controllers
         }
 
 
+        //public ActionResult Logout()
+        //{
+        //    // Clear all session data
+        //    Session.Clear();
+        //    Session.Abandon();
+        //    Session.RemoveAll();
+
+        //    // Remove authentication cookie
+        //    if (Request.Cookies[".AspNet.ApplicationCookie"] != null)
+        //    {
+        //        var cookie = new HttpCookie(".AspNet.ApplicationCookie")
+        //        {
+        //            Expires = DateTime.Now.AddDays(-1),
+        //            Value = null
+        //        };
+        //        Response.Cookies.Set(cookie);
+        //    }
+
+        //    // Disable browser caching to prevent back navigation
+        //    Response.Cache.SetCacheability(HttpCacheability.NoCache);
+        //    Response.Cache.SetExpires(DateTime.UtcNow.AddMinutes(-1));
+        //    Response.Cache.SetNoStore();
+
+        //    // Redirect to login page
+        //    return RedirectToAction("Loginpage", "Login");
+        //}
+
         public ActionResult Logout()
         {
-            // Clear all session data
             Session.Clear();
             Session.Abandon();
-            Session.RemoveAll();
 
-            // Remove authentication cookie
-            if (Request.Cookies[".AspNet.ApplicationCookie"] != null)
-            {
-                var cookie = new HttpCookie(".AspNet.ApplicationCookie")
-                {
-                    Expires = DateTime.Now.AddDays(-1),
-                    Value = null
-                };
-                Response.Cookies.Set(cookie);
-            }
-
-            // Disable browser caching to prevent back navigation
+            Response.Cache.SetExpires(DateTime.UtcNow.AddDays(-1));
+            Response.Cache.SetValidUntilExpires(false);
+            Response.Cache.SetRevalidation(HttpCacheRevalidation.AllCaches);
             Response.Cache.SetCacheability(HttpCacheability.NoCache);
-            Response.Cache.SetExpires(DateTime.UtcNow.AddMinutes(-1));
             Response.Cache.SetNoStore();
 
-            // Redirect to login page
-            return RedirectToAction("Loginpage", "Login");
+            return RedirectToAction("LoginPage", "Login");
         }
+
 
         protected override void OnActionExecuting(ActionExecutingContext filterContext)
         {

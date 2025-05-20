@@ -14,12 +14,6 @@ namespace WebApplication5.Models
     
     public partial class CentralAccountant
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public CentralAccountant()
-        {
-            this.StoreRequestingMaterials = new HashSet<StoreRequestingMaterial>();
-        }
-    
         public int CACCID { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -27,8 +21,5 @@ namespace WebApplication5.Models
         public string PhoneNumber { get; set; }
         public Nullable<decimal> Budget { get; set; }
         public string CentralAccountantID { get; set; }
-    
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<StoreRequestingMaterial> StoreRequestingMaterials { get; set; }
     }
 }

@@ -738,14 +738,30 @@ public JsonResult GetMaterialSubCategories(string categoryName)
             {
                 // Update existing row
                 existing.AvailableQuantity = model.AvailableQuantity;
-                existing.Make = model.Make;
-                existing.Units = model.Units;
-                existing.ExpiryDate = model.ExpiryDate;
+                //existing.Make = model.Make;
+                //existing.Units = model.Units;
+                //existing.ExpiryDate = model.ExpiryDate;
                 existing.MinimumLimit = model.MinimumLimit;
                 existing.MaterialUpdatedDate = DateTime.Now;
                 existing.UpdatedBy = "StoreAdmin"; // or from session
 
-                _db.SaveChanges();
+                try
+                {
+                    _db.SaveChanges();
+                }
+                catch (DbEntityValidationException ex)
+                {
+                    foreach (var validationErrors in ex.EntityValidationErrors)
+                    {
+                        foreach (var validationError in validationErrors.ValidationErrors)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Property: {validationError.PropertyName} Error: {validationError.ErrorMessage}");
+                        }
+                    }
+
+                    throw; // rethrow if you want to preserve the exception
+                }
+
             }
             else
             {
@@ -765,173 +781,173 @@ public JsonResult GetMaterialSubCategories(string categoryName)
         
 
 
-        public ActionResult AddAssetType()
-        {
+//        public ActionResult AddAssetType()
+//        {
 
-            return View();
-        }
+//            return View();
+//        }
 
-        // POST: AssetType/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult AssetTypeView(AssetType model)
-        {
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    AssetType assetType = new AssetType
-                    {
-                        AssetType1 = model.AssetType1?.Trim() // Ensure no null or whitespace issues
-                    };
+//        // POST: AssetType/Create
+//        [HttpPost]
+//        [ValidateAntiForgeryToken]
+//        public ActionResult AssetTypeView(AssetType model)
+//        {
+//            if (ModelState.IsValid)
+//            {
+//                try
+//                {
+//                    AssetType assetType = new AssetType
+//                    {
+//                        AssetType1 = model.AssetType1?.Trim() // Ensure no null or whitespace issues
+//                    };
 
-                    _db.AssetTypes.Add(assetType);
-                    _db.SaveChanges();
+//                    _db.AssetTypes.Add(assetType);
+//                    _db.SaveChanges();
 
-                    TempData["SuccessMessage"] = "Asset Type added successfully!";
-                    return RedirectToAction("AddAssetType"); // Redirect to avoid duplicate submissions
-                }
-                catch (DbEntityValidationException ex)
-                {
-                    foreach (var validationErrors in ex.EntityValidationErrors)
-                    {
-                        foreach (var validationError in validationErrors.ValidationErrors)
-                        {
-                            ModelState.AddModelError(validationError.PropertyName, validationError.ErrorMessage);
-                        }
-                    }
-                }
-            }
+//                    TempData["SuccessMessage"] = "Asset Type added successfully!";
+//                    return RedirectToAction("AddAssetType"); // Redirect to avoid duplicate submissions
+//                }
+//                catch (DbEntityValidationException ex)
+//                {
+//                    foreach (var validationErrors in ex.EntityValidationErrors)
+//                    {
+//                        foreach (var validationError in validationErrors.ValidationErrors)
+//                        {
+//                            ModelState.AddModelError(validationError.PropertyName, validationError.ErrorMessage);
+//                        }
+//                    }
+//                }
+//            }
 
-            return View(model);
-        }
-public ActionResult AddMaterialCategory()
-        {
-            ViewBag.AssetTypeID = new SelectList(_db.AssetTypes, "AssetTypeID", "AssetType1"); // Populate dropdown
+//            return View(model);
+//        }
+//public ActionResult AddMaterialCategory()
+//        {
+//            ViewBag.AssetTypeID = new SelectList(_db.AssetTypes, "AssetTypeID", "AssetType1"); // Populate dropdown
 
-            return View();
-        }
+//            return View();
+//        }
 
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult MaterialCategoryView(int AssetTypeID, string[] MCategoryNames)
-        {
-            try
-            {
-                if (MCategoryNames == null || MCategoryNames.Length == 0)
-                {
-                    ModelState.AddModelError("", "Please enter at least one material category.");
-                    ViewBag.AssetTypeID = new SelectList(_db.AssetTypes, "AssetTypeID", "AssetType1", AssetTypeID);
-                    return View();
-                }
+//        [HttpPost]
+//        [ValidateAntiForgeryToken]
+//        public ActionResult MaterialCategoryView(int AssetTypeID, string[] MCategoryNames)
+//        {
+//            try
+//            {
+//                if (MCategoryNames == null || MCategoryNames.Length == 0)
+//                {
+//                    ModelState.AddModelError("", "Please enter at least one material category.");
+//                    ViewBag.AssetTypeID = new SelectList(_db.AssetTypes, "AssetTypeID", "AssetType1", AssetTypeID);
+//                    return View();
+//                }
 
-                // Trim and filter out empty category names
-                var validCategories = MCategoryNames
-                    .Select(name => name?.Trim())
-                    .Where(name => !string.IsNullOrWhiteSpace(name))
-                    .Distinct(StringComparer.OrdinalIgnoreCase) // Remove duplicate entries from input
-                    .ToList();
+//                // Trim and filter out empty category names
+//                var validCategories = MCategoryNames
+//                    .Select(name => name?.Trim())
+//                    .Where(name => !string.IsNullOrWhiteSpace(name))
+//                    .Distinct(StringComparer.OrdinalIgnoreCase) // Remove duplicate entries from input
+//                    .ToList();
 
-                if (validCategories.Count == 0)
-                {
-                    ModelState.AddModelError("", "Please enter valid material categories.");
-                    ViewBag.AssetTypeID = new SelectList(_db.AssetTypes, "AssetTypeID", "AssetType1", AssetTypeID);
-                    return View();
-                }
+//                if (validCategories.Count == 0)
+//                {
+//                    ModelState.AddModelError("", "Please enter valid material categories.");
+//                    ViewBag.AssetTypeID = new SelectList(_db.AssetTypes, "AssetTypeID", "AssetType1", AssetTypeID);
+//                    return View();
+//                }
 
-                // Get existing categories for the selected AssetType
-                var existingCategories = _db.MaterialCategories
-                    .Where(mc => mc.AssetTypeID == AssetTypeID)
-                    .Select(mc => mc.MaterialCategory1.ToLower())
-                    .ToHashSet(); // Optimized lookup
+//                // Get existing categories for the selected AssetType
+//                var existingCategories = _db.MaterialCategories
+//                    .Where(mc => mc.AssetTypeID == AssetTypeID)
+//                    .Select(mc => mc.MaterialCategory1.ToLower())
+//                    .ToHashSet(); // Optimized lookup
 
-                List<string> skippedCategories = new List<string>();
+//                List<string> skippedCategories = new List<string>();
 
-                foreach (var categoryName in validCategories)
-                {
-                    string lowerCategory = categoryName.ToLower();
+//                foreach (var categoryName in validCategories)
+//                {
+//                    string lowerCategory = categoryName.ToLower();
 
-                    if (existingCategories.Contains(lowerCategory))
-                    {
-                        skippedCategories.Add(categoryName);
-                        continue;
-                    }
+//                    if (existingCategories.Contains(lowerCategory))
+//                    {
+//                        skippedCategories.Add(categoryName);
+//                        continue;
+//                    }
 
-                    MaterialCategory newCategory = new MaterialCategory
-                    {
-                        AssetTypeID = AssetTypeID,
-                        MaterialCategory1 = categoryName
-                    };
+//                    MaterialCategory newCategory = new MaterialCategory
+//                    {
+//                        AssetTypeID = AssetTypeID,
+//                        MaterialCategory1 = categoryName
+//                    };
 
-                    _db.MaterialCategories.Add(newCategory);
-                }
+//                    _db.MaterialCategories.Add(newCategory);
+//                }
 
-                _db.SaveChanges();
+//                _db.SaveChanges();
 
-                if (skippedCategories.Any())
-                {
-                    TempData["WarningMessage"] = "Some categories were skipped because they already exist: " + string.Join(", ", skippedCategories);
-                }
+//                if (skippedCategories.Any())
+//                {
+//                    TempData["WarningMessage"] = "Some categories were skipped because they already exist: " + string.Join(", ", skippedCategories);
+//                }
 
-                TempData["SuccessMessage"] = "Material categories added successfully!";
-                return RedirectToAction("AddMaterialCategory");
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", "An error occurred while saving categories: " + ex.Message);
-            }
+//                TempData["SuccessMessage"] = "Material categories added successfully!";
+//                return RedirectToAction("AddMaterialCategory");
+//            }
+//            catch (Exception ex)
+//            {
+//                ModelState.AddModelError("", "An error occurred while saving categories: " + ex.Message);
+//            }
 
-            ViewBag.AssetTypeID = new SelectList(_db.AssetTypes, "AssetTypeID", "AssetType1", AssetTypeID);
-            return View();
-        }
+//            ViewBag.AssetTypeID = new SelectList(_db.AssetTypes, "AssetTypeID", "AssetType1", AssetTypeID);
+//            return View();
+//        }
     
 
 
 
-        public ActionResult AddMaterialSubCategory()
-        {
-            ViewBag.AssetTypeID = new SelectList(_db.AssetTypes, "AssetTypeID", "AssetType1");
-            ViewBag.MID = new SelectList(Enumerable.Empty<SelectListItem>(), "MID", "MCategoryName"); // Initially empty dropdown
+//        public ActionResult AddMaterialSubCategory()
+//        {
+//            ViewBag.AssetTypeID = new SelectList(_db.AssetTypes, "AssetTypeID", "AssetType1");
+//            ViewBag.MID = new SelectList(Enumerable.Empty<SelectListItem>(), "MID", "MCategoryName"); // Initially empty dropdown
 
-            var existingSubcategories = _db.MaterialSubCategories.ToList(); // Fetch existing subcategories
-            return View(existingSubcategories);
+//            var existingSubcategories = _db.MaterialSubCategories.ToList(); // Fetch existing subcategories
+//            return View(existingSubcategories);
 
-        }
+//        }
 
 
 
-        [HttpPost]
-        public JsonResult MaterialSubCategoryView(int MID, int PurchaseDepartment, List<string> MSubCategoryNames)
-        {
-            try
-            {
-                if (MSubCategoryNames == null || MSubCategoryNames.Count == 0)
-                {
-                    return Json(new { success = false, message = "No subcategories provided." });
-                }
+//        [HttpPost]
+//        public JsonResult MaterialSubCategoryView(int MID, int PurchaseDepartment, List<string> MSubCategoryNames)
+//        {
+//            try
+//            {
+//                if (MSubCategoryNames == null || MSubCategoryNames.Count == 0)
+//                {
+//                    return Json(new { success = false, message = "No subcategories provided." });
+//                }
 
-                foreach (var subcategoryName in MSubCategoryNames)
-                {
-                    var newSubCategory = new MaterialSubCategory
-                    {
-                        MID = MID,
-                        //PDNo = PurchaseDepartment,
-                        MaterialSubCategory1 = subcategoryName.Trim()
-                    };
+//                foreach (var subcategoryName in MSubCategoryNames)
+//                {
+//                    var newSubCategory = new MaterialSubCategory
+//                    {
+//                        MID = MID,
+//                        //PDNo = PurchaseDepartment,
+//                        MaterialSubCategory1 = subcategoryName.Trim()
+//                    };
 
-                    _db.MaterialSubCategories.Add(newSubCategory);
-                }
+//                    _db.MaterialSubCategories.Add(newSubCategory);
+//                }
 
-                _db.SaveChanges();
+//                _db.SaveChanges();
 
-                return Json(new { success = true, message = "Subcategories saved successfully!" });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Error: " + ex.Message });
-            }
-        }
+//                return Json(new { success = true, message = "Subcategories saved successfully!" });
+//            }
+//            catch (Exception ex)
+//            {
+//                return Json(new { success = false, message = "Error: " + ex.Message });
+//            }
+//        }
 
         //Fetch Material Categories based on selected Asset Type(AJAX)
         public JsonResult GetMaterialCategories1(int assetTypeID)
@@ -956,151 +972,151 @@ public ActionResult AddMaterialCategory()
 
 
 
-        public ActionResult RaiseRequest(string assetType, string materialCategory, string materialSubCategory, DateTime? fromDate, DateTime? toDate)
-        {
-            var requests = _db.RequiredMaterials
-                              .Where(r => r.Status == "New") // Filter only "New" status
-                              .AsQueryable();
+        //public ActionResult RaiseRequest(string assetType, string materialCategory, string materialSubCategory, DateTime? fromDate, DateTime? toDate)
+        //{
+        //    var requests = _db.RequiredMaterials
+        //                      .Where(r => r.Status == "New") // Filter only "New" status
+        //                      .AsQueryable();
 
-            // Ensure ViewBag variables are always initialized
-            ViewBag.AssetTypes = _db.RequiredMaterials
-                                    .Where(r => r.Status == "New")
-                                    .Select(r => r.AssetType)
-                                    .Distinct()
-                                    .ToList();
+        //    // Ensure ViewBag variables are always initialized
+        //    ViewBag.AssetTypes = _db.RequiredMaterials
+        //                            .Where(r => r.Status == "New")
+        //                            .Select(r => r.AssetType)
+        //                            .Distinct()
+        //                            .ToList();
 
-            ViewBag.MaterialCategories = _db.RequiredMaterials
-                                            .Where(r => r.Status == "New")
-                                            .Select(r => r.MaterialCategory)
-                                            .Distinct()
-                                            .ToList();
+        //    ViewBag.MaterialCategories = _db.RequiredMaterials
+        //                                    .Where(r => r.Status == "New")
+        //                                    .Select(r => r.MaterialCategory)
+        //                                    .Distinct()
+        //                                    .ToList();
 
-            ViewBag.MaterialSubCategories = _db.RequiredMaterials
-                                               .Where(r => r.Status == "New")
-                                               .Select(r => r.MaterialSubCategory)
-                                               .Distinct()
-                                               .ToList();
+        //    ViewBag.MaterialSubCategories = _db.RequiredMaterials
+        //                                       .Where(r => r.Status == "New")
+        //                                       .Select(r => r.MaterialSubCategory)
+        //                                       .Distinct()
+        //                                       .ToList();
 
-            if (!string.IsNullOrEmpty(assetType))
-            {
-                requests = requests.Where(r => r.AssetType == assetType);
-                ViewBag.SelectedAssetType = assetType;
-            }
-            if (!string.IsNullOrEmpty(materialCategory))
-            {
-                requests = requests.Where(r => r.MaterialCategory == materialCategory);
-                ViewBag.SelectedMaterialCategory = materialCategory;
-            }
-            if (!string.IsNullOrEmpty(materialSubCategory))
-            {
-                requests = requests.Where(r => r.MaterialSubCategory == materialSubCategory);
-                ViewBag.SelectedMaterialSubCategory = materialSubCategory;
-            }
+        //    if (!string.IsNullOrEmpty(assetType))
+        //    {
+        //        requests = requests.Where(r => r.AssetType == assetType);
+        //        ViewBag.SelectedAssetType = assetType;
+        //    }
+        //    if (!string.IsNullOrEmpty(materialCategory))
+        //    {
+        //        requests = requests.Where(r => r.MaterialCategory == materialCategory);
+        //        ViewBag.SelectedMaterialCategory = materialCategory;
+        //    }
+        //    if (!string.IsNullOrEmpty(materialSubCategory))
+        //    {
+        //        requests = requests.Where(r => r.MaterialSubCategory == materialSubCategory);
+        //        ViewBag.SelectedMaterialSubCategory = materialSubCategory;
+        //    }
 
-            // Calculate total requested quantity for "New" status
-            int totalRequestedQuantity = requests.Sum(r => (int?)r.RequiredQuantity) ?? 0;
-            ViewBag.TotalRequestedQuantity = totalRequestedQuantity;
+        //    // Calculate total requested quantity for "New" status
+        //    int totalRequestedQuantity = requests.Sum(r => (int?)r.RequiredQuantity) ?? 0;
+        //    ViewBag.TotalRequestedQuantity = totalRequestedQuantity;
 
-            var requestList = requests.ToList();
-            return View(requestList);
-        }
-
-
+        //    var requestList = requests.ToList();
+        //    return View(requestList);
+        //}
 
 
 
 
 
-        public ActionResult GetMaterialCategoriesByAssetType(string assetType)
-        {
-            var categories = _db.RequiredMaterials
-                                .Where(r => r.AssetType == assetType)
-                                .Select(r => r.MaterialCategory)
-                                .Distinct()
-                                .ToList();
-
-            return Json(categories, JsonRequestBehavior.AllowGet);
-        }
 
 
+        //public ActionResult GetMaterialCategoriesByAssetType(string assetType)
+        //{
+        //    var categories = _db.RequiredMaterials
+        //                        .Where(r => r.AssetType == assetType)
+        //                        .Select(r => r.MaterialCategory)
+        //                        .Distinct()
+        //                        .ToList();
 
-        public ActionResult GetMaterialSubCategories1(string assetType, string materialCategory)
-        {
-            var subCategories = _db.RequiredMaterials
-                                   .Where(r => r.AssetType == assetType && r.MaterialCategory == materialCategory)
-                                   .Select(r => r.MaterialSubCategory)
-                                   .Distinct()
-                                   .ToList();
-
-            return Json(subCategories, JsonRequestBehavior.AllowGet);
-        }
+        //    return Json(categories, JsonRequestBehavior.AllowGet);
+        //}
 
 
 
-        [HttpPost]
-        public ActionResult RaiseRequestAction(string AssetType, string MaterialCategory, string MaterialSubCategory, int TotalRequestedQuantity)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("RaiseRequestAction called.");
+        //public ActionResult GetMaterialSubCategories1(string assetType, string materialCategory)
+        //{
+        //    var subCategories = _db.RequiredMaterials
+        //                           .Where(r => r.AssetType == assetType && r.MaterialCategory == materialCategory)
+        //                           .Select(r => r.MaterialSubCategory)
+        //                           .Distinct()
+        //                           .ToList();
 
-                if (string.IsNullOrEmpty(AssetType) || string.IsNullOrEmpty(MaterialCategory) || string.IsNullOrEmpty(MaterialSubCategory))
-                {
-                    ViewBag.ErrorMessage = "Invalid request data.";
-                    return RedirectToAction("RaiseRequest");
-                }
+        //    return Json(subCategories, JsonRequestBehavior.AllowGet);
+        //}
 
-                System.Diagnostics.Debug.WriteLine($"Request Data - AssetType: {AssetType}, MaterialCategory: {MaterialCategory}, MaterialSubCategory: {MaterialSubCategory}, RequestingQuantity: {TotalRequestedQuantity}");
 
-                int storeAdminID = Convert.ToInt32(Session["UserID"]);
-                var storeAdmin = _db.StoreAdmins.FirstOrDefault(s => int.Parse(s.StoreAdminID) == storeAdminID);
-                int universityID = storeAdmin?.UniversityID ?? 0;
 
-                var requiredMaterials = _db.RequiredMaterials
-                    .Where(r => r.AssetType == AssetType
-                             && r.MaterialCategory == MaterialCategory
-                             && r.MaterialSubCategory == MaterialSubCategory
-                             && r.Status == "New")
-                    .ToList();
+        //[HttpPost]
+        //public ActionResult RaiseRequestAction(string AssetType, string MaterialCategory, string MaterialSubCategory, int TotalRequestedQuantity)
+        //{
+        //    try
+        //    {
+        //        System.Diagnostics.Debug.WriteLine("RaiseRequestAction called.");
 
-                if (!requiredMaterials.Any())
-                {
-                    ViewBag.ErrorMessage = "No pending requests found.";
-                    return RedirectToAction("RaiseRequest");
-                }
+        //        if (string.IsNullOrEmpty(AssetType) || string.IsNullOrEmpty(MaterialCategory) || string.IsNullOrEmpty(MaterialSubCategory))
+        //        {
+        //            ViewBag.ErrorMessage = "Invalid request data.";
+        //            return RedirectToAction("RaiseRequest");
+        //        }
 
-                foreach (var item in requiredMaterials)
-                {
-                    item.Status = "Raised";
-                }
-                _db.SaveChanges();
+        //        System.Diagnostics.Debug.WriteLine($"Request Data - AssetType: {AssetType}, MaterialCategory: {MaterialCategory}, MaterialSubCategory: {MaterialSubCategory}, RequestingQuantity: {TotalRequestedQuantity}");
 
-                RequestingMaterial newRequest = new RequestingMaterial
-                {
-                    AssetType = AssetType,
-                    MaterialCategory = MaterialCategory,
-                    MaterialSubCategory = MaterialSubCategory,
-                    RequestingQuantity = TotalRequestedQuantity,
-                    Status = "Raised",
-                    RequestedDate = DateTime.Now,
-                    StoreAdminID = storeAdminID,
-                    UniversityID = universityID,
-                    PurchaseDepartmentID = 0,
-                    VendorID = 0
-                };
+        //        int storeAdminID = Convert.ToInt32(Session["UserID"]);
+        //        var storeAdmin = _db.StoreAdmins.FirstOrDefault(s => int.Parse(s.StoreAdminID) == storeAdminID);
+        //        int universityID = storeAdmin?.UniversityID ?? 0;
 
-                _db.RequestingMaterials.Add(newRequest);
-                _db.SaveChanges();
+        //        var requiredMaterials = _db.RequiredMaterials
+        //            .Where(r => r.AssetType == AssetType
+        //                     && r.MaterialCategory == MaterialCategory
+        //                     && r.MaterialSubCategory == MaterialSubCategory
+        //                     && r.Status == "New")
+        //            .ToList();
 
-                TempData["SuccessMessage"] = "Request successfully raised!";
-                return RedirectToAction("RaiseRequest");
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = "Error: " + ex.Message;
-                return RedirectToAction("RaiseRequest");
-            }
-        }
+        //        if (!requiredMaterials.Any())
+        //        {
+        //            ViewBag.ErrorMessage = "No pending requests found.";
+        //            return RedirectToAction("RaiseRequest");
+        //        }
+
+        //        foreach (var item in requiredMaterials)
+        //        {
+        //            item.Status = "Raised";
+        //        }
+        //        _db.SaveChanges();
+
+        //        RequestingMaterial newRequest = new RequestingMaterial
+        //        {
+        //            AssetType = AssetType,
+        //            MaterialCategory = MaterialCategory,
+        //            MaterialSubCategory = MaterialSubCategory,
+        //            RequestingQuantity = TotalRequestedQuantity,
+        //            Status = "Raised",
+        //            RequestedDate = DateTime.Now,
+        //            StoreAdminID = storeAdminID,
+        //            UniversityID = universityID,
+        //            PurchaseDepartmentID = 0,
+        //            VendorID = 0
+        //        };
+
+        //        _db.RequestingMaterials.Add(newRequest);
+        //        _db.SaveChanges();
+
+        //        TempData["SuccessMessage"] = "Request successfully raised!";
+        //        return RedirectToAction("RaiseRequest");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        TempData["ErrorMessage"] = "Error: " + ex.Message;
+        //        return RedirectToAction("RaiseRequest");
+        //    }
+        //}
 
 
         //public ActionResult MyRequests()
@@ -1184,7 +1200,10 @@ public ActionResult AddMaterialCategory()
                     Remarks = item.Remarks,
                     AcceptedQty = item.AcceptedQty,
                     RejectedQty = item.RejectedQty,
-                    VendorEmail = item.VendorEmail
+                    VendorEmail = item.VendorEmail,
+                    Unit = item.Unit,
+                    Make = item.Make,
+                    ExpiryDate = item.ExpiryDate
                 }).ToList()
             };
             return View(viewModel);
@@ -1205,6 +1224,9 @@ public ActionResult AddMaterialCategory()
                         existingItem.Remarks = item.Remarks;
                         existingItem.RejectedQty = item.RejectedQty;
                         existingItem.AcceptedQty = item.AcceptedQty;
+                        existingItem.Make = item.Make;
+                        existingItem.ExpiryDate = item.ExpiryDate;
+                        existingItem.Unit = item.Unit;
 
                         // Update TotalCost based on ReceivedQty * UnitPrice
                         existingItem.Total = (item.AcceptedQty) * (existingItem.UnitPrice);
@@ -1217,7 +1239,10 @@ public ActionResult AddMaterialCategory()
                         {
                             material.AvailableQuantity += item.AcceptedQty.Value;
                             material.IsLowStockAlertSent = false; // allow future alerts
-                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Updated Material: {material.MaterialSubCategory}, New AvailableQty: {material.AvailableQuantity}");
+                            material.Units = existingItem.Unit;
+                            material.Make = existingItem.Make;
+                            material.ExpiryDate = existingItem.ExpiryDate;
+                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Updated Material: {material.MaterialSubCategory}, New AvailableQty: {material.AvailableQuantity},Unit: {item.Unit},Make: {item.Make},ExpiryDate:{item.ExpiryDate}");
                         }
                     }
 
@@ -1325,7 +1350,11 @@ public ActionResult AddMaterialCategory()
                     //UnitPrice = item.UnitPrice ?? 0,
                     //Total = (item.QtyOrdered ?? 0) * (item.UnitPrice ?? 0),
                     Remarks = item.Remarks,
-                    VendorEmail = item.VendorEmail
+                    VendorEmail = item.VendorEmail,
+                     Unit = item.Unit,
+                    Make = item.Make,
+                    ExpiryDate = item.ExpiryDate
+
                 }).ToList()
             };
             return View(viewModel);
@@ -1346,6 +1375,9 @@ public ActionResult AddMaterialCategory()
                         existingItem.Remarks = item.Remarks;
                         existingItem.RejectedQty = item.RejectedQty;
                         existingItem.AcceptedQty = item.AcceptedQty;
+                        existingItem.Make = item.Make;
+                        existingItem.ExpiryDate = item.ExpiryDate;
+                        existingItem.Unit = item.Unit;
 
 
                         // Update TotalCost based on ReceivedQty * UnitPrice
@@ -1359,7 +1391,10 @@ public ActionResult AddMaterialCategory()
                         {
                             material.AvailableQuantity += item.AcceptedQty.Value;
                             material.IsLowStockAlertSent = false; // allow future alerts
-                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Updated Material: {material.MaterialSubCategory}, New AvailableQty: {material.AvailableQuantity}Accepted: {item.AcceptedQty},Rejected: {item.RejectedQty}");
+                            material.Units = existingItem.Unit;
+                            material.Make = existingItem.Make;
+                            material.ExpiryDate = existingItem.ExpiryDate;
+                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Updated Material: {material.MaterialSubCategory}, New AvailableQty: {material.AvailableQuantity}, Unit: {item.Unit},Make: {item.Make},ExpiryDate:{item.ExpiryDate}");
                         }
                     }
                     else
@@ -1393,7 +1428,7 @@ public ActionResult AddMaterialCategory()
 
                 foreach (var item in model.CentralPurchaseOrderItems)
                 {
-                    System.Diagnostics.Debug.WriteLine($"POItemID: {item.POItemID}, Received: {item.QtyReceived}, Remarks: {item.Remarks}");
+                    System.Diagnostics.Debug.WriteLine($"POItemID: {item.POItemID}, Received: {item.QtyReceived}, Remarks: {item.Remarks},Accepted: {item.AcceptedQty},Rejected: {item.RejectedQty}");
                 }
 
                 _db.SaveChanges();
@@ -1491,7 +1526,11 @@ public ActionResult AddMaterialCategory()
                 return View(expiredMaterials);
             }
         }
-
+        public ActionResult Materials()
+        {
+            var materials = _db.MaterialMasterLists.ToList(); // Fetch all materials
+            return View(materials);
+        }
 
     }
 }

@@ -20,7 +20,5 @@ namespace WebApplication5.Models
         public decimal RequestingAmount { get; set; }
         public decimal SettledAmount { get; set; }
         public System.DateTime SettledDate { get; set; }
-    
-        public virtual RequestingMaterial RequestingMaterial { get; set; }
     }
 }

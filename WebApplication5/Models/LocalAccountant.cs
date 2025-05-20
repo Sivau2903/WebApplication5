@@ -14,12 +14,6 @@ namespace WebApplication5.Models
     
     public partial class LocalAccountant
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public LocalAccountant()
-        {
-            this.StoreRequestingMaterials = new HashSet<StoreRequestingMaterial>();
-        }
-    
         public int LACCID { get; set; }
         public int UniversityID { get; set; }
         public string FirstName { get; set; }
@@ -30,7 +24,5 @@ namespace WebApplication5.Models
         public string LocalAccountantID { get; set; }
     
         public virtual University University { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<StoreRequestingMaterial> StoreRequestingMaterials { get; set; }
     }
 }

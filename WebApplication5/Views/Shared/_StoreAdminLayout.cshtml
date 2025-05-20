@@ -167,35 +167,31 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="typesMaterialsMenu"
                            role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            @*Types &amp; Materials*@Stock Alert
+                           Reports
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="typesMaterialsMenu">
                             <li>
-                                <a class="dropdown-item" href="@Url.Action("MaterialMasterList", "Home")">
-                                    Set Alert Limit
+                                <a class="dropdown-item" href="@Url.Action("Report", "Home")">
+                                    Issue Report
                                 </a>
                             </li>
                             <li class="dropend">
                                 <a class="dropdown-item dropdown-toggle" href="#" id="addTypesSubmenu2"
                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    Add Types
+                                    MRV Reports
                                 </a>
                                 <ul class="dropdown-menu d-none" aria-labelledby="addTypesSubmenu2">
                                     <li>
-                                        <a class="dropdown-item" href="@Url.Action("ExpiredMaterials", "Home")">
-                                            ExpiredMaterials
+                                        <a class="dropdown-item" href="@Url.Action("PODetails", "Home")">
+                                            Local MRV
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="@Url.Action("AddMaterialCategory", "Home")">
-                                            Add MaterialCategory
+                                        <a class="dropdown-item" href="@Url.Action("CentralPODetails", "Home")">
+                                           Central MRV
                                         </a>
                                     </li>
-                                    <li>
-                                        <a class="dropdown-item" href="@Url.Action("AddMaterialSubCategory", "Home")">
-                                            Add MaterialSubCategory
-                                        </a>
-                                    </li>
+                                  
                                 </ul>
                             </li>
                         </ul>
@@ -206,14 +202,14 @@
 
 
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="PODetails" role="button">MRV Reports</a>
+                        <a class="nav-link dropdown-toggle" href="#" id="PODetails" role="button">Material List</a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="@Url.Action("PODetails", "Home")">LocalMRVReport</a></li>
-                            <li><a class="dropdown-item" href="@Url.Action("CentralPODetails", "Home")">Central MRVReport</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Materials", "Home")">Master List</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("ExpiredMaterials", "Home")">Expired List</a></li>
                             @*<li><a class="dropdown-item" href="@Url.Action("Report", "Home")">Issue Report</a></li>*@
                         </ul>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Report", "Home")">IssueReport</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("MaterialMasterList", "Home")">StockAlert</a></li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="icfaiLifeMenu" role="button">My Profile</a>
                         <ul class="dropdown-menu">

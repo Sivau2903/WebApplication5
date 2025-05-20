@@ -30,6 +30,9 @@ namespace WebApplication5
                 x => x.CheckLowStock(),
                  //Cron.Hourly // or Cron.Minutely
                  "0 10 * * *"
+
+                  //"30 4 * * *" // This runs at 10:00 AM IST
+                  // TimeZoneInfo.FindSystemTimeZoneById("India Standard Time") // Runs at 10 AM IST
             );
         }
     }

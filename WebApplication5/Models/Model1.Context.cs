@@ -28,36 +28,23 @@ namespace WebApplication5.Models
         public virtual DbSet<AssetType> AssetTypes { get; set; }
         public virtual DbSet<CentralAccountant> CentralAccountants { get; set; }
         public virtual DbSet<CentralAccountantReport> CentralAccountantReports { get; set; }
-        public virtual DbSet<CentralIssue> CentralIssues { get; set; }
-        public virtual DbSet<CentralPurchased> CentralPurchaseds { get; set; }
         public virtual DbSet<CentralPurchaseDepartment> CentralPurchaseDepartments { get; set; }
         public virtual DbSet<CentralPurchaseOrder> CentralPurchaseOrders { get; set; }
         public virtual DbSet<CentralPurchaseOrderItem> CentralPurchaseOrderItems { get; set; }
-        public virtual DbSet<CentralSentRequest> CentralSentRequests { get; set; }
         public virtual DbSet<CentralVendorDetail> CentralVendorDetails { get; set; }
         public virtual DbSet<CIT> CITs { get; set; }
         public virtual DbSet<Department> Departments { get; set; }
         public virtual DbSet<Employee> Employees { get; set; }
         public virtual DbSet<HOD> HODs { get; set; }
-        public virtual DbSet<InsertCentralPurchaseDepartment> InsertCentralPurchaseDepartments { get; set; }
-        public virtual DbSet<InsertLocalPurchaseDepartment> InsertLocalPurchaseDepartments { get; set; }
         public virtual DbSet<LocalAccountant> LocalAccountants { get; set; }
-        public virtual DbSet<LocalAccountantReport> LocalAccountantReports { get; set; }
-        public virtual DbSet<LocalIssue> LocalIssues { get; set; }
-        public virtual DbSet<LocalPurchased> LocalPurchaseds { get; set; }
         public virtual DbSet<LocalPurchaseDepartment> LocalPurchaseDepartments { get; set; }
-        public virtual DbSet<LocalSentRequest> LocalSentRequests { get; set; }
         public virtual DbSet<Login> Logins { get; set; }
         public virtual DbSet<MaterialCategory> MaterialCategories { get; set; }
         public virtual DbSet<MaterialMasterList> MaterialMasterLists { get; set; }
-        public virtual DbSet<MaterialMSt> MaterialMSts { get; set; }
         public virtual DbSet<MaterialSubCategory> MaterialSubCategories { get; set; }
         public virtual DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
         public virtual DbSet<PurchaseOrder> PurchaseOrders { get; set; }
-        public virtual DbSet<RequestingMaterial> RequestingMaterials { get; set; }
-        public virtual DbSet<RequiredMaterial> RequiredMaterials { get; set; }
         public virtual DbSet<StoreAdmin> StoreAdmins { get; set; }
-        public virtual DbSet<StoreRequestingMaterial> StoreRequestingMaterials { get; set; }
         public virtual DbSet<University> Universities { get; set; }
         public virtual DbSet<VendorDetail> VendorDetails { get; set; }
         public virtual DbSet<EmployeeIssueMaterial> EmployeeIssueMaterials { get; set; }

@@ -11,47 +11,48 @@ namespace WebApplication5.Controllers
     {
         // GET: Base
 
-            protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        {
+            var controllerName = filterContext.ActionDescriptor.ControllerDescriptor.ControllerName;
+            var actionName = filterContext.ActionDescriptor.ActionName;
+
+            var allowAnonymousActions = new[]
             {
-                // Get current controller and action names
-                var controllerName = filterContext.ActionDescriptor.ControllerDescriptor.ControllerName;
-                var actionName = filterContext.ActionDescriptor.ActionName;
+        new { Controller = "Login", Action = "LoginPage" },
+        new { Controller = "Login", Action = "Authenticate" },
+        new { Controller = "Login", Action = "ForgotPassword" },
+        new { Controller = "Login", Action = "VerifyOTP" },
+        new { Controller = "Login", Action = "ResetPasswordRequest" },
+        new { Controller = "Login", Action = "ResetPassword" }
+    };
 
-                // Allow specific pages without login
-                var allowAnonymousActions = new[]
-                {
-            new { Controller = "Login", Action = "LoginPage" },
-            new { Controller = "Login", Action = "Authenticate" },
-            new { Controller = "Login", Action = "ForgotPassword" },
-            new { Controller = "Login", Action = "VerifyOTP" },
-            new { Controller = "Login", Action = "ResetPasswordRequest" },
-            new { Controller = "Login", Action = "ResetPassword" }
-        };
+            bool isAnonymous = allowAnonymousActions.Any(a =>
+                string.Equals(a.Controller, controllerName, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(a.Action, actionName, StringComparison.OrdinalIgnoreCase)
+            );
 
-                bool isAnonymous = allowAnonymousActions.Any(a =>
-                    string.Equals(a.Controller, controllerName, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(a.Action, actionName, StringComparison.OrdinalIgnoreCase)
-                );
-
-                if (!isAnonymous && Session["UserID"] == null)
-                {
-                    filterContext.Result = new RedirectToRouteResult(
-                        new RouteValueDictionary {
-                    { "controller", "Login" },
-                    { "action", "LoginPage" }
-                        });
-                    return;
-                }
-
-                // Prevent caching for back/forward navigation
-                Response.Cache.SetExpires(DateTime.UtcNow.AddDays(-1));
-                Response.Cache.SetValidUntilExpires(false);
-                Response.Cache.SetRevalidation(HttpCacheRevalidation.AllCaches);
-                Response.Cache.SetCacheability(HttpCacheability.NoCache);
-                Response.Cache.SetNoStore();
-
-                base.OnActionExecuting(filterContext);
+            if (!isAnonymous && Session["UserID"] == null)
+            {
+                filterContext.Result = new RedirectToRouteResult(
+                    new RouteValueDictionary {
+                { "controller", "Login" },
+                { "action", "LoginPage" }
+                    });
+                return;
             }
+
+            // Prevent caching for all pages to avoid back-navigation after logout
+            HttpCachePolicyBase cache = filterContext.HttpContext.Response.Cache;
+            cache.SetCacheability(HttpCacheability.NoCache);
+            cache.SetNoStore();
+            cache.SetExpires(DateTime.UtcNow.AddSeconds(-1));
+            cache.SetRevalidation(HttpCacheRevalidation.AllCaches);
+            cache.SetValidUntilExpires(false);
+
+            base.OnActionExecuting(filterContext);
         }
 
     }
+
+}
+

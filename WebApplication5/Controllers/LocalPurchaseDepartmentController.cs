@@ -84,9 +84,18 @@ namespace WebApplication5.Controllers
                     UniversityID = universityId.ToString()
                 });
                 _db.SaveChanges();
+
+                TempData["SuccessMessage"] = $"{materialSubCategory} added to Received Requests.";
+            }
+            else
+            {
+                TempData["InfoMessage"] = $"{materialSubCategory} is already added.";
             }
 
             return RedirectToAction("Materials");
+
+
+           
         }
 
 

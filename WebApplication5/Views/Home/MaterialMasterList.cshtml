@@ -18,6 +18,9 @@
             font-size: 14px;
             padding: 2px 8px;
         }
+        footer{
+            position:fixed;
+        }
 
         .btn {
             padding: 4px 8px;
@@ -77,7 +80,7 @@
             <input type="number" id="availableQuantity" class="form-control" name="AvailableQuantity" required>
         </div>
 
-        <div class="col-md-2">
+        @*<div class="col-md-2">
             <label for="units">Unit</label>
             <input type="text" id="units" class="form-control" name="Units" required>
         </div>
@@ -90,7 +93,7 @@
         <div class="col-md-2">
             <label for="expiryDate">Expiry Date</label>
             <input type="date" id="expiryDate" class="form-control" name="ExpiryDate">
-        </div>
+        </div>*@
 
         <div class="col-md-2">
             <label for="MinimumLimit">Minimum Limit</label>
@@ -124,8 +127,6 @@
                     });
                 }
             });
-
-
 
 
             // Load Subcategories based on Category

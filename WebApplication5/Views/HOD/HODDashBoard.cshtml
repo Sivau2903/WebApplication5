@@ -203,9 +203,7 @@
     <!-- Include Bootstrap CSS & JS (if not already included) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 
 
     <script>
@@ -247,7 +245,10 @@
     $(".action-select").change(function () {
     let requestId = $(this).data("id").split("-")[0]; // Extract RequestID
     let msubCategory = $(this).data("id").split("-")[1]; // Extract MSubCategory
-    let approvingQuantity = $("input[data-id='" + requestId + "-" + msubCategory + "']").val();
+        //let approvingQuantity = $("input[data-id='" + requestId + "-" + msubCategory + "']").val();
+        let selector = "input[data-id='" + CSS.escape(requestId + "-" + msubCategory) + "']";
+        let approvingQuantity = $(selector).val();
+
     let actionType = $(this).val(); // Get selected action (Approve/Reject)
 
     console.log("Dropdown changed:", requestId, msubCategory, approvingQuantity, actionType); // Debugging

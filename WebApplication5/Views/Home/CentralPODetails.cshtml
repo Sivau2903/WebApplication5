@@ -12,7 +12,7 @@
     .po-container {
         border: 2px solid black;
         padding: 30px;
-        max-width: 800px;
+        max-width: 1300px;
         height: auto;
         margin: auto;
         font-family: Arial, sans-serif;
@@ -135,19 +135,19 @@
 
                 <!-- Right side: PO title -->
                 @*<div class="po-title text-end">
-                        <div>Purchase Order</div>
-                        <div style="font-size: 14px;">PO No: @Model.PONumber</div>
-                        <div style="font-size: 14px;">Date: @Model.PODate</div>
-                    </div>*@
+                <div>Purchase Order</div>
+                <div style="font-size: 14px;">PO No: @Model.PONumber</div>
+                <div style="font-size: 14px;">Date: @Model.PODate</div>
+            </div>*@
             </div>
             <h3 class="my-0 text-center mx-lg-5">Material Receipt Vocher</h3>
             <table>
                 <tr>
                     <td>Purchase Order No.:</td>
-                    <td colspan="2"><input type="text" name="PONumber" value="@Model.PONumber" style="width:100%;" /></td>
+                    <td colspan="2"><input type="text" name="PONumber" value="@Model.PONumber" style="width:50%;" /></td>
 
                     <td>Date:</td>
-                    <td><input type="date" name="PODate" value="@Model.PODate.ToString("yyyy-MM-dd")" style="width:100%;" /></td>
+                    <td><input type="date" name="PODate" value="@Model.PODate.ToString("yyyy-MM-dd")" style="width:50%;" /></td>
                 </tr>
 
             </table>
@@ -157,100 +157,121 @@
 
             @using (Html.BeginForm("CentralUpdatePOItems", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
             {
-            @Html.HiddenFor(m => m.PONumber)
+                @Html.HiddenFor(m => m.PONumber)
 
-            <table class="table">
-                <tr>
-                    <th style="width: 45%;">Material Description</th>
-                    <th style="width: 10%;">Ordered Qty</th>
-                    <th style="width: 10%;">Received</th>
-                    <th style="width: 10%;">Accepted</th>
-                    <th style="width: 10%;">Rejected</th>
-                    <th style="width: 10%;">Remarks</th>
-                </tr>
-
-                @for (int i = 0; i < Model.CentralPurchaseOrderItems.Count; i++)
-                {
+                <table class="table">
                     <tr>
-                        <td>
-                            @Html.DisplayFor(m => m.CentralPurchaseOrderItems[i].Description)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(m => m.CentralPurchaseOrderItems[i].QtyOrdered)
-                        </td>
-                        <td>
-                            <input type="number" class="form-control" name="CentralPurchaseOrderItems[@i].QtyReceived"
-                                   value="@Model.CentralPurchaseOrderItems[i].QtyReceived" min="0" />
-                            <input type="hidden" name="CentralPurchaseOrderItems[@i].POItemID"
-                                   value="@Model.CentralPurchaseOrderItems[i].POItemID" />
-                        </td>
-                        <td>
-                            <input type="number" class="form-control" name="CentralPurchaseOrderItems[@i].AcceptedQty"
-                                   value="@Model.CentralPurchaseOrderItems[i].AcceptedQty" min="0" />
-                            <input type="hidden" name="CentralPurchaseOrderItems[@i].POItemID"
-                                   value="@Model.CentralPurchaseOrderItems[i].POItemID" />
-                        </td>
-                        <td>
-                            <input type="number" class="form-control" name="CentralPurchaseOrderItems[@i].RejectedQty"
-                                   value="@Model.CentralPurchaseOrderItems[i].RejectedQty" min="0" />
-                            <input type="hidden" name="CentralPurchaseOrderItems[@i].POItemID"
-                                   value="@Model.CentralPurchaseOrderItems[i].POItemID" />
-                        </td>
-
-                        <td>
-                            <input type="text" class="form-control" name="CentralPurchaseOrderItems[@i].Remarks"
-                                   value="@Model.CentralPurchaseOrderItems[i].Remarks" />
-                        </td>
+                    <tr>
+                        <th style="width: 28%;">Material Description</th>
+                        <th style="width: 10%;">Ordered Qty</th>
+                        <th style="width: 8%;">Received</th>
+                        <th style="width: 8%;">Accepted</th>
+                        <th style="width: 8%;">Rejected</th>
+                        <th style="width: 25%;">Remarks</th>
+                        <th style="width: 20%;">Unit</th>
+                        <th style="width: 25%;">Make</th>
+                        @*<th style="width: 8%;">ExpiryDate</th>*@
                     </tr>
+
+
+                    @for (int i = 0; i < Model.CentralPurchaseOrderItems.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(m => m.CentralPurchaseOrderItems[i].Description)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(m => m.CentralPurchaseOrderItems[i].QtyOrdered)
+                            </td>
+                            <td>
+                                <input type="number" class="form-control" name="CentralPurchaseOrderItems[@i].QtyReceived"
+                                       value="@Model.CentralPurchaseOrderItems[i].QtyReceived" min="0" />
+                                <input type="hidden" name="CentralPurchaseOrderItems[@i].POItemID"
+                                       value="@Model.CentralPurchaseOrderItems[i].POItemID" />
+                            </td>
+                            <td>
+                                <input type="number" class="form-control" name="CentralPurchaseOrderItems[@i].AcceptedQty"
+                                       value="@Model.CentralPurchaseOrderItems[i].AcceptedQty" min="0" />
+                                <input type="hidden" name="CentralPurchaseOrderItems[@i].POItemID"
+                                       value="@Model.CentralPurchaseOrderItems[i].POItemID" />
+                            </td>
+                            <td>
+                                <input type="number" class="form-control" name="CentralPurchaseOrderItems[@i].RejectedQty"
+                                       value="@Model.CentralPurchaseOrderItems[i].RejectedQty" min="0" />
+                                <input type="hidden" name="CentralPurchaseOrderItems[@i].POItemID"
+                                       value="@Model.CentralPurchaseOrderItems[i].POItemID" />
+                            </td>
+
+                            <td>
+                                <input type="text" class="form-control" name="CentralPurchaseOrderItems[@i].Remarks"
+                                       value="@Model.CentralPurchaseOrderItems[i].Remarks" />
+                            </td>
+                            <td>
+                                <input type="text" class="form-control" name="CentralPurchaseOrderItems[@i].Unit" value="@Model.CentralPurchaseOrderItems[i].Unit" />
+                            </td>
+                            <td>
+                                <input type="text" class="form-control" name="CentralPurchaseOrderItems[@i].Make" value="@Model.CentralPurchaseOrderItems[i].Make" />
+                            </td>
+                            @*<td>
+                                <input type="date" class="form-control"
+                                       name="CentralPurchaseOrderItems[@i].ExpiryDate"
+                                       value="@Model.CentralPurchaseOrderItems[i].ExpiryDate?.ToString(" yyyy-MM-dd")"/>
+
+
+                            </td>*@
+
+                        </tr>
+                    }
+                </table>
+
+                if (!string.IsNullOrEmpty(Model.StoreUploads))
+                {
+                    <div class="mt-2">
+                        <label>Previously Uploaded Certificate:</label>
+                        <a href="@Url.Content(Model.StoreUploads)" target="_blank">View Certificate</a>
+                    </div>
                 }
-            </table>
+                else
+                {
 
-            if (!string.IsNullOrEmpty(Model.StoreUploads))
-            {
-            <div class="mt-2">
-                <label>Previously Uploaded Certificate:</label>
-                <a href="@Url.Content(Model.StoreUploads)" target="_blank">View Certificate</a>
-            </div>
-            }
-            else
-            {
+                    <div class="form-group">
+                        <label>Upload DC Document</label>
+                        <input type="file" name="CertificationFile" class="form-control" accept=".pdf,.doc,.docx" />
 
-            <div class="form-group">
-                <label>Upload DC Document</label>
-                <input type="file" name="CertificationFile" class="form-control" accept=".pdf,.doc,.docx" />
+                    </div>
+                }
+                @*<button type="submit" class="btn btn-primary">Save</button>*@
 
-            </div>
-            }
-            @*<button type="submit" class="btn btn-primary">Save</button>*@
-
-            <div class="text-end mt-3">
-                <button type="submit" class="btn btn-success">Save Updates</button>
-            </div>
+                <div class="text-end mt-3">
+                    <button type="submit" class="btn btn-success">Save Updates</button>
+                </div>
+                <div class="text-lg-center mt-3">
+                    <button type="button" class="btn btn-secondary" onclick="window.print()">Print MRV</button>
+                </div>
             }
 
 
             <!--<div style="font-size: 13px; margin-top: 10px;">
-                <p>
-                    1. Please send @Model.CopiesOfInvoice copies of your invoice.
-                </p>
+        <p>
+            1. Please send @Model.CopiesOfInvoice copies of your invoice.
+        </p>
 
-                <p>2. Order is to be entered in accordance with prices, delivery and specifications shown above.</p>
-                <p>3. Notify us immediately if you are unable to ship as specified.</p>
-            </div>
+        <p>2. Order is to be entered in accordance with prices, delivery and specifications shown above.</p>
+        <p>3. Notify us immediately if you are unable to ship as specified.</p>
+    </div>
 
 
-            <div class="signature">
+    <div class="signature">
 
-                <strong>AUTHORIZED BY</strong><br />
-                @Model.AuthorizedBy
-                <br /><br />-->
-
-                @*<div class="text-lg-center mt-3">
-                        <button type="button" class="btn btn-secondary" onclick="window.print()">Print PO</button>
-                    </div>*@
+        <strong>AUTHORIZED BY</strong><br />
+        @Model.AuthorizedBy
+        <br /><br />-->
+            @*<div class="text-lg-center mt-3">
+            <button type="button" class="btn btn-secondary" onclick="window.print()">Print PO</button>
+        </div>*@
 
             <!--</div>-->
-            </div>
+        </div>
             }
 
         </div>

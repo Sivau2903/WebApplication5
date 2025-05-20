@@ -26,6 +26,9 @@ namespace WebApplication5.Models
         public string VendorEmail { get; set; }
         public Nullable<int> AcceptedQty { get; set; }
         public Nullable<int> RejectedQty { get; set; }
+        public string Unit { get; set; }
+        public string Make { get; set; }
+        public Nullable<System.DateTime> ExpiryDate { get; set; }
     
         public virtual PurchaseOrder PurchaseOrder { get; set; }
     }

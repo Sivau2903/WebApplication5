@@ -181,12 +181,6 @@
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\CentralGeneratePOViewModel.cs" />
-    <Compile Include="Models\CentralIssue.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\CentralPurchased.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
-    </Compile>
     <Compile Include="Models\CentralPurchaseDepartment.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
@@ -198,9 +192,6 @@
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\CentralRequestViewModel.cs" />
-    <Compile Include="Models\CentralSentRequest.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
-    </Compile>
     <Compile Include="Models\CentralVendorDetail.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
@@ -233,29 +224,11 @@
     <Compile Include="Models\HODRequestGroupedViewModel.cs" />
     <Compile Include="Models\HODRequestViewModel.cs" />
     <Compile Include="Models\HODViewRequestsViewModel.cs" />
-    <Compile Include="Models\InsertCentralPurchaseDepartment.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\InsertLocalPurchaseDepartment.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
-    </Compile>
     <Compile Include="Models\IssueGroupedViewModel.cs" />
     <Compile Include="Models\LocalAccountant.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
-    <Compile Include="Models\LocalAccountantReport.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\LocalIssue.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\LocalPurchased.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
-    </Compile>
     <Compile Include="Models\LocalPurchaseDepartment.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\LocalSentRequest.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\localtocentral.cs" />
@@ -272,9 +245,6 @@
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\MaterialMasterViewModel.cs" />
-    <Compile Include="Models\MaterialMSt.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
-    </Compile>
     <Compile Include="Models\MaterialSubCategory.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
@@ -312,22 +282,13 @@
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\RequestGroupedViewModel.cs" />
-    <Compile Include="Models\RequestingMaterial.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
-    </Compile>
     <Compile Include="Models\RequestViewModel.cs" />
-    <Compile Include="Models\RequiredMaterial.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
-    </Compile>
     <Compile Include="Models\ResetPasswordViewModel.cs" />
     <Compile Include="Models\SavetoCentral.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\StockAlertService.cs" />
     <Compile Include="Models\StoreAdmin.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\StoreRequestingMaterial.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\TempSelectedMaterial.cs">
@@ -510,6 +471,7 @@
     <Content Include="Views\Shared\_ResetLayout.cshtml" />
     <Content Include="Views\Home\MRV.cshtml" />
     <Content Include="Views\Home\ExpiredMaterials.cshtml" />
+    <Content Include="Views\Home\Materials.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

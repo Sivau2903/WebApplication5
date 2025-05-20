@@ -449,7 +449,8 @@
         $(".action-select").change(function () {
             let requestId = $(this).data("id").split("-")[0]; // Extract RequestID
             let msubCategory = $(this).data("id").split("-")[1]; // Extract MSubCategory
-            let approvingQuantity = $("input[data-id='" + requestId + "-" + msubCategory + "']").val();
+            let selector = "input[data-id='" + CSS.escape(requestId + "-" + msubCategory) + "']";
+            let approvingQuantity = $(selector).val();
             let actionType = $(this).val(); // Get selected action (Approve/Reject)
 
             console.log("Dropdown changed:", requestId, msubCategory, approvingQuantity, actionType); // Debugging

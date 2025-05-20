@@ -26,17 +26,17 @@ namespace WebApplication5.Controllers
             }
             base.OnActionExecuting(filterContext);
         }
-        public ActionResult PurchaseDepartmentRequests()
-        {
-            int purchaseDepartmentID = Convert.ToInt32(Session["UserID"]);
+        //public ActionResult PurchaseDepartmentRequests()
+        //{
+        //    int purchaseDepartmentID = Convert.ToInt32(Session["UserID"]);
 
-            var raisedRequests = (from request in _db.LocalSentRequests
-                                  where request.AccountantID == purchaseDepartmentID
-                                  orderby request.OrderedDate descending
-                                  select request).ToList();
+        //    var raisedRequests = (from request in _db.LocalSentRequests
+        //                          where request.AccountantID == purchaseDepartmentID
+        //                          orderby request.OrderedDate descending
+        //                          select request).ToList();
 
-            return View(raisedRequests);
-        }
+        //    return View(raisedRequests);
+        //}
 
         public ActionResult AllPOs()
         {
@@ -193,17 +193,46 @@ namespace WebApplication5.Controllers
         //    return View(viewModel);
         //}
 
-        public ActionResult VendorSettlement()
-        {
-            return View();
-        }
+        //public ActionResult VendorSettlement()
+        //{
+        //    return View();
+        //}
         public ActionResult UpdateBudget()
         {
-            return View();
+            string userId = (string)Session["UserID"];
+            var accountant = _db.LocalAccountants.FirstOrDefault(a => a.LocalAccountantID == userId);
+
+            if (accountant == null)
+            {
+                return HttpNotFound("Local Accountant not found.");
+            }
+
+            return View(accountant);
         }
-        public ActionResult GenerateReport()
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult UpdateBudget(decimal AvailableBudget)
         {
-            return View();
+            string userId = (string)Session["UserID"];
+            var accountant = _db.LocalAccountants.FirstOrDefault(a => a.LocalAccountantID == userId);
+
+            if (accountant == null)
+            {
+                return HttpNotFound("Local Accountant not found.");
+            }
+
+            accountant.Budget = AvailableBudget;
+            _db.SaveChanges();
+
+            TempData["SuccessMessage"] = "Budget updated successfully.";
+            return RedirectToAction("UpdateBudget");
         }
+
+
+        //public ActionResult GenerateReport()
+        //{
+        //    return View();
+        //}
     }
 }

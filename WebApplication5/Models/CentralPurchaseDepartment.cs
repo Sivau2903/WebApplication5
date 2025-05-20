@@ -14,12 +14,6 @@ namespace WebApplication5.Models
     
     public partial class CentralPurchaseDepartment
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public CentralPurchaseDepartment()
-        {
-            this.StoreRequestingMaterials = new HashSet<StoreRequestingMaterial>();
-        }
-    
         public int CID { get; set; }
         public Nullable<int> CentralAccountantID { get; set; }
         public Nullable<decimal> Budget { get; set; }
@@ -29,8 +23,5 @@ namespace WebApplication5.Models
         public string CentralDepartmentEmail { get; set; }
         public string CentralDepartmentAddress { get; set; }
         public string CentralID { get; set; }
-    
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<StoreRequestingMaterial> StoreRequestingMaterials { get; set; }
     }
 }

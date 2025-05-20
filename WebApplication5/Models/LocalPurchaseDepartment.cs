@@ -14,12 +14,6 @@ namespace WebApplication5.Models
     
     public partial class LocalPurchaseDepartment
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public LocalPurchaseDepartment()
-        {
-            this.StoreRequestingMaterials = new HashSet<StoreRequestingMaterial>();
-        }
-    
         public int LID { get; set; }
         public int UniversityID { get; set; }
         public Nullable<int> LocalAccountantID { get; set; }
@@ -28,7 +22,5 @@ namespace WebApplication5.Models
         public string LocalID { get; set; }
     
         public virtual University University { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<StoreRequestingMaterial> StoreRequestingMaterials { get; set; }
     }
 }

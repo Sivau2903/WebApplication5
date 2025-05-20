@@ -19,6 +19,7 @@ namespace WebApplication5.Controllers
         {
             return View();
         }
+
         private List<Request> pagedRequest;
 
         public ActionResult HODDashBoard(DateTime? fromDate, DateTime? toDate, int page = 1, int pageSize = 10)
@@ -213,11 +214,7 @@ namespace WebApplication5.Controllers
             }
         }
 
-
-
-
-
-
+        
 
         // Add this at the top
 
@@ -277,8 +274,6 @@ namespace WebApplication5.Controllers
 
         return View(model);
     }
-
-
 
 
     // GET: HOD
@@ -367,84 +362,84 @@ namespace WebApplication5.Controllers
             }
         }
 
-        public PartialViewResult RequestMaterial()
-        {
-            return PartialView("_hodRequestMaterial");
-        }
+        //public PartialViewResult RequestMaterial()
+        //{
+        //    return PartialView("_hodRequestMaterial");
+        //}
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public JsonResult SubmitRequestMaterial(string assetType, string materialCategory, string materialSubCategory, int requestingQuantity)
-        {
-            if (string.IsNullOrEmpty(assetType) || string.IsNullOrEmpty(materialCategory) || string.IsNullOrEmpty(materialSubCategory) || requestingQuantity <= 0)
-            {
-                return Json(new { success = false, message = "Invalid input data!" });
-            }
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public JsonResult SubmitRequestMaterial(string assetType, string materialCategory, string materialSubCategory, int requestingQuantity)
+        //{
+        //    if (string.IsNullOrEmpty(assetType) || string.IsNullOrEmpty(materialCategory) || string.IsNullOrEmpty(materialSubCategory) || requestingQuantity <= 0)
+        //    {
+        //        return Json(new { success = false, message = "Invalid input data!" });
+        //    }
 
-            string userID = Session["UserID"] as string;
-            string userRole = Session["UserRole"] as string;
+        //    string userID = Session["UserID"] as string;
+        //    string userRole = Session["UserRole"] as string;
 
-            Debug.WriteLine($"Session UserID: {userID}, Role: {userRole}");
+        //    Debug.WriteLine($"Session UserID: {userID}, Role: {userRole}");
 
-            if (string.IsNullOrEmpty(userID) || string.IsNullOrEmpty(userRole))
-            {
-                return Json(new { success = false, message = "Unauthorized access!" });
-            }
+        //    if (string.IsNullOrEmpty(userID) || string.IsNullOrEmpty(userRole))
+        //    {
+        //        return Json(new { success = false, message = "Unauthorized access!" });
+        //    }
 
-            int storeAdminID = 0;
+        //    int storeAdminID = 0;
 
-            if (userRole == "Employee")
-            {
-                var employee = db.Employees.FirstOrDefault(e => e.EmpID.ToString() == userID);
-                if (employee == null)
-                {
-                    return Json(new { success = false, message = "Employee not found!" });
-                }
+        //    if (userRole == "Employee")
+        //    {
+        //        var employee = db.Employees.FirstOrDefault(e => e.EmpID.ToString() == userID);
+        //        if (employee == null)
+        //        {
+        //            return Json(new { success = false, message = "Employee not found!" });
+        //        }
 
-                // Fetch StoreAdminID by matching UniversityID
-                storeAdminID = db.StoreAdmins
-                                .Where(sa => sa.UniversityID == employee.UniversityID)
-                                .Select(sa => int.Parse(sa.StoreAdminID))
-                                .FirstOrDefault();
-            }
-            else if (userRole == "HOD")
-            {
-                var hod = db.HODs.FirstOrDefault(h => h.HODID.ToString() == userID);
-                if (hod == null)
-                {
-                    return Json(new { success = false, message = "HOD not found!" });
-                }
+        //        // Fetch StoreAdminID by matching UniversityID
+        //        storeAdminID = db.StoreAdmins
+        //                        .Where(sa => sa.UniversityID == employee.UniversityID)
+        //                        .Select(sa => int.Parse(sa.StoreAdminID))
+        //                        .FirstOrDefault();
+        //    }
+        //    else if (userRole == "HOD")
+        //    {
+        //        var hod = db.HODs.FirstOrDefault(h => h.HODID.ToString() == userID);
+        //        if (hod == null)
+        //        {
+        //            return Json(new { success = false, message = "HOD not found!" });
+        //        }
 
-                // Fetch StoreAdminID by matching UniversityID
-                storeAdminID = db.StoreAdmins
-                                .Where(sa => sa.UniversityID == hod.UniversityID)
-                                .Select(sa => int.Parse(sa.StoreAdminID))
-                                .FirstOrDefault();
-            }
-            else
-            {
-                return Json(new { success = false, message = "Invalid role!" });
-            }
+        //        // Fetch StoreAdminID by matching UniversityID
+        //        storeAdminID = db.StoreAdmins
+        //                        .Where(sa => sa.UniversityID == hod.UniversityID)
+        //                        .Select(sa => int.Parse(sa.StoreAdminID))
+        //                        .FirstOrDefault();
+        //    }
+        //    else
+        //    {
+        //        return Json(new { success = false, message = "Invalid role!" });
+        //    }
 
-            RequiredMaterial newRequest = new RequiredMaterial
-            {
-                AssetType = assetType,
-                MaterialCategory = materialCategory,
-                MaterialSubCategory = materialSubCategory,
-                RequiredQuantity = requestingQuantity,
-                UserID = int.Parse(userID),
-                Role = userRole,
-                StoreAdminID = storeAdminID,
-                RequestedDate = DateTime.Now,
-                Status = "New"
-            };
+        //    RequiredMaterial newRequest = new RequiredMaterial
+        //    {
+        //        AssetType = assetType,
+        //        MaterialCategory = materialCategory,
+        //        MaterialSubCategory = materialSubCategory,
+        //        RequiredQuantity = requestingQuantity,
+        //        UserID = int.Parse(userID),
+        //        Role = userRole,
+        //        StoreAdminID = storeAdminID,
+        //        RequestedDate = DateTime.Now,
+        //        Status = "New"
+        //    };
 
-            db.RequiredMaterials.Add(newRequest);
-            db.SaveChanges();
+        //    db.RequiredMaterials.Add(newRequest);
+        //    db.SaveChanges();
 
 
-            return Json(new { success = true, message = "Material request submitted successfully!" });
-        }
+        //    return Json(new { success = true, message = "Material request submitted successfully!" });
+        //}
 
         [HttpPost]
         [ValidateAntiForgeryToken]

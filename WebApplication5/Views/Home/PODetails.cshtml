@@ -12,7 +12,7 @@
     .po-container {
         border: 2px solid black;
         padding: 30px;
-        max-width: 800px;
+        max-width: 1300px;
         height: auto;
         margin: auto;
         font-family: Arial, sans-serif;
@@ -21,6 +21,7 @@
     .po-title {
 
         font-weight: normal;
+       padding-top:10px;
 
     }
 
@@ -40,6 +41,7 @@
         border: 1px solid black;
         padding: 6px;
         text-align: left;
+        width:auto;
     }
 
     .no-border {
@@ -144,10 +146,10 @@
         <table>
             <tr>
                 <td>Purchase Order No.:</td>
-                <td colspan="2"><input type="text" name="PONumber" value="@Model.PONumber" style="width:100%;" /></td>
+                <td colspan="2"><input type="text" name="PONumber" value="@Model.PONumber" style="width:50%;" readonly /></td>
 
                 <td>Date:</td>
-                <td><input type="date" name="PODate" value="@Model.PODate.ToString("yyyy-MM-dd")" style="width:100%;" /></td>
+                <td><input type="date" name="PODate" value="@Model.PODate.ToString("yyyy-MM-dd")" style="width:50%;" readonly /></td>
             </tr>
 
         </table>
@@ -192,26 +194,29 @@
 
             <table class="table">
                 <tr>
-                    <th style="width: 45%;">Material Description</th>
+                    <th style="width: 30%;">Material Description</th>
                     <th style="width: 10%;">Ordered Qty</th>
-                    <th style="width: 10%;">Received</th>
-                    <th style="width: 10%;">Accepted</th>
-                    <th style="width: 10%;">Rejected</th>
-                    <th style="width: 10%;">Remarks</th>
+                    <th style="width: 6%;">Received</th>
+                    <th style="width: 6%;">Accepted</th>
+                    <th style="width: 6%;">Rejected</th>
+                    <th style="width: 25%;">Remarks</th>
+                    <th style="width: 15%;">Unit</th>
+                    <th style="width: 25%;">Make</th>
+                    @*<th style="width: 8%;">ExpiryDate</th>*@
                 </tr>
 
                 @for (int i = 0; i < Model.PurchaseOrderItems.Count; i++)
                 {
                     <tr>
                         <td>
-                            @Html.DisplayFor(m => m.PurchaseOrderItems[i].Description)
+                            @Html.DisplayFor(m => m.PurchaseOrderItems[i].Description )
                         </td>
                         <td>
                             @Html.DisplayFor(m => m.PurchaseOrderItems[i].QtyOrdered)
                         </td>
                         <td>
                             <input type="number" class="form-control" name="PurchaseOrderItems[@i].QtyReceived"
-                                   value="@Model.PurchaseOrderItems[i].QtyReceived" min="0" />
+                                   value="@Model.PurchaseOrderItems[i].QtyReceived" min="0"; />
                             <input type="hidden" name="PurchaseOrderItems[@i].POItemID"
                                    value="@Model.PurchaseOrderItems[i].POItemID" />
                         </td>
@@ -232,6 +237,16 @@
                             <input type="text" class="form-control" name="PurchaseOrderItems[@i].Remarks"
                                    value="@Model.PurchaseOrderItems[i].Remarks" />
                         </td>
+                        <td>
+                            <input type="text" class="form-control" name="PurchaseOrderItems[@i].Unit" value="@Model.PurchaseOrderItems[i].Unit" />
+                        </td>
+                        <td>
+                            <input type="text" class="form-control" name="PurchaseOrderItems[@i].Make" value="@Model.PurchaseOrderItems[i].Make" />
+                        </td>
+                        @*<td>
+                            <input type="date" class="form-control" name="PurchaseOrderItems[@i].ExpiryDate" value="@Model.PurchaseOrderItems[i].ExpiryDate?.ToString(" yyyy-MM-dd")" />
+                        </td>*@
+
                     </tr>
                 }
             </table>
@@ -239,7 +254,7 @@
             if (!string.IsNullOrEmpty(Model.StoreUploads))
             {
                 <div class="mt-2">
-                    <label>Previously Uploaded Certificate:</label>
+                    <label>Uploaded DeliveryChallan:</label>
                     <a href="@Url.Content(Model.StoreUploads)" target="_blank">View Certificate</a>
                 </div>
             }
@@ -247,7 +262,7 @@
             {
 
                 <div class="form-group">
-                    <label>Upload Certification Document</label>
+                    <label>Upload DeliveryChallan </label>
                     <input type="file" name="CertificationFile" class="form-control" accept=".pdf,.doc,.docx" />
 
                 </div>
@@ -257,7 +272,7 @@
                 <button type="submit" class="btn btn-success">Save Updates</button>
             </div>
             <div class="text-lg-center mt-3">
-                <button type="button" class="btn btn-secondary" onclick="window.print()">Print PO</button>
+                <button type="button" class="btn btn-secondary" onclick="window.print()">Print MRV</button>
             </div>
 
         }
