@@ -34,6 +34,8 @@
             font-weight: bold;
             margin-bottom: 5px;
             padding-top: 3px;
+            align-content:center;
+            align-items:center;
         }
 
             .field-labels div {
@@ -117,7 +119,7 @@
                 <div>Asset Type</div>
                 <div>Material Category</div>
                 <div>Sub-Category</div>
-                <div>Available Quantity</div>
+                @*<div>Available Quantity</div>*@
                 <div>Required Quantity</div>
             </div>
 
@@ -130,7 +132,7 @@
                     <select name="model[0].MSubCategory" class="form-control subCategoryDropdown" disabled required>
                         <option value="">Sub-Category</option>
                     </select>
-                    <input type="text" class="form-control availableQuantity" readonly placeholder="Available Quantity" value="0" />
+                    @*<input type="text" class="form-control availableQuantity" readonly placeholder="Available Quantity" value="0" />*@
                     <input type="number" name="model[0].RequestingQuantity" class="form-control" min="1" required placeholder="Required Quantity" />
                     <button type="button" class="btn addItem">+</button>
                 </div>

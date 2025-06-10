@@ -33,12 +33,13 @@ namespace WebApplication5.Models
         public string CertificationFileName { get; set; }
 
         public string StoreUploads {get; set;}
+        public string Statement { get; set; }
         public string CertificationFilePath { get; set; }
 
 
         public string PurchaseDepartmentUploads { get; set; }
         public List<CentralPurchaseOrderItem> CentralPurchaseOrderItems { get; set; }
-        public List<CentralPurchaseOrderItem> CentralPurchaseOrder { get; set; }
+        public List<CentralPurchaseOrder> CentralPurchaseOrder { get; set; }
 
         //public static implicit operator GeneratePOViewModel(GeneratePOViewModel v)
         //{

@@ -12,17 +12,14 @@ namespace WebApplication5.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class SavetoCentral
+    public partial class CentralAuditor
     {
         public int ID { get; set; }
-        public string LocalID { get; set; }
-        public int UniversityID { get; set; }
-        public string CentralID { get; set; }
-        public string Material { get; set; }
-        public int Order_Quantity { get; set; }
-        public System.DateTime RequestedDate { get; set; }
-        public string Status { get; set; }
-        public string PurchaseDepartmentUploads { get; set; }
         public string AuditorID { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string PhoneNumber { get; set; }
+        public string EmailID { get; set; }
+        public Nullable<decimal> Budget { get; set; }
     }
 }

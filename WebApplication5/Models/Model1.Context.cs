@@ -27,7 +27,6 @@ namespace WebApplication5.Models
     
         public virtual DbSet<AssetType> AssetTypes { get; set; }
         public virtual DbSet<CentralAccountant> CentralAccountants { get; set; }
-        public virtual DbSet<CentralAccountantReport> CentralAccountantReports { get; set; }
         public virtual DbSet<CentralPurchaseDepartment> CentralPurchaseDepartments { get; set; }
         public virtual DbSet<CentralPurchaseOrder> CentralPurchaseOrders { get; set; }
         public virtual DbSet<CentralPurchaseOrderItem> CentralPurchaseOrderItems { get; set; }
@@ -53,5 +52,7 @@ namespace WebApplication5.Models
         public virtual DbSet<HODIssueMaterial> HODIssueMaterials { get; set; }
         public virtual DbSet<TempSelectedMaterial> TempSelectedMaterials { get; set; }
         public virtual DbSet<SavetoCentral> SavetoCentrals { get; set; }
+        public virtual DbSet<CentralAuditor> CentralAuditors { get; set; }
+        public virtual DbSet<RequestsSummarizer> RequestsSummarizers { get; set; }
     }
 }

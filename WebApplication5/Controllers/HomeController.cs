@@ -248,7 +248,7 @@ namespace WebApplication5.Controllers
             return PartialView("_HODIssueForm", issuingModel);
 
         }
-
+        
         [HttpPost]
         public ActionResult HODIssueMaterial(HODIssueMaterial model)
         {
@@ -473,7 +473,7 @@ namespace WebApplication5.Controllers
         }
 
 
-
+        
 
         public ActionResult HODRequests(DateTime? fromDate, DateTime? toDate, string requestType = "Employee", int page = 1, int pageSize = 10)
         {
@@ -1195,8 +1195,8 @@ public JsonResult GetMaterialSubCategories(string categoryName)
                     QtyOrdered = item.QtyOrdered ?? 0,
                     QtyReceived = item.QtyReceived,
                     Description = item.Description,
-                    //UnitPrice = item.UnitPrice ?? 0,
-                    //Total = (item.QtyOrdered ?? 0) * (item.UnitPrice ?? 0),
+                    UnitPrice = item.UnitPrice ?? 0,
+                    Total = item.Total,
                     Remarks = item.Remarks,
                     AcceptedQty = item.AcceptedQty,
                     RejectedQty = item.RejectedQty,
@@ -1347,8 +1347,8 @@ public JsonResult GetMaterialSubCategories(string categoryName)
                     AcceptedQty = item.AcceptedQty,
                     RejectedQty = item.RejectedQty,
                     Description = item.Description,
-                    //UnitPrice = item.UnitPrice ?? 0,
-                    //Total = (item.QtyOrdered ?? 0) * (item.UnitPrice ?? 0),
+                    UnitPrice = item.UnitPrice ?? 0,
+                    Total = item.Total,
                     Remarks = item.Remarks,
                     VendorEmail = item.VendorEmail,
                      Unit = item.Unit,
@@ -1407,7 +1407,7 @@ public JsonResult GetMaterialSubCategories(string categoryName)
                     if (po != null)
                     {
                         po.Status = "Delivered";
-                    }
+                   }
 
                 }
                     // ✅ Save certification file

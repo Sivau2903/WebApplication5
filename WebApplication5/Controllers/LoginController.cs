@@ -98,6 +98,18 @@ namespace WebApplication5.Controllers
                         return RedirectToAction("LPDDashBoard", "LocalPurchaseDepartment");
                     }
 
+                    if (user.Role == "Auditor")
+                    {
+                        Debug.WriteLine("Redirecting to Auditor Dashboard.");
+                        return RedirectToAction("Home", "Auditor");
+                    }
+
+                    if (user.Role == "Summarizer")
+                    {
+                        Debug.WriteLine("Redirecting to Summarizer Dashboard.");
+                        return RedirectToAction("Home", "Summarizer");
+                    }
+
                     Debug.WriteLine("Access Denied! Invalid Role.");
                     TempData["Message"] = "Access Denied! Invalid Role.";
                 }
@@ -333,6 +345,34 @@ namespace WebApplication5.Controllers
                     //profileVM.PhoneNumber = hod.PhoneNumber;
                     //profileVM.Department = hod.DepName;
                     profileVM.Role = "localPurchaseD";
+                }
+            }
+
+            else if (role == "Summarizer")
+            {
+                var hod = _db.RequestsSummarizers.FirstOrDefault(h => h.SummarizerID == userId);
+                if (hod != null)
+                {
+                    profileVM.Name = hod.FirstName + " " + hod.LastName;
+                    profileVM.ID = hod.SummarizerID;
+                    profileVM.Email = hod.EmailID;
+                    profileVM.PhoneNumber = hod.PhoneNumber;
+                    //profileVM.Department = "Nill";
+                    profileVM.Role = "RequestsSummarizer";
+                }
+            }
+
+            else if (role == "Auditor")
+            {
+                var hod = _db.CentralAuditors.FirstOrDefault(h => h.AuditorID == userId);
+                if (hod != null)
+                {
+                    profileVM.Name = hod.FirstName + " " + hod.LastName;
+                    profileVM.ID = hod.AuditorID;
+                    profileVM.Email = hod.EmailID;
+                    profileVM.PhoneNumber = hod.PhoneNumber;
+                    //profileVM.Department = "Nill";
+                    profileVM.Role = "Auditor";
                 }
             }
 

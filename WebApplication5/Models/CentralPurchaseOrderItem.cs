@@ -28,6 +28,10 @@ namespace WebApplication5.Models
         public string Unit { get; set; }
         public string Make { get; set; }
         public Nullable<System.DateTime> ExpiryDate { get; set; }
+        public string SummarizerID { get; set; }
+        public string Statement { get; set; }
+        public string CentralAccountantID { get; set; }
+        public string Status { get; set; }
     
         public virtual CentralPurchaseOrder CentralPurchaseOrder { get; set; }
     }

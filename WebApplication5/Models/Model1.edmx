@@ -24,16 +24,17 @@
           <Property Name="Budget" Type="decimal" Precision="18" Scale="2" />
           <Property Name="CentralAccountantID" Type="nvarchar" MaxLength="100" />
         </EntityType>
-        <EntityType Name="CentralAccountantReport">
+        <EntityType Name="CentralAuditor">
           <Key>
-            <PropertyRef Name="ReportID" />
+            <PropertyRef Name="ID" />
           </Key>
-          <Property Name="ReportID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="RequestID" Type="int" Nullable="false" />
-          <Property Name="VendorID" Type="int" Nullable="false" />
-          <Property Name="RequestingAmount" Type="decimal" Precision="18" Scale="2" Nullable="false" />
-          <Property Name="SettledAmount" Type="decimal" Precision="18" Scale="2" Nullable="false" />
-          <Property Name="SettledDate" Type="date" Nullable="false" />
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="AuditorID" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="FirstName" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="LastName" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="PhoneNumber" Type="nvarchar" MaxLength="15" />
+          <Property Name="EmailID" Type="nvarchar" MaxLength="100" />
+          <Property Name="Budget" Type="decimal" Precision="18" Scale="2" />
         </EntityType>
         <EntityType Name="CentralPurchaseDepartment">
           <Key>
@@ -72,6 +73,9 @@
           <Property Name="Status" Type="nvarchar" MaxLength="50" />
           <Property Name="StoreUploads" Type="nvarchar" MaxLength="500" />
           <Property Name="PurchaseDepartmentUploads" Type="nvarchar" MaxLength="500" />
+          <Property Name="Statement" Type="nvarchar" MaxLength="500" />
+          <Property Name="SummarizerID" Type="nvarchar" MaxLength="50" />
+          <Property Name="CentralAccountantID" Type="nvarchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="CentralPurchaseOrderItems">
           <Key>
@@ -91,6 +95,10 @@
           <Property Name="Unit" Type="nvarchar" MaxLength="50" />
           <Property Name="Make" Type="nvarchar" MaxLength="100" />
           <Property Name="ExpiryDate" Type="date" />
+          <Property Name="SummarizerID" Type="nvarchar" MaxLength="100" />
+          <Property Name="Statement" Type="nvarchar" MaxLength="100" />
+          <Property Name="CentralAccountantID" Type="nvarchar" MaxLength="50" />
+          <Property Name="Status" Type="nvarchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="CentralVendorDetails">
           <Key>
@@ -348,6 +356,17 @@
           <Property Name="PendingQuantity" Type="int" />
           <Property Name="Remarks" Type="char" MaxLength="300" />
         </EntityType>
+        <EntityType Name="RequestsSummarizer">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="SummarizerID" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="FirstName" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="LastName" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="PhoneNumber" Type="nvarchar" MaxLength="15" />
+          <Property Name="EmailID" Type="nvarchar" MaxLength="100" />
+        </EntityType>
         <EntityType Name="SavetoCentral">
           <Key>
             <PropertyRef Name="ID" />
@@ -361,6 +380,7 @@
           <Property Name="RequestedDate" Type="datetime" Nullable="false" />
           <Property Name="Status" Type="nvarchar" MaxLength="50" />
           <Property Name="PurchaseDepartmentUploads" Type="nvarchar" MaxLength="500" />
+          <Property Name="AuditorID" Type="nvarchar" MaxLength="100" />
         </EntityType>
         <EntityType Name="StoreAdmin">
           <Key>
@@ -598,7 +618,7 @@
         <EntityContainer Name="ASPModelStoreContainer">
           <EntitySet Name="AssetType" EntityType="Self.AssetType" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="CentralAccountant" EntityType="Self.CentralAccountant" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="CentralAccountantReport" EntityType="Self.CentralAccountantReport" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="CentralAuditor" EntityType="Self.CentralAuditor" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="CentralPurchaseDepartment" EntityType="Self.CentralPurchaseDepartment" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="CentralPurchaseOrder" EntityType="Self.CentralPurchaseOrder" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="CentralPurchaseOrderItems" EntityType="Self.CentralPurchaseOrderItems" Schema="dbo" store:Type="Tables" />
@@ -619,6 +639,7 @@
           <EntitySet Name="PurchaseOrderItems" EntityType="Self.PurchaseOrderItems" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="PurchaseOrders" EntityType="Self.PurchaseOrders" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Request" EntityType="Self.Request" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="RequestsSummarizer" EntityType="Self.RequestsSummarizer" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="SavetoCentral" EntityType="Self.SavetoCentral" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="StoreAdmin" EntityType="Self.StoreAdmin" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="TempSelectedMaterials" EntityType="Self.TempSelectedMaterials" Schema="dbo" store:Type="Tables" />
@@ -709,17 +730,6 @@
           <Property Name="Budget" Type="Decimal" Precision="18" Scale="2" />
           <Property Name="CentralAccountantID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
         </EntityType>
-        <EntityType Name="CentralAccountantReport">
-          <Key>
-            <PropertyRef Name="ReportID" />
-          </Key>
-          <Property Name="ReportID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="RequestID" Type="Int32" Nullable="false" />
-          <Property Name="VendorID" Type="Int32" Nullable="false" />
-          <Property Name="RequestingAmount" Type="Decimal" Precision="18" Scale="2" Nullable="false" />
-          <Property Name="SettledAmount" Type="Decimal" Precision="18" Scale="2" Nullable="false" />
-          <Property Name="SettledDate" Type="DateTime" Nullable="false" Precision="0" />
-        </EntityType>
         <EntityType Name="CentralPurchaseDepartment">
           <Key>
             <PropertyRef Name="CID" />
@@ -758,6 +768,9 @@
           <Property Name="StoreUploads" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
           <Property Name="PurchaseDepartmentUploads" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="CentralPurchaseOrderItems" Relationship="Self.FK_CentralPurchaseOrderItems_CentralPurchaseOrder" FromRole="CentralPurchaseOrder" ToRole="CentralPurchaseOrderItems" />
+          <Property Name="Statement" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="SummarizerID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CentralAccountantID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="CentralPurchaseOrderItem">
           <Key>
@@ -778,6 +791,10 @@
           <Property Name="Unit" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Make" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="ExpiryDate" Type="DateTime" Precision="0" />
+          <Property Name="SummarizerID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Statement" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="CentralAccountantID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="CentralVendorDetail">
           <Key>
@@ -1207,7 +1224,6 @@
         <EntityContainer Name="ASPEntities2" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="AssetTypes" EntityType="Self.AssetType" />
           <EntitySet Name="CentralAccountants" EntityType="Self.CentralAccountant" />
-          <EntitySet Name="CentralAccountantReports" EntityType="Self.CentralAccountantReport" />
           <EntitySet Name="CentralPurchaseDepartments" EntityType="Self.CentralPurchaseDepartment" />
           <EntitySet Name="CentralPurchaseOrders" EntityType="Self.CentralPurchaseOrder" />
           <EntitySet Name="CentralPurchaseOrderItems" EntityType="Self.CentralPurchaseOrderItem" />
@@ -1293,6 +1309,8 @@
           <EntitySet Name="HODIssueMaterials" EntityType="ASPModel.HODIssueMaterial" />
           <EntitySet Name="TempSelectedMaterials" EntityType="ASPModel.TempSelectedMaterial" />
           <EntitySet Name="SavetoCentrals" EntityType="ASPModel.SavetoCentral" />
+          <EntitySet Name="CentralAuditors" EntityType="ASPModel.CentralAuditor" />
+          <EntitySet Name="RequestsSummarizers" EntityType="ASPModel.RequestsSummarizer" />
         </EntityContainer>
         <EntityType Name="EmployeeIssueMaterial">
           <Key>
@@ -1398,6 +1416,30 @@
           <Property Name="RequestedDate" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="PurchaseDepartmentUploads" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="AuditorID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="CentralAuditor">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="AuditorID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="FirstName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="LastName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNumber" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
+          <Property Name="EmailID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Budget" Type="Decimal" Precision="18" Scale="2" />
+        </EntityType>
+        <EntityType Name="RequestsSummarizer">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="SummarizerID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="FirstName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="LastName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNumber" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
+          <Property Name="EmailID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -1426,18 +1468,6 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="CentralAccountantReports">
-            <EntityTypeMapping TypeName="ASPModel.CentralAccountantReport">
-              <MappingFragment StoreEntitySet="CentralAccountantReport">
-                <ScalarProperty Name="ReportID" ColumnName="ReportID" />
-                <ScalarProperty Name="RequestID" ColumnName="RequestID" />
-                <ScalarProperty Name="VendorID" ColumnName="VendorID" />
-                <ScalarProperty Name="RequestingAmount" ColumnName="RequestingAmount" />
-                <ScalarProperty Name="SettledAmount" ColumnName="SettledAmount" />
-                <ScalarProperty Name="SettledDate" ColumnName="SettledDate" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="CentralPurchaseDepartments">
             <EntityTypeMapping TypeName="ASPModel.CentralPurchaseDepartment">
               <MappingFragment StoreEntitySet="CentralPurchaseDepartment">
@@ -1456,6 +1486,9 @@
           <EntitySetMapping Name="CentralPurchaseOrders">
             <EntityTypeMapping TypeName="ASPModel.CentralPurchaseOrder">
               <MappingFragment StoreEntitySet="CentralPurchaseOrder">
+                <ScalarProperty Name="CentralAccountantID" ColumnName="CentralAccountantID" />
+                <ScalarProperty Name="SummarizerID" ColumnName="SummarizerID" />
+                <ScalarProperty Name="Statement" ColumnName="Statement" />
                 <ScalarProperty Name="PONumber" ColumnName="PONumber" />
                 <ScalarProperty Name="PODate" ColumnName="PODate" />
                 <ScalarProperty Name="CentralDepartmentName" ColumnName="CentralDepartmentName" />
@@ -1481,6 +1514,10 @@
           <EntitySetMapping Name="CentralPurchaseOrderItems">
             <EntityTypeMapping TypeName="ASPModel.CentralPurchaseOrderItem">
               <MappingFragment StoreEntitySet="CentralPurchaseOrderItems">
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="CentralAccountantID" ColumnName="CentralAccountantID" />
+                <ScalarProperty Name="Statement" ColumnName="Statement" />
+                <ScalarProperty Name="SummarizerID" ColumnName="SummarizerID" />
                 <ScalarProperty Name="ExpiryDate" ColumnName="ExpiryDate" />
                 <ScalarProperty Name="Make" ColumnName="Make" />
                 <ScalarProperty Name="Unit" ColumnName="Unit" />
@@ -1827,6 +1864,7 @@
           <EntitySetMapping Name="SavetoCentrals">
             <EntityTypeMapping TypeName="ASPModel.SavetoCentral">
               <MappingFragment StoreEntitySet="SavetoCentral">
+                <ScalarProperty Name="AuditorID" ColumnName="AuditorID" />
                 <ScalarProperty Name="PurchaseDepartmentUploads" ColumnName="PurchaseDepartmentUploads" />
                 <ScalarProperty Name="Status" ColumnName="Status" />
                 <ScalarProperty Name="RequestedDate" ColumnName="RequestedDate" />
@@ -1835,6 +1873,31 @@
                 <ScalarProperty Name="CentralID" ColumnName="CentralID" />
                 <ScalarProperty Name="UniversityID" ColumnName="UniversityID" />
                 <ScalarProperty Name="LocalID" ColumnName="LocalID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="CentralAuditors">
+            <EntityTypeMapping TypeName="ASPModel.CentralAuditor">
+              <MappingFragment StoreEntitySet="CentralAuditor">
+                <ScalarProperty Name="Budget" ColumnName="Budget" />
+                <ScalarProperty Name="EmailID" ColumnName="EmailID" />
+                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+                <ScalarProperty Name="LastName" ColumnName="LastName" />
+                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
+                <ScalarProperty Name="AuditorID" ColumnName="AuditorID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="RequestsSummarizers">
+            <EntityTypeMapping TypeName="ASPModel.RequestsSummarizer">
+              <MappingFragment StoreEntitySet="RequestsSummarizer">
+                <ScalarProperty Name="EmailID" ColumnName="EmailID" />
+                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+                <ScalarProperty Name="LastName" ColumnName="LastName" />
+                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
+                <ScalarProperty Name="SummarizerID" ColumnName="SummarizerID" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
               </MappingFragment>
             </EntityTypeMapping>

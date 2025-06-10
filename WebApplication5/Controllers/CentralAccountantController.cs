@@ -43,17 +43,17 @@ namespace WebApplication5.Controllers
 
         public ActionResult AllPOs()
         {
-            var draftPOs = _db.CentralPurchaseOrders
-                              .Where(po => po.Status == "Draft")
-                              .OrderByDescending(po => po.PODate)
-                              .ToList();
+            //var draftPOs = _db.CentralPurchaseOrders
+            //                  .Where(po => po.Status == "Draft")
+            //                  .OrderByDescending(po => po.PODate)
+            //                  .ToList();
 
             var deliveredPOs = _db.CentralPurchaseOrders
-                                  .Where(po => po.Status == "Delivered")
+                                  .Where(po => po.Status == "Sent to Accountant")
                                   .OrderByDescending(po => po.PODate)
                                   .ToList();
 
-            ViewBag.DraftPOs = draftPOs;
+            //ViewBag.DraftPOs = draftPOs;
             ViewBag.DeliveredPOs = deliveredPOs;
 
             return View();
@@ -101,6 +101,8 @@ namespace WebApplication5.Controllers
                 AuthorizedBy = po.AuthorizedBy,
                 StoreUploads = po.StoreUploads,
                 PurchaseDepartmentUploads = po.PurchaseDepartmentUploads,
+                Statement = po.Statement,
+
 
                 CentralPurchaseOrderItems = items.Select(item => new CentralPurchaseOrderItem
                 {

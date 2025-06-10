@@ -1,9 +1,12 @@
-﻿@model WebApplication5.Models.CentralGeneratePOViewModel
+﻿
+
+
+@model WebApplication5.Models.CentralGeneratePOViewModel
 
 @{
     //var uni = ViewBag.University as WebApplication5.Models.University;
 
-    Layout = "~/Views/Shared/_centralAccountant.cshtml";
+    Layout = "~/Views/Shared/_SummarizerLayout.cshtml";
     ViewBag.Title = "Purchase Order";
     var today = DateTime.Now.ToString("dd-MM-yyyy");
 }
@@ -23,10 +26,12 @@
         font-weight: bold;
         text-align: right;
     }
+
     .btn-secondary {
         --bs-btn-color: white;
         --bs-btn-bg: blue;
     }
+
     .company-header {
         font-size: 16px;
         font-weight: bold;
@@ -219,19 +224,23 @@
         </table>
 
 
+       
 
-
-        using (Html.BeginForm("InitiatePayment", "CentralAccountant", FormMethod.Post))
+        using (Html.BeginForm("InitiatePayment", "Summarizer", FormMethod.Post))
         {
             @Html.HiddenFor(model => model.PONumber)
 
-
-
-            <div class="text-end mt-3">
-                <button type="submit" class="btn btn-success">Initiate Payment</button>
+            <div class="form-group mt-3">
+                <label for="RemarksByAccountant"><strong>Remarks / Notes:</strong></label>
+                @Html.TextAreaFor(model => model.Statement, new { @class = "form-control", rows = 3, placeholder = "Enter any remarks before initiating payment..." })
             </div>
 
+            <div class="text-end mt-3">
+                <button type="submit" class="btn btn-success">Send for Payment</button>
+            </div>
         }
+
+
 
         if (!string.IsNullOrEmpty(Model.StoreUploads))
         {
@@ -247,23 +256,11 @@
                 <label>Certified Document:</label>
                 <a href="@Url.Content(Model.PurchaseDepartmentUploads)" target="_blank">PurchaseDepartment Certificate</a>
             </div>
-
-
         }
-        <!-- Display the Statement -->
-        <div class="mb-3">
-            <label><strong>Remarks from Summarizer:</strong></label>
-            <div class="border p-2 rounded bg-light">
-                @(!string.IsNullOrWhiteSpace(Model.Statement) ? Model.Statement : "No remarks given.")
-            </div>
-        </div>
-
 
         <div class="text-lg-center mt-3">
             <button type="button" class="btn btn-secondary" onclick="window.print()">Print PO</button>
         </div>
-
-
 
         <div style="font-size: 13px; margin-top: 10px;">
             <p>
@@ -273,6 +270,7 @@
             <p>2. Order is to be entered in accordance with prices, delivery and specifications shown above.</p>
             <p>3. Notify us immediately if you are unable to ship as specified.</p>
         </div>
+
 
 
         <div class="signature">

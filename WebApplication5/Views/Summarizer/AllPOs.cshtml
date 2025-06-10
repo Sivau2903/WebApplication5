@@ -1,6 +1,13 @@
-﻿@model dynamic
+﻿
 @{
-    Layout = "~/Views/Shared/_centralAccountant.cshtml";
+    ViewBag.Title = "AllPOs";
+}
+
+<h2>AllPOs</h2>
+
+@model dynamic
+@{
+    Layout = "~/Views/Shared/_SummarizerLayout.cshtml";
     ViewBag.Title = "All Purchase Orders";
     var draftPOs = ViewBag.DraftPOs as List<WebApplication5.Models.CentralPurchaseOrder>;
     var deliveredPOs = ViewBag.DeliveredPOs as List<WebApplication5.Models.CentralPurchaseOrder>;
@@ -15,7 +22,7 @@
 
     .po-section {
         flex: 1;
-        color:darkblue;
+        color: darkblue;
         border: 1px solid #ccc;
         padding: 15px;
         height: 80vh;
@@ -47,7 +54,7 @@
 
     .po-number {
         font-weight: bold;
-        color:darkblue;
+        color: darkblue;
     }
 
     .po-date {
@@ -58,13 +65,13 @@
 
 <div class="po-wrapper">
     <!-- Not Delivered Section -->
-    @*<div class="po-section">
+    <div class="po-section">
         <h3>Not Delivered</h3>
         @if (draftPOs.Any())
         {
             foreach (var po in draftPOs)
             {
-                <a class="po-link" href="@Url.Action("PODetails", "CentralAccountant", new { poNumber = po.PONumber })">
+                <a class="po-link" href="@Url.Action("PODetails", "Summarizer", new { poNumber = po.PONumber })">
                     <div class="po-number">PO No: @po.PONumber</div>
                     <div class="po-date">Date: @po.PODate</div>
                 </a>
@@ -74,7 +81,7 @@
         {
             <p>No Draft POs found.</p>
         }
-    </div>*@
+    </div>
 
     <!-- Delivered Section -->
     <div class="po-section">
@@ -83,7 +90,7 @@
         {
             foreach (var po in deliveredPOs)
             {
-                <a class="po-link" href="@Url.Action("PODetails", "CentralAccountant", new { poNumber = po.PONumber })">
+                <a class="po-link" href="@Url.Action("PODetails", "Summarizer", new { poNumber = po.PONumber })">
                     <div class="po-number">PO No: @po.PONumber</div>
                     <div class="po-date">Date: @po.PODate</div>
                 </a>

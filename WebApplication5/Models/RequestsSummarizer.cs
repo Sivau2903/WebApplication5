@@ -12,13 +12,13 @@ namespace WebApplication5.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class CentralAccountantReport
+    public partial class RequestsSummarizer
     {
-        public int ReportID { get; set; }
-        public int RequestID { get; set; }
-        public int VendorID { get; set; }
-        public decimal RequestingAmount { get; set; }
-        public decimal SettledAmount { get; set; }
-        public System.DateTime SettledDate { get; set; }
+        public int ID { get; set; }
+        public string SummarizerID { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string PhoneNumber { get; set; }
+        public string EmailID { get; set; }
     }
 }

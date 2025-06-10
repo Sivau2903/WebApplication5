@@ -39,6 +39,9 @@ namespace WebApplication5.Models
         public string Status { get; set; }
         public string StoreUploads { get; set; }
         public string PurchaseDepartmentUploads { get; set; }
+        public string Statement { get; set; }
+        public string SummarizerID { get; set; }
+        public string CentralAccountantID { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<CentralPurchaseOrderItem> CentralPurchaseOrderItems { get; set; }

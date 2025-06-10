@@ -7,7 +7,6 @@
       <Diagram DiagramId="98cc48fb1b4a46a397039d749eeb33d5" Name="Diagram1" ZoomLevel="69">
         <EntityTypeShape EntityType="ASPModel.AssetType" Width="1.5" PointX="0.75" PointY="1.125" IsExpanded="true" />
         <EntityTypeShape EntityType="ASPModel.CentralAccountant" Width="1.5" PointX="3" PointY="15.625" IsExpanded="true" />
-        <EntityTypeShape EntityType="ASPModel.CentralAccountantReport" Width="1.5" PointX="6" PointY="29.625" IsExpanded="true" />
         <EntityTypeShape EntityType="ASPModel.CentralPurchaseDepartment" Width="1.5" PointX="3" PointY="34" IsExpanded="true" />
         <EntityTypeShape EntityType="ASPModel.CentralPurchaseOrder" Width="1.5" PointX="12.75" PointY="1.125" IsExpanded="true" />
         <EntityTypeShape EntityType="ASPModel.CentralPurchaseOrderItem" Width="1.5" PointX="15" PointY="2" IsExpanded="true" />
@@ -48,6 +47,8 @@
         <EntityTypeShape EntityType="ASPModel.HODIssueMaterial" Width="1.5" PointX="16.375" PointY="18.75" />
         <EntityTypeShape EntityType="ASPModel.TempSelectedMaterial" Width="1.5" PointX="18.375" PointY="18.75" />
         <EntityTypeShape EntityType="ASPModel.SavetoCentral" Width="1.5" PointX="19.375" PointY="0.75" />
+        <EntityTypeShape EntityType="ASPModel.CentralAuditor" Width="1.5" PointX="0.75" PointY="3.75" />
+        <EntityTypeShape EntityType="ASPModel.RequestsSummarizer" Width="1.5" PointX="2.75" PointY="3.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
