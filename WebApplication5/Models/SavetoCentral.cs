@@ -23,6 +23,8 @@ namespace WebApplication5.Models
         public System.DateTime RequestedDate { get; set; }
         public string Status { get; set; }
         public string PurchaseDepartmentUploads { get; set; }
-        public string AuditorID { get; set; }
+        public string IUCDID { get; set; }
+        public Nullable<int> IUCDApprovedQty { get; set; }
+        public string IUCDApprovalDoc { get; set; }
     }
 }

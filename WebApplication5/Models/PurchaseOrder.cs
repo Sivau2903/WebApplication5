@@ -41,6 +41,22 @@ namespace WebApplication5.Models
         public string Remarks { get; set; }
         public string StoreUploads { get; set; }
         public string PurchaseDepartmentUploads { get; set; }
+        public string VendorName { get; set; }
+        public string VendorEmail { get; set; }
+        public string VendorAddress { get; set; }
+        public string VendorGSTNo { get; set; }
+        public string VendorGSTPercent { get; set; }
+        public Nullable<int> TotalQuantity { get; set; }
+        public Nullable<decimal> TotalCost { get; set; }
+        public string TermsConditions { get; set; }
+        public string Specification { get; set; }
+        public byte[] PODetails { get; set; }
+        public string MRVDetails { get; set; }
+        public string IUCDApprovalDoc { get; set; }
+        public string Statement { get; set; }
+        public string AuditorSentID { get; set; }
+        public string InvoiceDetails { get; set; }
+        public string CommityApprovedDoc { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<PurchaseOrderItem> PurchaseOrderItems { get; set; }

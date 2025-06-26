@@ -1,264 +1,150 @@
-﻿@model WebApplication5.Models.GeneratePOViewModel
+﻿@model WebApplication5.Models.AuditPOViewModel
 
 @{
-    //var uni = ViewBag.University as WebApplication5.Models.University;
-
+    ViewBag.Title = "Audit Purchase Order";
     Layout = "~/Views/Shared/_LocalAccountant.cshtml";
-    ViewBag.Title = "Purchase Order";
-    var today = DateTime.Now.ToString("dd-MM-yyyy");
 }
+
+<!-- Bootstrap and FontAwesome -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
 <style>
-    .po-container {
-        border: 2px solid black;
-        padding: 30px;
+    .audit-container {
         max-width: 800px;
-        height: 800px;
-        margin: auto;
-        font-family: Arial, sans-serif;
+        margin: 30px auto;
+        padding: 25px;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     }
 
-    .po-title {
-        font-size: 28px;
-        font-weight: bold;
-        text-align: right;
+
+    .audit-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 10px;
+    }
+    footer{
+        position:fixed;
+    }
+    .university-name {
+        font-size: 1.4rem;
+        color: #007bff;
+        font-weight: 500;
+        margin-bottom: 20px;
     }
 
-    .company-header {
-        font-size: 16px;
-        font-weight: bold;
+    .container, .container-md, .container-sm {
+        max-width: 720px;
+        height: 900px;
     }
 
-    table {
-        width: 100%;
-        height: 50px;
-        border-collapse: collapse;
-        margin-top: 10px;
+    .doc-section {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
     }
 
-    th, td {
-        border: 1px solid black;
-        padding: 6px;
-        text-align: left;
+        .doc-section i {
+            color: #17a2b8;
+            margin-right: 10px;
+        }
+
+    .doc-link {
+        font-weight: 500;
+        margin-left: 10px;
+        color: #28a745;
     }
 
-    .no-border {
-        border: none;
-    }
+        .doc-link:hover {
+            text-decoration: underline;
+            color: #218838;
+        }
 
-    .signature {
-        margin-top: 50px;
-        text-align: right;
-    }
-
-    .print-button {
+    hr {
         margin-top: 30px;
-        text-align: center;
-        color:blue;
-    }
-
-    .company-header {
-        font-weight: bold;
-        font-size: 18px;
-        margin-bottom: 5px;
-    }
-    .btn-secondary {
-        --bs-btn-color: white;
-        --bs-btn-bg: blue;
-        
-    }
-
-    .input-no-border {
-        width: 100%;
-        border: none;
-        border-bottom: 1px solid black;
+        margin-bottom: 30px;
     }
 </style>
-@if (ViewBag.SuccessMessage != null)
-{
-    <div class="alert alert-success">@ViewBag.SuccessMessage</div>
-}
 
+<div class="audit-container">
+    @*<div class="audit-title">📝 Audit the Purchase Order</div>*@
+    <div class="university-name"><i class="fas fa-university"></i> @Model.UniversityName</div>
+    @*<div class="poNo"><i class="fas fa-poNo"></i> @Model.PONumber</div>*@
 
-<div class="po-container">
-    <!-- Search bar to fetch PO Details -->
-    @*<h2>Search Purchase Order</h2>
+    <hr />
 
-        @using (Html.BeginForm("PODetails", "CentralAccountant", FormMethod.Post))
+    <div class="doc-section">
+        <i class="fas fa-check-circle"></i><strong>IUCD Approval:</strong>
+        @if (!string.IsNullOrEmpty(Model.IUCDApprovalDoc))
         {
-            <div class="form-group row">
-                <label class="col-sm-2 col-form-label">Enter PO Number:</label>
-                <div class="col-sm-4">
-                    <input type="text" name="poNumber" class="form-control" placeholder="PO123" required />
-                </div>
-                <div class="col-sm-2">
-                    <button type="submit" class="btn btn-primary">Fetch</button>
-                </div>
-            </div>
+            <a class="doc-link" href="@Url.Content(Model.IUCDApprovalDoc)" target="_blank">View Document</a>
         }
-
-        @if (ViewBag.ErrorMessage != null)
+        else
         {
-            <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
-        }*@
-
-
-    @if (Model != null)
-    {
-
-
-        <div class="d-flex justify-content-between">
-            <!-- Left side: University details stacked vertically -->
-            <div>
-
-                <div class="company-header">@Model.UniversityName</div>
-                <div>@Model.UniversityAddress</div>
-                <div>Email: @Model.UniversityEmail</div>
-                <div>Phone: @Model.UniversityPhone</div>
-
-            </div>
-
-            <!-- Right side: PO title -->
-            <div class="po-title text-end">
-                <div>Purchase Order</div>
-                <div style="font-size: 14px;">PO No: @Model.PONumber</div>
-            </div>
-        </div>
-
-        <!-- Displaying the PO details -->
-        <table>
-            <tr>
-                <td><strong>Date:</strong> @Model.PODate</td>
-                <td><strong>Requisition No:</strong> @Model.RequisitionNo</td>
-            </tr>
-
-            <tr>
-                <td colspan="2">
-                    <strong>Ship To:</strong> @Model.ShipTo
-                </td>
-            </tr>
-        </table>
-
-        <table>
-            <tr>
-                <th>Requisitioned By</th>
-                <th>When Ship</th>
-                <th>Ship Via</th>
-                <th>F.O.B. Point</th>
-                <th>Terms</th>
-            </tr>
-            <tr>
-                <td>@Model.RequisitionedBy</td>
-                <td>@Model.WhenShip</td>
-                <td>@Model.ShipVia</td>
-                <td>@Model.FOBPoint</td>
-                <td>@Model.Terms</td>
-            </tr>
-        </table>
-
-
-
-
-
-
-        <table class="table">
-            <tr>
-                <th>Description</th>
-                <th>Order Qty</th>
-                <th>Received Qty</th>
-                <th>Accepted Qty</th>
-                <th>Rejected Qty</th>
-               
-                <th>Unit Price</th>
-                <th>Total</th>
-                <th>Remarks</th>
-            </tr>
-
-            @for (int i = 0; i < Model.PurchaseOrderItems.Count; i++)
-            {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(m => m.PurchaseOrderItems[i].Description)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(m => m.PurchaseOrderItems[i].QtyOrdered)
-                    </td>
-
-                    <td>
-                        @Html.DisplayFor(m => m.PurchaseOrderItems[i].QtyReceived)
-                    </td>
-
-                    <td>
-                        @Html.DisplayFor(m => m.PurchaseOrderItems[i].AcceptedQty)
-                    </td>
-
-                    <td>
-                        @Html.DisplayFor(m => m.PurchaseOrderItems[i].RejectedQty)
-                    </td>
-
-                    <td>
-                        @Html.DisplayFor(m => m.PurchaseOrderItems[i].UnitPrice)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(m => m.PurchaseOrderItems[i].Total)
-                    </td>
-
-                    <td>
-                        @Html.DisplayFor(m => m.PurchaseOrderItems[i].Remarks)
-                    </td>
-
-                </tr>
-            }
-        </table>
-
-        using (Html.BeginForm("InitiatePayment", "LocalAccountant", FormMethod.Post))
-        {
-            @Html.HiddenFor(model => model.PONumber)
-
-            <div class="text-end mt-3">
-                <button type="submit" class="btn btn-success">Initiate Payment</button>
-            </div>
+            <span class="text-danger ml-2">Not uploaded</span>
         }
+    </div>
 
-        if (!string.IsNullOrEmpty(Model.StoreUploads))
+    <div class="doc-section">
+        <i class="fas fa-file-contract"></i><strong>PO Details:</strong>
+        @if (Model.PODetails != null && Model.PODetails.Length > 0)
         {
-            <div class="mt-3">
-                <label>Certified Document:</label>
-                <a href="@Url.Content(Model.StoreUploads)" target="_blank">Store Certificate</a>
-            </div>
+            <a class="doc-link" href="@Url.Action("GetPOFile", "LocalAccountant", new { poNumber = Model.PONumber })" target="_blank">View PO</a>
         }
-
-        if (!string.IsNullOrEmpty(Model.PurchaseDepartmentUploads))
+        else
         {
-            <div class="mt-3">
-                <label>Certified Document:</label>
-                <a href="@Url.Content(Model.PurchaseDepartmentUploads)" target="_blank">PurchaseDepartment Certificate</a>
-            </div>
+            <span class="text-danger ml-2">Not uploaded</span>
         }
-        <div class="text-lg-center mt-3">
-            <button type="button" class="btn btn-secondary" onclick="window.print()">Print PO</button>
-        </div>
+    </div>
 
 
 
-        <div style="font-size: 13px; margin-top: 10px;">
-            <p>
-                1. Please send @Model.CopiesOfInvoice copies of your invoice.
-            </p>
+    <div class="doc-section">
+        <i class="fas fa-truck"></i><strong>Delivery Challan:</strong>
+        @if (!string.IsNullOrEmpty(Model.StoreUploads))
+        {
+            <a class="doc-link" href="@Url.Content(Model.StoreUploads)" target="_blank">View Challan</a>
+        }
+        else
+        {
+            <span class="text-danger ml-2">Not uploaded</span>
+        }
+    </div>
 
-            <p>2. Order is to be entered in accordance with prices, delivery and specifications shown above.</p>
-            <p>3. Notify us immediately if you are unable to ship as specified.</p>
-        </div>
+    <div class="doc-section">
+        <i class="fas fa-file-alt"></i><strong>MRV Details:</strong>
+        @if (!string.IsNullOrEmpty(Model.MRVDetails))
+        {
+            <a class="doc-link" href="@Url.Content(Model.MRVDetails)" target="_blank">View MRV</a>
+        }
+        else
+        {
+            <span class="text-danger ml-2">Not uploaded</span>
+        }
+    </div>
 
-
-        <div class="signature">
-
-            <strong>AUTHORIZED BY</strong><br />
-            @Model.AuthorizedBy
-            <br /><br />
-
-        </div>
-    }
-
+    <div class="doc-section">
+        <i class="fas fa-receipt"></i><strong>Invoice Details:</strong>
+        @if (!string.IsNullOrEmpty(Model.InvoiceDetails))
+        {
+            <a class="doc-link" href="@Url.Content(Model.InvoiceDetails)" target="_blank">View Invoice</a>
+        }
+        else
+        {
+            <span class="text-danger ml-2">Not uploaded</span>
+        }
+    </div>
+    <strong >Auditor Statement</strong>
+    <div class="statement" style="color:green"> @Model.Statement</div>
 </div>
 
+ @using (Html.BeginForm("InitiatePayment", "LocalAccountant", FormMethod.Post))
+ {
+@Html.HiddenFor(model => model.PONumber)
+
+<div class="text-end mt-3">
+    <button type="submit" class="btn btn-success">Initiate Payment</button>
+</div>
+ }

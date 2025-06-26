@@ -1,178 +1,172 @@
-﻿
+﻿@model WebApplication5.Models.CentralGeneratePOViewModel
 
+@{
+    var university = ViewBag.University as WebApplication5.Models.University;
+    //var user = ViewBag.Central as WebApplication5.Models.CentralPurchaseDepartment;
 
-@model WebApplication5.Models.GeneratePOViewModel
+    Layout = null;
+    ViewBag.Title = "Purchase Order";
+    var today = DateTime.Now.ToString("dd-MM-yyyy");
+}
 
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
 
+    .po-container {
+        padding: 40px;
+        width: 100%;
+        box-sizing: border-box;
+    }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Purchase Order - @Model.PONumber</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            margin: 0;
-            padding: 0;
+    .header, .footer {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .section {
+        page-break-after: always;
+    }
+
+        .section:last-child {
+            page-break-after: avoid;
         }
 
-        .po-container {
-            border: 2px solid black;
-            padding: 30px;
-            max-width: 900px;
-            margin: auto;
-        }
+    .university-info, .vendor-info, .po-info {
+        margin-bottom: 20px;
+    }
 
-        .po-title {
-            font-size: 28px;
-            font-weight: bold;
-            text-align: right;
-        }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
 
-        .company-header {
-            font-size: 16px;
-            font-weight: bold;
-        }
+    th, td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: left;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
+    .signature {
+        margin-top: 40px;
+        text-align: right;
+    }
 
-        th, td {
-            border: 1px solid black;
-            padding: 6px;
-            text-align: left;
-        }
+    .annexure-title, .terms-title {
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+</style>
 
-        .no-border {
-            border: none;
-        }
+<!-- SECTION 1: PO SUMMARY -->
+<div class="section po-container">
+    <div class="header">
+        <h2>Purchase Order</h2>
+        <p>Date: @today</p>
+    </div>
 
-        .signature {
-            margin-top: 50px;
-            text-align: right;
-        }
+    <div class="university-info">
+        <strong>University:</strong> @Model.UniversityName<br />
+        <strong>Email:</strong> @Model.UniversityEmail<br />
+        <strong>Phone:</strong> @Model.UniversityPhone<br />
+        <strong>Address:</strong> @Model.UniversityAddress
+    </div>
 
-        .input-no-border {
-            width: 100%;
-            border: none;
-            border-bottom: 1px solid black;
-        }
-    </style>
-</head>
-<body>
-    <div class="po-container">
-        <div class="d-flex justify-content-between">
-            @if (!string.IsNullOrEmpty(Model.UniversityName))
-            {
-                <div class="company-header">@Model.UniversityName</div>
-                <div>@Model.UniversityAddress</div>
-                <div>Phone: @Model.UniversityPhone</div>
-                <div>Email: @Model.UniversityEmail</div>
-            }
-            else
-            {
-                <div class="text-danger">University details are missing.</div>
-            }
+    <div class="vendor-info">
+        <strong>Vendor:</strong> @Model.VendorName<br />
+        <strong>Email:</strong> @Model.VendorEmail<br />
+        <strong>Address:</strong> @Model.VendorAddress<br />
+        <strong>GST No:</strong> @Model.VendorGSTNo
+    </div>
 
-
-            <div class="po-title">
-                Purchase Order<br />
-                <span style="font-size: 14px;">PO No: @Model.PONumber</span>
-            </div>
-        </div>
-
-        <!-- Hidden fields for dynamic values -->
-        @Html.HiddenFor(m => m.PONumber)
-
-        <!-- Hidden fields for dynamic university data -->
-        @Html.Hidden("VendorEmail", (string)ViewBag.VendorEmail)
-        @Html.Hidden("UniversityName", (string)ViewBag.University?.UniversityName)
-        @Html.Hidden("UniversityAddress", (string)ViewBag.University?.Address)
-        @Html.Hidden("UniversityEmail", (string)ViewBag.University?.UniversityEmail)
-        @Html.Hidden("UniversityPhone", (string)ViewBag.University?.UniversityPhone)
-
-        <!-- Purchase Order Table -->
+    <div class="po-info">
         <table>
             <tr>
-                <td><strong>Date:</strong> @DateTime.Now.ToString("dd-MM-yyyy")</td>
-                <td>
-                    <strong>Requisition No:</strong>
-                    @Model.RequisitionNo
-                </td>
+                <th>PO Number</th>
+                <th>Requisition No</th>
+                <th>Requisitioned By</th>
+                <th>Ship To</th>
             </tr>
             <tr>
-                <td colspan="2">
-                    <strong>Ship To:</strong> @Model.ShipTo
-                </td>
+                <td>@Model.PONumber</td>
+                <td>@Model.RequisitionNo</td>
+                <td>@Model.RequisitionedBy</td>
+                <td>@Model.UniversityName</td>
             </tr>
         </table>
 
-        <!-- Order Details Table -->
         <table>
             <tr>
-                <th>Requisitioned By</th>
                 <th>When Ship</th>
                 <th>Ship Via</th>
                 <th>F.O.B. Point</th>
                 <th>Terms</th>
             </tr>
             <tr>
-                <td>@Model.RequisitionedBy</td>
-                <td>@Model.WhenShip</td>
+                <td>@Model.WhenShip?.ToString("dd-MM-yyyy")</td>
                 <td>@Model.ShipVia</td>
                 <td>@Model.FOBPoint</td>
                 <td>@Model.Terms</td>
             </tr>
         </table>
 
-        <!-- Order Items Table -->
         <table>
             <tr>
-                <th>QTY ORDERED</th>
-                @*<th>QTY RECEIVED</th>*@
-                <th>STOCK NO. / DESCRIPTION</th>
-                <th>UNIT PRICE</th>
-                <th>TOTAL</th>
+                <th>Description</th>
+                <th>Total Quantity</th>
+                <th>Total Cost (Incl. Taxes)</th>
             </tr>
+            <tr>
+                <td>As per Annexure</td>
+                <td>@Model.TotalQuantity</td>
+                <td>₹@Model.TotalCost</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="signature">
+        <p>Authorized By</p>
+        <strong>@Model.RequisitionedBy</strong>
+    </div>
+</div>
+
+<!-- SECTION 2: ANNEXURE -->
+<div class="section po-container">
+    <div class="annexure-title">Annexure</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Qty Ordered</th>
+                <th>Unit Price (₹)</th>
+                <th>Total (Incl. Taxes)</th>
+            </tr>
+        </thead>
+        <tbody>
             @foreach (var item in Model.PurchaseOrderItems)
             {
                 <tr>
-                    <td>@item.QtyOrdered</td>
-                    @*<td>0</td>*@
                     <td>@item.Description</td>
+                    <td>@item.QtyOrdered</td>
                     <td>@item.UnitPrice</td>
                     <td>@item.Total</td>
-
                 </tr>
             }
-        </table>
+        </tbody>
+    </table>
+</div>
 
-        @*<div class="form-group">
-           
-            <span>Certification Document: @Model.PurchaseDepartmentUploads</span>
-        </div>*@
-
-
-        <!-- Footer Section with Terms and Signature -->
-        <div style="font-size: 13px; margin-top: 10px;">
-            <p>1. Please send <strong>@Model.CopiesOfInvoice</strong> copies of your invoice.</p>
-            <p>2. Order is to be entered in accordance with prices, delivery and specifications shown above.</p>
-            <p>3. Notify us immediately if you are unable to ship as specified.</p>
-        </div>
-
-
-        <div class="signature">
-            <strong>AUTHORIZED BY</strong><br />
-            @Model.AuthorizedBy
-            <br /><br />
-            ___________________________
-        </div>
-    </div>
-</body>
-</html>
+<!-- SECTION 3: TERMS AND CONDITIONS -->
+<div class="section po-container">
+    <div class="terms-title">Terms and Conditions</div>
+    <p style="white-space: pre-wrap;">
+        @Model.TermsConditions
+    </p>
+</div>

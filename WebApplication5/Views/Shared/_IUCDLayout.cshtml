@@ -119,16 +119,16 @@
                      style="height: 70px; width: 200px; ">
             </a>
 
-            <h2 class="my-0 text-center mx-lg-5">Indent Summarizer DashBoard </h2>
+            <h2 class="my-0 text-center mx-lg-5">IUCD DashBoard </h2>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Home", "Summarizer")">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="@Url.Action("AllPOs", "Summarizer")">View Request</a></li>
-                    @*<li class="nav-item"><a class="nav-link" href="@Url.Action("MyRequests", "Summarizer")">My Request</a></li>*@
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Home", "IUCD")">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("RequestsRecevied", "IUCD")">View Requests</a></li>
+                    @*<li class="nav-item"><a class="nav-link" href="@Url.Action("MyRequests", "Auditor")">My Request</a></li>*@
 
 
                     <li class="nav-item dropdown">
@@ -157,6 +157,11 @@
     <div class="container">
         @RenderBody()
     </div>
+    <i class="fas fa-bell"></i>
+    @*@if (Model.Alerts?.Count > 0)
+    {
+        <span class="badge badge-danger">@Model.Alerts.Count</span>
+    }*@
 
 
     <!-- Footer -->

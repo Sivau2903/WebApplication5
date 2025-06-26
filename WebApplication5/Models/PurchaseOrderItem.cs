@@ -29,6 +29,7 @@ namespace WebApplication5.Models
         public string Unit { get; set; }
         public string Make { get; set; }
         public Nullable<System.DateTime> ExpiryDate { get; set; }
+        public string AuditorID { get; set; }
     
         public virtual PurchaseOrder PurchaseOrder { get; set; }
     }

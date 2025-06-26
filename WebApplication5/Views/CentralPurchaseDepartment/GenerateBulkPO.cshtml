@@ -144,7 +144,7 @@
         </table>
 
         <!-- Check if PurchaseOrderItems is not null and has items -->
-        @if (Model.CentralPurchaseOrderItems != null && Model.CentralPurchaseOrderItems.Count > 0)
+        @if (Model.PurchaseOrderItems != null && Model.PurchaseOrderItems.Count > 0)
         {
             <table>
                 <tr>
@@ -154,27 +154,27 @@
                     <th>TOTAL</th>
                 </tr>
 
-                @for (int i = 0; i < Model.CentralPurchaseOrderItems.Count; i++)
+                @for (int i = 0; i < Model.PurchaseOrderItems.Count; i++)
                 {
                     <tr>
                         <td>
                             <input name="PurchaseOrderItems[@i].QtyOrdered"
-                                   value="@Model.CentralPurchaseOrderItems[i].QtyOrdered"
+                                   value="@Model.PurchaseOrderItems[i].QtyOrdered"
                                    class="input-no-border" readonly />
                         </td>
                         <td>
                             <input name="PurchaseOrderItems[@i].Description"
-                                   value="@Model.CentralPurchaseOrderItems[i].Description"
+                                   value="@Model.PurchaseOrderItems[i].Description"
                                    class="input-no-border" readonly />
                         </td>
                         <td>
                             <input name="PurchaseOrderItems[@i].UnitPrice"
-                                   value="@Model.CentralPurchaseOrderItems[i].UnitPrice"
+                                   value="@Model.PurchaseOrderItems[i].UnitPrice"
                                    class="input-no-border" readonly />
                         </td>
                         <td>
                             <input name="PurchaseOrderItems[@i].Total"
-                                   value="@Model.CentralPurchaseOrderItems[i].Total"
+                                   value="@Model.PurchaseOrderItems[i].Total"
                                    class="input-no-border" readonly />
                         </td>
                     </tr>

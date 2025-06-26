@@ -27,19 +27,23 @@
     @if (Model != null && Model.Any())
     {
         var groupedMaterials = Model.GroupBy(m => m.MaterialCategory).ToList();
+        string expandedCategory = ViewBag.ExpandedCategory as string;
 
         <div class="accordion shadow-sm" id="materialAccordion">
             @for (int i = 0; i < groupedMaterials.Count; i++)
             {
                 var categoryGroup = groupedMaterials[i];
                 string collapseId = $"collapse{i}";
+               
                 <div class="accordion-item border-0 rounded mb-2">
                     <h2 class="accordion-header" id="heading@i">
                         <button class="accordion-button collapsed fw-bold text-dark bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="false" aria-controls="@collapseId">
                             @categoryGroup.Key
                         </button>
                     </h2>
-                    <div id="@collapseId" class="accordion-collapse collapse" aria-labelledby="heading@i" data-bs-parent="#materialAccordion">
+                    <div id="@collapseId" class="accordion-collapse collapse @(categoryGroup.Key == expandedCategory ? "show" : "")" aria-labelledby="heading@i" data-bs-parent="#materialAccordion">
+
+
                         <div class="accordion-body p-4">
                             <table class="table table-hover table-bordered table-striped align-middle">
                                 <thead class="table-dark">
@@ -48,7 +52,7 @@
                                         <th scope="col">Material Subcategory</th>
                                         <th scope="col">Available Quantity</th>
                                         @*<th scope="col">Make</th>
-                                            <th scope="col">Units</th>*@
+                        <th scope="col">Units</th>*@
                                         <th scope="col">Expiry Date</th>
                                         <th scope="col">Action</th>
                                     </tr>
@@ -64,7 +68,7 @@
                                             <td>@item.MaterialSubCategory</td>
                                             <td>@item.AvailableQuantity</td>
                                             @*<td>@item.Make</td>
-                                                <td>@item.Units</td>*@
+                            <td>@item.Units</td>*@
                                             <td>@(item.ExpiryDate != null ? item.ExpiryDate.Value.ToString("dd-MMM-yyyy") : "N/A")</td>
                                             <td>
                                                 <form method="post" action="@Url.Action("AddToReceivedRequests", "LocalPurchaseDepartment")" class="d-inline">

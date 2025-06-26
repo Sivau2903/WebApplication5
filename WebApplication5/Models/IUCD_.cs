@@ -12,7 +12,7 @@ namespace WebApplication5.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class RequestsSummarizer
+    public partial class IUCD_
     {
         public int ID { get; set; }
         public string SummarizerID { get; set; }
@@ -20,5 +20,6 @@ namespace WebApplication5.Models
         public string LastName { get; set; }
         public string PhoneNumber { get; set; }
         public string EmailID { get; set; }
+        public Nullable<decimal> Budget { get; set; }
     }
 }

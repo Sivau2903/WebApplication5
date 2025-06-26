@@ -15,13 +15,15 @@ namespace WebApplication5.Models
     public partial class CentralVendorDetail
     {
         public int CVID { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
         public string EmailID { get; set; }
         public string PhoneNumber { get; set; }
         public string Material { get; set; }
         public Nullable<decimal> PricePerUnit { get; set; }
         public string Address { get; set; }
         public Nullable<int> VendorID { get; set; }
+        public string GSTNO { get; set; }
+        public string PanNumber { get; set; }
+        public string VendorName { get; set; }
+        public string GSTPercentage { get; set; }
     }
 }

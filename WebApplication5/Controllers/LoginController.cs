@@ -104,10 +104,10 @@ namespace WebApplication5.Controllers
                         return RedirectToAction("Home", "Auditor");
                     }
 
-                    if (user.Role == "Summarizer")
+                    if (user.Role == "IUCD")
                     {
                         Debug.WriteLine("Redirecting to Summarizer Dashboard.");
-                        return RedirectToAction("Home", "Summarizer");
+                        return RedirectToAction("Home", "IUCD");
                     }
 
                     Debug.WriteLine("Access Denied! Invalid Role.");
@@ -350,15 +350,16 @@ namespace WebApplication5.Controllers
 
             else if (role == "Summarizer")
             {
-                var hod = _db.RequestsSummarizers.FirstOrDefault(h => h.SummarizerID == userId);
+                var hod = _db.IUCD_.FirstOrDefault(h => h.ID.ToString() == userId);
+
                 if (hod != null)
                 {
                     profileVM.Name = hod.FirstName + " " + hod.LastName;
-                    profileVM.ID = hod.SummarizerID;
+                    profileVM.ID = hod.ID.ToString();
                     profileVM.Email = hod.EmailID;
                     profileVM.PhoneNumber = hod.PhoneNumber;
                     //profileVM.Department = "Nill";
-                    profileVM.Role = "RequestsSummarizer";
+                    profileVM.Role = "IUCD Department";
                 }
             }
 

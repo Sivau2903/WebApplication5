@@ -20,6 +20,6 @@ namespace WebApplication5.Models
         public string LastName { get; set; }
         public string PhoneNumber { get; set; }
         public string EmailID { get; set; }
-        public Nullable<decimal> Budget { get; set; }
+        public string University { get; set; }
     }
 }

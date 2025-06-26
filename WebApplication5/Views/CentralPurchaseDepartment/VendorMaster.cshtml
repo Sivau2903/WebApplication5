@@ -1,0 +1,103 @@
+﻿@model WebApplication5.Models.VendorDetailViewModel
+
+@{
+    Layout = "~/Views/Shared/_CentralPDLayout.cshtml";
+    ViewBag.Title = "Add Vendor";
+}
+
+<h2>Add Vendor</h2>
+
+@using (Html.BeginForm("Create", "CentralPurchaseDepartment", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <hr />
+
+        <!-- Row 1: FirstName, LastName, EmailID -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                @Html.LabelFor(m => m.VendorName)
+                @Html.TextBoxFor(m => m.VendorName, new { @class = "form-control" })
+            </div>
+          
+            <div class="col-md-4">
+                @Html.LabelFor(m => m.EmailID)
+                @Html.TextBoxFor(m => m.EmailID, new { @class = "form-control" })
+            </div>
+        </div>
+
+        <!-- Row 2: PhoneNumber and Materials -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                @Html.LabelFor(m => m.PhoneNumber)
+                @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control" })
+            </div>
+            <div class="col-md-8">
+                <label>Materials</label>
+                <div id="materials-container">
+                    <div class="material-input d-flex mb-2">
+                        <input type="text" name="Materials[0]" class="form-control me-2 material-box" />
+                        <button type="button" class="btn btn-danger remove-btn">Remove</button>
+                    </div>
+                </div>
+                <button type="button" id="add-material" class="btn btn-secondary mt-1">Add Material</button>
+            </div>
+        </div>
+
+        <!-- Row 3: GSTNO, PAN, Address -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                @Html.LabelFor(m => m.GSTNO)
+                @Html.TextBoxFor(m => m.GSTNO, new { @class = "form-control" })
+            </div>
+            <div class="col-md-4">
+                @Html.LabelFor(m => m.PanNumber)
+                @Html.TextBoxFor(m => m.PanNumber, new { @class = "form-control" })
+            </div>
+            <div class="col-md-4">
+                @Html.LabelFor(m => m.Address)
+                @Html.TextAreaFor(m => m.Address, new { @class = "form-control", rows = 2 })
+            </div>
+        </div>
+
+        <!-- Final: UniversityID and Submit -->
+        @*<div class="row mb-3">
+                <div class="col-md-4">
+                    @Html.LabelFor(m => m.UniversityID)
+                    @Html.TextBoxFor(m => m.UniversityID, new { @class = "form-control" })
+                </div>
+            </div>*@
+
+        <input type="submit" value="Add Vendor" class="btn btn-primary" />
+    </div>
+}
+
+@section Scripts {
+    <script>
+        let materialIndex = 1;
+
+        $('#add-material').click(function () {
+            let newField = `
+                <div class="material-input d-flex mb-2">
+                    <input type="text" name="Materials[${materialIndex}]" class="form-control me-2 material-box" />
+                    <button type="button" class="btn btn-danger remove-btn">Remove</button>
+                </div>`;
+            $('#materials-container').append(newField);
+            materialIndex++;
+        });
+
+        $(document).on('click', '.remove-btn', function () {
+            $(this).closest('.material-input').remove();
+        });
+
+        // Show success alert if TempData is set
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+                alert("@TempData["SuccessMessage"]");
+            </text>
+        }
+    </script>
+}
+

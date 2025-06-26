@@ -119,7 +119,7 @@
                      style="height: 70px; width: 200px; ">
             </a>
 
-            <div class="text-center mx-lg-5">
+            <div class="text-lg-end mx-xxl-0">
                 <h2 class="my-0" style="color: darkred; font-weight: bold;">Local Accountant DashBoard</h2>
                 @*<h3 class="my-0" style="color: darkblue;">Local Accountant</h3>*@
             </div>
@@ -132,7 +132,9 @@
                 <ul class="navbar-nav">
                     <li class="nav-item"><a class="nav-link" href="@Url.Action("LADashBoard", "LocalAccountant")">Home</a></li>
                     @*<li class="nav-item"><a class="nav-link" href="@Url.Action("PurchaseDepartmentRequests", "LocalAccountant")"> Request</a></li>*@
-                    <li class="nav-item"><a class="nav-link" href="@Url.Action("AllPOs", "LocalAccountant")">PODetails</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("LocalAllPOs", "LocalAccountant")">Local Purchases</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("AllPOs", "LocalAccountant")">Central Purchases</a></li>
+                    @*<li class="nav-item"><a class="nav-link" href="@Url.Action("LocalAllPOs", "LocalAccountant")">Local Purchases</a></li>*@
                     <li class="nav-item"><a class="nav-link" href="@Url.Action("UpdateBudget", "LocalAccountant")">Budget</a></li>
                     @*<li class="nav-item"><a class="nav-link" href="@Url.Action("GenerateReport", "LocalAccountant")">Report</a></li>*@
 

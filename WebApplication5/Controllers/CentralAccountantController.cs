@@ -104,7 +104,7 @@ namespace WebApplication5.Controllers
                 Statement = po.Statement,
 
 
-                CentralPurchaseOrderItems = items.Select(item => new CentralPurchaseOrderItem
+                PurchaseOrderItems = items.Select(item => new PurchaseOrderItem
                 {
                     POItemID = item.POItemID,
                     QtyOrdered = item.QtyOrdered ?? 0,

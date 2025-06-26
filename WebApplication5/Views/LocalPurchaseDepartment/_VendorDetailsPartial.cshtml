@@ -6,24 +6,41 @@
         <thead class="table-dark">
             <tr>
                 <th>Select</th>
-                <th>Name</th>
+                <th>VendorName</th>
                 <th>Email ID</th>
-                @*<th>Phone Number</th>*@
+                <th>Address</th>
                 <th>Material</th>
+                <th>GSTNO</th>
+                <th>GST%</th>
                 <th>Price Per Unit</th>
+
             </tr>
         </thead>
         <tbody>
             @foreach (var vendor in Model)
             {
-                <tr class="vendor-row" data-vendorid="@vendor.VendorID" data-emailid="@vendor.EmailID" data-price="@vendor.PricePerUnit">
+                <tr class="vendor-row"
+                    data-vendorid="@vendor.VendorID"
+                    data-vendorname="@vendor.VendorName"
+                    data-emailid="@vendor.EmailID"
+                    data-address="@vendor.Address"
+                    data-material="@vendor.Material"
+                    data-gstno="@vendor.GSTNO"
+                    data-gstpercent="@vendor.GSTPercentage"
+                    data-price="@vendor.PricePerUnit">
+
+
+
+
                     <td>
                         <input type="radio" name="selectedVendor" class="select-vendor">
                     </td>
-                    <td>@vendor.FirstName</td>
+                    <td>@vendor.VendorName</td>
                     <td>@vendor.EmailID</td>
-                    @*<td>@vendor.PhoneNumber</td>*@
+                    <td>@vendor.Address</td>
                     <td>@vendor.Material</td>
+                    <td>@vendor.GSTNO</td>
+                    <td>@vendor.GSTPercentage</td>
                     <td>@vendor.PricePerUnit</td>
                 </tr>
             }
@@ -38,7 +55,7 @@ else
 }
 
 <script>
-    $("#confirmVendorSelection").click(function () {
+    $(document).on('click', '#confirmVendorSelection', function () {
         var selectedRow = $("#vendorTable .select-vendor:checked").closest("tr");
 
         if (selectedRow.length === 0) {
@@ -47,14 +64,36 @@ else
         }
 
         var vendorId = selectedRow.data("vendorid");
-        var emailId = selectedRow.find("td:eq(2)").text();
-        var pricePerQuantity = parseFloat(selectedRow.data("price"));
-        var material = selectedRow.find("td:eq(3)").text();
+        var emailId = selectedRow.data("emailid");
+        var price = parseFloat(selectedRow.data("price"));
+        var material = selectedRow.data("material");
+        var vendorName = selectedRow.data("vendorname");
+        var address = selectedRow.data("address");
+        var gstNo = selectedRow.data("gstno");
+        var gstPercent = parseFloat(selectedRow.data("gstpercent")) || 0;
 
-        // Call function defined in main view
-        selectVendor(vendorId, emailId, pricePerQuantity, material);
+        // Find the correct row in the main view
+        var targetRow = $("tbody tr").filter(function () {
+            return $(this).find('input.materialName').val() === material;
+        });
 
-        $("#vendorModal").modal("hide");
+        var qty = parseInt(targetRow.find('input.orderQuantity').val()) || 0;
+        var cost = qty * price;
+        var totalWithGST = cost + (cost * gstPercent / 100);
+
+        // Set values in the main table row
+        targetRow.find('.vendorIDCell').text(vendorId);
+        targetRow.find('.vendorNameCell').text(vendorName);
+        targetRow.find('.addressCell').text(address);
+        targetRow.find('.gstNoCell').text(gstNo);
+        targetRow.find('.gstPercentCell').text(gstPercent);
+        targetRow.find('.emailCell').text(emailId);
+        targetRow.find('.priceInput').val(price);
+        targetRow.find('.costCell').text(cost.toFixed(2));
+        targetRow.find('.totalCostCell').text(totalWithGST.toFixed(2));
+
+        // Hide the modal
+        var modal = bootstrap.Modal.getInstance(document.getElementById('vendorModal'));
+        modal.hide();
     });
-
 </script>

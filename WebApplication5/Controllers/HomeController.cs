@@ -21,10 +21,59 @@ namespace WebApplication5.Controllers
 
         public ActionResult StoreAdminDasBoard(DateTime? fromDate, DateTime? toDate, string requestType = "Employee", int page = 1, int pageSize = 10)
         {
-          
+            string userId = Session["UserID"]?.ToString();
+
+            var alerts = _db.PurchaseOrders
+                .Where(po => po.AuditorSentID == userId && po.Status.StartsWith("Sent Back"))
+                .ToList();
+
+            ViewBag.Alerts = alerts;
+
             return View();
         }
+        [HttpPost]
+        public ActionResult UploadCPDDocuments(string PONumber)
+        {
+            var po = _db.PurchaseOrders.FirstOrDefault(p => p.PONumber.ToString() == PONumber);
+            if (po == null)
+            {
+                return HttpNotFound("Purchase Order not found.");
+            }
 
+            foreach (string fileKey in Request.Files)
+            {
+                var file = Request.Files[fileKey];
+                if (file != null && file.ContentLength > 0)
+                {
+                    var fileName = Path.GetFileName(file.FileName);
+                    var uploadPath = Server.MapPath("~/UploadedDocs/");
+                    if (!Directory.Exists(uploadPath))
+                    {
+                        Directory.CreateDirectory(uploadPath);
+                    }
+
+                    var filePath = Path.Combine(uploadPath, fileName);
+                    file.SaveAs(filePath);
+                    var virtualPath = "~/UploadedDocs/" + fileName;
+
+                    // Store in correct field based on input name
+                    if (fileKey == "MRVDetails")
+                    {
+                        po.MRVDetails = virtualPath;
+                    }
+                    else if (fileKey == "StoreUploads")
+                    {
+                        po.StoreUploads = virtualPath;
+                    }
+
+                    po.Status = "Uploaded";
+                }
+            }
+
+            _db.SaveChanges();
+            TempData["UploadSuccess"] = "Documents uploaded successfully.";
+            return RedirectToAction("Home");
+        }
 
         public ActionResult IssueForm(int requestId, string msubCategory)
         {
@@ -1188,6 +1237,7 @@ public JsonResult GetMaterialSubCategories(string categoryName)
                 CopiesOfInvoice = po.CopiesOfInvoice ??0,
                 AuthorizedBy = po.AuthorizedBy,
                 StoreUploads = po.StoreUploads,
+                MRVDetails = po.MRVDetails,
                 PurchaseOrderItems = items.Select(item => new PurchaseOrderItem
                 
                 {
@@ -1214,6 +1264,55 @@ public JsonResult GetMaterialSubCategories(string categoryName)
         {
             if (model.PurchaseOrderItems != null && model.PurchaseOrderItems.Count > 0)
             {
+                // Get PO once to check AuthorizedBy
+                var po = _db.PurchaseOrders.FirstOrDefault(p => p.PONumber.ToString() == model.PONumber);
+
+                string auditorIdToAssign = null;
+
+                if (po != null)
+                {
+                    //string auditorIdToAssign = null;
+
+                    if (!po.UniversityName?.Trim().Equals(po.AuthorizedBy.Trim(), StringComparison.OrdinalIgnoreCase) == true)
+                    {
+                        
+                        // Match university name in CentralAuditors table
+                        var centralAuditor = _db.CentralAuditors
+                            .FirstOrDefault(a => a.University.Trim().Equals(po.UniversityName.Trim(), StringComparison.OrdinalIgnoreCase));
+
+                        if (centralAuditor != null)
+                        {
+                            auditorIdToAssign = centralAuditor.AuditorID;
+                        }
+                    }
+                    else
+                    {
+                        // Match using AuthorizedBy (which is a university name)
+                        var university = _db.Universities
+                            .FirstOrDefault(u => u.UniversityName.Trim().Equals(po.AuthorizedBy.Trim(), StringComparison.OrdinalIgnoreCase));
+
+                        if (university != null)
+                        {
+                            var accountant = _db.LocalAccountants
+                                .FirstOrDefault(a => a.UniversityID == university.UniversityId);
+
+                            if (accountant != null)
+                            {
+                                auditorIdToAssign = accountant.LocalAccountantID;
+                            }
+                        }
+                    }
+
+                    // ✅ Assign the AuditorID if found
+                    //if (!string.IsNullOrEmpty(auditorIdToAssign))
+                    //{
+                    //    po.AuditorID = auditorIdToAssign;
+                    //}
+
+                    // ✅ Mark the PO as delivered
+                    po.Status = "Delivered";
+                }
+
                 foreach (var item in model.PurchaseOrderItems)
                 {
                     var existingItem = _db.PurchaseOrderItems.FirstOrDefault(p => p.POItemID == item.POItemID);
@@ -1228,56 +1327,57 @@ public JsonResult GetMaterialSubCategories(string categoryName)
                         existingItem.ExpiryDate = item.ExpiryDate;
                         existingItem.Unit = item.Unit;
 
-                        // Update TotalCost based on ReceivedQty * UnitPrice
-                        existingItem.Total = (item.AcceptedQty) * (existingItem.UnitPrice);
+                        existingItem.Total = (item.AcceptedQty ?? 0) * (existingItem.UnitPrice ?? 0);
 
-                        // ✅ Update AvailableQuantity for each unique material in the PO
+                        // ✅ Assign AuditorID
+                        existingItem.AuditorID = auditorIdToAssign;
+
+                        // ✅ Update Available Quantity in Material Master
                         var material = _db.MaterialMasterLists
                             .FirstOrDefault(m => m.MaterialSubCategory == existingItem.Description);
 
                         if (material != null && item.AcceptedQty.HasValue)
                         {
                             material.AvailableQuantity += item.AcceptedQty.Value;
-                            material.IsLowStockAlertSent = false; // allow future alerts
+                            material.IsLowStockAlertSent = false;
                             material.Units = existingItem.Unit;
                             material.Make = existingItem.Make;
                             material.ExpiryDate = existingItem.ExpiryDate;
-                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Updated Material: {material.MaterialSubCategory}, New AvailableQty: {material.AvailableQuantity},Unit: {item.Unit},Make: {item.Make},ExpiryDate:{item.ExpiryDate}");
+
+                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Updated Material: {material.MaterialSubCategory}, New AvailableQty: {material.AvailableQuantity}");
                         }
                     }
-
                     else
                     {
-                        // Log or debug to make sure this is not null
                         System.Diagnostics.Debug.WriteLine($"POItemID {item.POItemID} not found!");
-                    }
-                    // ✅ Update the PO status to Delivered
-                    var po = _db.PurchaseOrders.FirstOrDefault(p => p.PONumber.ToString() == model.PONumber);
-                    if (po != null)
-                    {
-                        po.Status = "Delivered";
                     }
                 }
 
-                // ✅ Save certification file
-                // Save Certification file
+                // ✅ Save Certification File if provided
                 if (model.CertificationFile != null && model.CertificationFile.ContentLength > 0)
                 {
                     string fileName = Path.GetFileName(model.CertificationFile.FileName);
                     string path = Path.Combine(Server.MapPath("~/UploadedCertificates/"), fileName);
                     model.CertificationFile.SaveAs(path);
-                    var po = _db.PurchaseOrders.FirstOrDefault(p => p.PONumber.ToString() == model.PONumber);
 
                     if (po != null)
                     {
                         po.StoreUploads = "/UploadedCertificates/" + fileName;
                     }
                 }
+               
 
-
-                foreach (var item in model.PurchaseOrderItems)
+                // ✅ Save MRV file
+                if (model.MRVFile != null && model.MRVFile.ContentLength > 0)
                 {
-                    System.Diagnostics.Debug.WriteLine($"POItemID: {item.POItemID}, Received: {item.QtyReceived}, Remarks: {item.Remarks},Accepted: {item.AcceptedQty},Rejected: {item.RejectedQty}");
+                    string mrvFileName = Path.GetFileName(model.MRVFile.FileName);
+                    string mrvPath = Path.Combine(Server.MapPath("~/UploadedCertificates/"), mrvFileName);
+                    model.MRVFile.SaveAs(mrvPath);
+
+                    if (po != null)
+                    {
+                        po.MRVDetails = "/UploadedCertificates/" + mrvFileName;
+                    }
                 }
 
                 _db.SaveChanges();
@@ -1291,156 +1391,157 @@ public JsonResult GetMaterialSubCategories(string categoryName)
             return RedirectToAction("PODetails", new { poNumber = model.PONumber });
         }
 
-        public ActionResult CentralPODetails()
-        {
-            if (TempData["SuccessMessage"] != null)
-            {
-                ViewBag.SuccessMessage = TempData["SuccessMessage"].ToString();
-            }
 
-            return View(); // just the empty search form initially
-        }
+        //public ActionResult CentralPODetails()
+        //{
+        //    if (TempData["SuccessMessage"] != null)
+        //    {
+        //        ViewBag.SuccessMessage = TempData["SuccessMessage"].ToString();
+        //    }
 
-        [HttpPost]
-        public ActionResult CentralPODetails(string poNumber)
-        {
-            if (string.IsNullOrEmpty(poNumber))
-            {
-                ViewBag.Error = "Please enter a PO Number.";
-                return View("PODetails");
-            }
+        //    return View(); // just the empty search form initially
+        //}
 
-            var po = _db.CentralPurchaseOrders.FirstOrDefault(p => p.PONumber.ToString() == poNumber);
-            if (po == null)
-            {
-                ViewBag.Error = $"No Purchase Order found with PO Number {poNumber}.";
-                return View("PODetails");
-            }
+        //[HttpPost]
+        //public ActionResult CentralPODetails(string poNumber)
+        //{
+        //    if (string.IsNullOrEmpty(poNumber))
+        //    {
+        //        ViewBag.Error = "Please enter a PO Number.";
+        //        return View("PODetails");
+        //    }
 
-            var items = _db.CentralPurchaseOrderItems.Where(i => i.PONumber.ToString() == poNumber).ToList();
+        //    var po = _db.CentralPurchaseOrders.FirstOrDefault(p => p.PONumber.ToString() == poNumber);
+        //    if (po == null)
+        //    {
+        //        ViewBag.Error = $"No Purchase Order found with PO Number {poNumber}.";
+        //        return View("PODetails");
+        //    }
 
-
-            var viewModel = new CentralGeneratePOViewModel
-            {
-                PONumber = po.PONumber.ToString(),
-                PODate = (DateTime)po.PODate,
-                CentralDepartmentName = po.CentralDepartmentName,
-                CentralDepartmentAddress = po.CentralDepartmentAddress,
-                CentralDepartmentPhone = po.CentralDepartmentPhone,
-                CentralDepartmentEmail = po.CentralDepartmentEmail,
-                RequisitionNo = po.RequisitionNo,
-                ShipTo = po.ShipTo,
-                RequisitionedBy = po.RequisitionedBy,
-                WhenShip = po.WhenShip,
-                ShipVia = po.ShipVia,
-                FOBPoint = po.FOBPoint,
-                Terms = po.Terms,
-                CopiesOfInvoice = po.CopiesOfInvoice ?? 0,
-                AuthorizedBy = po.AuthorizedBy,
-                StoreUploads = po.StoreUploads,
-
-                CentralPurchaseOrderItems = items.Select(item => new CentralPurchaseOrderItem
-                {
-                    POItemID = item.POItemID,
-                    QtyOrdered = item.QtyOrdered ?? 0,
-                    QtyReceived = item.QtyReceived,
-                    AcceptedQty = item.AcceptedQty,
-                    RejectedQty = item.RejectedQty,
-                    Description = item.Description,
-                    UnitPrice = item.UnitPrice ?? 0,
-                    Total = item.Total,
-                    Remarks = item.Remarks,
-                    VendorEmail = item.VendorEmail,
-                     Unit = item.Unit,
-                    Make = item.Make,
-                    ExpiryDate = item.ExpiryDate
-
-                }).ToList()
-            };
-            return View(viewModel);
-        }
-
-        [HttpPost]
-        public ActionResult CentralUpdatePOItems(CentralGeneratePOViewModel model)
-        {
-            if (model.CentralPurchaseOrderItems != null && model.CentralPurchaseOrderItems.Count > 0)
-            {
-                foreach (var item in model.CentralPurchaseOrderItems)
-                {
-                    var existingItem = _db.CentralPurchaseOrderItems.FirstOrDefault(p => p.POItemID == item.POItemID);
-
-                    if (existingItem != null)
-                    {
-                        existingItem.QtyReceived = item.QtyReceived;
-                        existingItem.Remarks = item.Remarks;
-                        existingItem.RejectedQty = item.RejectedQty;
-                        existingItem.AcceptedQty = item.AcceptedQty;
-                        existingItem.Make = item.Make;
-                        existingItem.ExpiryDate = item.ExpiryDate;
-                        existingItem.Unit = item.Unit;
+        //    var items = _db.CentralPurchaseOrderItems.Where(i => i.PONumber.ToString() == poNumber).ToList();
 
 
-                        // Update TotalCost based on ReceivedQty * UnitPrice
-                        existingItem.Total = (item.AcceptedQty ?? 0) * (existingItem.UnitPrice ?? 0);
+        //    var viewModel = new CentralGeneratePOViewModel
+        //    {
+        //        PONumber = po.PONumber.ToString(),
+        //        PODate = (DateTime)po.PODate,
+        //        CentralDepartmentName = po.CentralDepartmentName,
+        //        CentralDepartmentAddress = po.CentralDepartmentAddress,
+        //        CentralDepartmentPhone = po.CentralDepartmentPhone,
+        //        CentralDepartmentEmail = po.CentralDepartmentEmail,
+        //        RequisitionNo = po.RequisitionNo,
+        //        ShipTo = po.ShipTo,
+        //        RequisitionedBy = po.RequisitionedBy,
+        //        WhenShip = po.WhenShip,
+        //        ShipVia = po.ShipVia,
+        //        FOBPoint = po.FOBPoint,
+        //        Terms = po.Terms,
+        //        CopiesOfInvoice = po.CopiesOfInvoice ?? 0,
+        //        AuthorizedBy = po.AuthorizedBy,
+        //        StoreUploads = po.StoreUploads,
 
-                        // ✅ Update AvailableQuantity for each unique material in the PO
-                        var material = _db.MaterialMasterLists
-                            .FirstOrDefault(m => m.MaterialSubCategory == existingItem.Description);
+        //        PurchaseOrderItems = items.Select(item => new PurchaseOrderItem
+        //        {
+        //            POItemID = item.POItemID,
+        //            QtyOrdered = item.QtyOrdered ?? 0,
+        //            QtyReceived = item.QtyReceived,
+        //            AcceptedQty = item.AcceptedQty,
+        //            RejectedQty = item.RejectedQty,
+        //            Description = item.Description,
+        //            UnitPrice = item.UnitPrice ?? 0,
+        //            Total = item.Total,
+        //            Remarks = item.Remarks,
+        //            VendorEmail = item.VendorEmail,
+        //             Unit = item.Unit,
+        //            Make = item.Make,
+        //            ExpiryDate = item.ExpiryDate
 
-                        if (material != null && item.AcceptedQty.HasValue)
-                        {
-                            material.AvailableQuantity += item.AcceptedQty.Value;
-                            material.IsLowStockAlertSent = false; // allow future alerts
-                            material.Units = existingItem.Unit;
-                            material.Make = existingItem.Make;
-                            material.ExpiryDate = existingItem.ExpiryDate;
-                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Updated Material: {material.MaterialSubCategory}, New AvailableQty: {material.AvailableQuantity}, Unit: {item.Unit},Make: {item.Make},ExpiryDate:{item.ExpiryDate}");
-                        }
-                    }
-                    else
-                    {
-                        // Log or debug to make sure this is not null
-                        System.Diagnostics.Debug.WriteLine($"POItemID {item.POItemID} not found!");
-                    }
-                    // ✅ Update the PO status to Delivered
-                    var po = _db.CentralPurchaseOrders.FirstOrDefault(p => p.PONumber.ToString() == model.PONumber);
-                    if (po != null)
-                    {
-                        po.Status = "Delivered";
-                   }
+        //        }).ToList()
+        //    };
+        //    return View(viewModel);
+        //}
 
-                }
-                    // ✅ Save certification file
-                    // Save Certification file
-                    if (model.CertificationFile != null && model.CertificationFile.ContentLength > 0)
-                    {
-                        string fileName = Path.GetFileName(model.CertificationFile.FileName);
-                        string path = Path.Combine(Server.MapPath("~/UploadedCertificates/"), fileName);
-                        model.CertificationFile.SaveAs(path);
-                        var po = _db.CentralPurchaseOrders.FirstOrDefault(p => p.PONumber.ToString() == model.PONumber);
+        //[HttpPost]
+        //public ActionResult CentralUpdatePOItems(CentralGeneratePOViewModel model)
+        //{
+        //    if (model.PurchaseOrderItems != null && model.PurchaseOrderItems.Count > 0)
+        //    {
+        //        foreach (var item in model.PurchaseOrderItems)
+        //        {
+        //            var existingItem = _db.CentralPurchaseOrderItems.FirstOrDefault(p => p.POItemID == item.POItemID);
 
-                        if (po != null)
-                        {
-                            po.StoreUploads = "/UploadedCertificates/" + fileName;
-                        }
-                    }
-                
+        //            if (existingItem != null)
+        //            {
+        //                existingItem.QtyReceived = item.QtyReceived;
+        //                existingItem.Remarks = item.Remarks;
+        //                existingItem.RejectedQty = item.RejectedQty;
+        //                existingItem.AcceptedQty = item.AcceptedQty;
+        //                existingItem.Make = item.Make;
+        //                existingItem.ExpiryDate = item.ExpiryDate;
+        //                existingItem.Unit = item.Unit;
 
-                foreach (var item in model.CentralPurchaseOrderItems)
-                {
-                    System.Diagnostics.Debug.WriteLine($"POItemID: {item.POItemID}, Received: {item.QtyReceived}, Remarks: {item.Remarks},Accepted: {item.AcceptedQty},Rejected: {item.RejectedQty}");
-                }
 
-                _db.SaveChanges();
-                TempData["SuccessMessage"] = "Purchase Order items updated successfully.";
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "No items received to update.";
-            }
+        //                // Update TotalCost based on ReceivedQty * UnitPrice
+        //                existingItem.Total = (item.AcceptedQty ?? 0) * (existingItem.UnitPrice ?? 0);
 
-            return RedirectToAction("CentralPODetails", new { poNumber = model.PONumber });
-        }
+        //                // ✅ Update AvailableQuantity for each unique material in the PO
+        //                var material = _db.MaterialMasterLists
+        //                    .FirstOrDefault(m => m.MaterialSubCategory == existingItem.Description);
+
+        //                if (material != null && item.AcceptedQty.HasValue)
+        //                {
+        //                    material.AvailableQuantity += item.AcceptedQty.Value;
+        //                    material.IsLowStockAlertSent = false; // allow future alerts
+        //                    material.Units = existingItem.Unit;
+        //                    material.Make = existingItem.Make;
+        //                    material.ExpiryDate = existingItem.ExpiryDate;
+        //                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Updated Material: {material.MaterialSubCategory}, New AvailableQty: {material.AvailableQuantity}, Unit: {item.Unit},Make: {item.Make},ExpiryDate:{item.ExpiryDate}");
+        //                }
+        //            }
+        //            else
+        //            {
+        //                // Log or debug to make sure this is not null
+        //                System.Diagnostics.Debug.WriteLine($"POItemID {item.POItemID} not found!");
+        //            }
+        //            // ✅ Update the PO status to Delivered
+        //            var po = _db.CentralPurchaseOrders.FirstOrDefault(p => p.PONumber.ToString() == model.PONumber);
+        //            if (po != null)
+        //            {
+        //                po.Status = "Delivered";
+        //           }
+
+        //        }
+        //            // ✅ Save certification file
+        //            // Save Certification file
+        //            if (model.CertificationFile != null && model.CertificationFile.ContentLength > 0)
+        //            {
+        //                string fileName = Path.GetFileName(model.CertificationFile.FileName);
+        //                string path = Path.Combine(Server.MapPath("~/UploadedCertificates/"), fileName);
+        //                model.CertificationFile.SaveAs(path);
+        //                var po = _db.CentralPurchaseOrders.FirstOrDefault(p => p.PONumber.ToString() == model.PONumber);
+
+        //                if (po != null)
+        //                {
+        //                    po.StoreUploads = "/UploadedCertificates/" + fileName;
+        //                }
+        //            }
+
+
+        //        foreach (var item in model.PurchaseOrderItems)
+        //        {
+        //            System.Diagnostics.Debug.WriteLine($"POItemID: {item.POItemID}, Received: {item.QtyReceived}, Remarks: {item.Remarks},Accepted: {item.AcceptedQty},Rejected: {item.RejectedQty}");
+        //        }
+
+        //        _db.SaveChanges();
+        //        TempData["SuccessMessage"] = "Purchase Order items updated successfully.";
+        //    }
+        //    else
+        //    {
+        //        TempData["ErrorMessage"] = "No items received to update.";
+        //    }
+
+        //    return RedirectToAction("CentralPODetails", new { poNumber = model.PONumber });
+        //}
 
         [HttpGet]
         public ActionResult Report(DateTime? startDate, DateTime? endDate)

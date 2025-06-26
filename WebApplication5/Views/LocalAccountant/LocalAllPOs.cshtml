@@ -1,16 +1,9 @@
-﻿
+﻿@model dynamic
 @{
-    ViewBag.Title = "AllPOs";
-}
-
-<h2>AllPOs</h2>
-
-@model dynamic
-@{
-    Layout = "~/Views/Shared/_SummarizerLayout.cshtml";
+    Layout = "~/Views/Shared/_LocalAccountant.cshtml";
     ViewBag.Title = "All Purchase Orders";
-    var draftPOs = ViewBag.DraftPOs as List<WebApplication5.Models.CentralPurchaseOrder>;
-    var deliveredPOs = ViewBag.DeliveredPOs as List<WebApplication5.Models.CentralPurchaseOrder>;
+    var draftPOs = ViewBag.DraftPOs as List<WebApplication5.Models.PurchaseOrder>;
+    var deliveredPOs = ViewBag.DeliveredPOs as List<WebApplication5.Models.PurchaseOrder>;
 }
 
 <style>
@@ -71,7 +64,7 @@
         {
             foreach (var po in draftPOs)
             {
-                <a class="po-link" href="@Url.Action("PODetails", "Summarizer", new { poNumber = po.PONumber })">
+                <a class="po-link" href="@Url.Action("LocalPODetails", "LocalAccountant", new { poNumber = po.PONumber })">
                     <div class="po-number">PO No: @po.PONumber</div>
                     <div class="po-date">Date: @po.PODate</div>
                 </a>
@@ -90,7 +83,7 @@
         {
             foreach (var po in deliveredPOs)
             {
-                <a class="po-link" href="@Url.Action("PODetails", "Summarizer", new { poNumber = po.PONumber })">
+                <a class="po-link" href="@Url.Action("LocalPODetails", "LocalAccountant", new { poNumber = po.PONumber })">
                     <div class="po-number">PO No: @po.PONumber</div>
                     <div class="po-date">Date: @po.PODate</div>
                 </a>

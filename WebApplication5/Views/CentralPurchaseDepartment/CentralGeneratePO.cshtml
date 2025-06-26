@@ -1,11 +1,20 @@
 ﻿@model WebApplication5.Models.CentralGeneratePOViewModel
 
 @{
-    var uni = ViewBag.University as WebApplication5.Models.CentralPurchaseDepartment;
+    var university = ViewBag.University as WebApplication5.Models.University;
+    var user = ViewBag.Central as WebApplication5.Models.CentralPurchaseDepartment;
 
-    Layout = "~/Views/Shared/_LocalPDLayout.cshtml";
+    Layout = "~/Views/Shared/_CentralPDLayout.cshtml";
     ViewBag.Title = "Purchase Order";
     var today = DateTime.Now.ToString("dd-MM-yyyy");
+
+    // Pre-populate model from ViewBag for hidden fields
+    Model.UniversityName = university?.UniversityName;
+    Model.UniversityEmail = university?.UniversityEmail;
+    Model.UniversityPhone = university?.UniversityPhone;
+    Model.UniversityAddress = university?.Address;
+
+    //Model.VendorEmail = ViewBag.VendorEmail;
 }
 
 <style>
@@ -13,25 +22,12 @@
         border: 2px solid black;
         padding: 30px;
         max-width: 800px;
-        height: 900px;
         margin: auto;
         font-family: Arial, sans-serif;
     }
 
-    .po-title {
-        font-size: 28px;
-        font-weight: bold;
-        text-align: right;
-    }
-
-    .company-header {
-        font-size: 16px;
-        font-weight: bold;
-    }
-
     table {
         width: 100%;
-        height: 50px;
         border-collapse: collapse;
         margin-top: 10px;
     }
@@ -42,8 +38,10 @@
         text-align: left;
     }
 
-    .no-border {
+    .input-no-border {
+        width: 100%;
         border: none;
+        border-bottom: 1px solid black;
     }
 
     .signature {
@@ -51,82 +49,79 @@
         text-align: right;
     }
 
-    .print-button {
-        margin-top: 30px;
-        text-align: center;
+    #annexureSection, #termsSection {
+        margin-top: 50px;
+        display: none;
+        page-break-before: always;
     }
 
-    .company-header {
-        font-weight: bold;
-        font-size: 18px;
-        margin-bottom: 5px;
-    }
-
-    .po-title {
-        font-size: 18px;
-        font-weight: bold;
-    }
-
-    .input-no-border {
-        width: 100%;
-        border: none;
-        border-bottom: 1px solid black;
-    }
+        #termsSection textarea {
+            width: 100%;
+            height: 150px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
 </style>
 
-@using (Html.BeginForm("CentralGeneratePO", "CentralPurchaseDepartment", FormMethod.Post, new { enctype = "multipart/form-data" }))
+@using (Html.BeginForm("BulkPO", "CentralPurchaseDepartment", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     <div class="po-container">
+
+        <!-- HIDDEN FIELDS TO BIND MODEL PROPERTIES -->
+        @*@Html.HiddenFor(m => m.PONumber)*@
+        @Html.HiddenFor(m => m.VendorName)
+        @Html.HiddenFor(m => m.VendorEmail)
+        @Html.HiddenFor(m => m.VendorAddress)
+        @Html.HiddenFor(m => m.VendorGSTNo)
+
+        @Html.HiddenFor(m => m.UniversityName)
+        @Html.HiddenFor(m => m.UniversityEmail)
+        @Html.HiddenFor(m => m.UniversityPhone)
+        @Html.HiddenFor(m => m.UniversityAddress)
+
+        @Html.HiddenFor(m => m.TotalQuantity)
+        @Html.HiddenFor(m => m.TotalCost)
+        @Html.HiddenFor(m => m.ShipTo)
+        @Html.HiddenFor(m => m.RequisitionNo)
+
+
         <div class="d-flex justify-content-between">
-            <!-- Left side: University details stacked vertically -->
-            <div>
-                @if (uni != null)
-                {
-                    <div class="company-header">@uni.CentralDepartmentName</div>
-                    <div>@uni.CentralDepartmentAddress</div>
-                    <div>Email: @uni.CentralDepartmentEmail</div>
-                    <div>Phone: @uni.CentralDepartmentPhone</div>
-                }
-                else
-                {
-                    <div class="text-danger">University details are missing.</div>
-                }
+            <div style="width: 48%;">
+                <div><strong>@Model.UniversityName</strong></div>
+                <div>Email: @Model.UniversityEmail</div>
+                <div>Phone: @Model.UniversityPhone</div>
+                <div>Address: @Model.UniversityAddress</div>
+
+                <div style="margin-top: 10px;">
+                    <strong>Vendor Details:</strong><br />
+                    <div><strong>Name:</strong> @Model.VendorName</div>
+                    <div><strong>Email:</strong> @Model.VendorEmail</div>
+                    <div><strong>Address:</strong> @Model.VendorAddress</div>
+                    <div><strong>GST No:</strong> @Model.VendorGSTNo</div>
+                </div>
             </div>
 
-            <!-- Right side: PO title -->
-            <div class="po-title text-end">
-                <div>Purchase Order</div>
-                <div style="font-size: 14px;">PO No: @ViewBag.PONumber</div>
+            <div style="width: 48%;">
+                <div style="text-align: right;">
+                    <h4>Purchase Order</h4>
+                    <div><strong>PO No:</strong> @Model.PONumber</div>
+                    <div><strong>Date:</strong> @today</div>
+                </div>
+
+                <table>
+                    <tr><td><strong>Requisition No:</strong> @Model.RequisitionNo</td></tr>
+                    <tr><td><strong>Requisitioned By:</strong> @Model.RequisitionedBy</td></tr>
+                    <tr>
+                        <td>
+                            <strong>Ship To:</strong>
+                            @Html.TextBoxFor(m => m.ShipTo, new { @class = "input-no-border", @readonly = "readonly" })
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
 
-
-        <!-- Hidden fields for dynamic values -->
-        @Html.HiddenFor(m => m.PONumber)
-
-        <!-- Hidden fields for dynamic university data -->
-        @Html.Hidden("VendorEmail", (string)ViewBag.VendorEmail)
-        @Html.Hidden("UniversityName", (string)uni?.CentralDepartmentName)
-        @Html.Hidden("UniversityAddress", (string)uni?.CentralDepartmentAddress)
-        @Html.Hidden("UniversityEmail", (string)uni?.CentralDepartmentEmail)
-        @Html.Hidden("UniversityPhone", (string)uni?.CentralDepartmentPhone)
-
-
-        <table>
-            <tr>
-                <td><strong>Date:</strong> @today</td>
-                <td>
-                    <strong>Requisition No:</strong> @Model.RequisitionNo
-                </td>
-            </tr>
-
-            <tr>
-                <td colspan="2">
-                    <strong>Ship To:</strong>
-                    @Html.TextBoxFor(m => m.ShipTo, new { @class = "input-no-border", @Value = uni?.CentralDepartmentAddress, @readonly = "readonly", required = "required" })
-                </td>
-            </tr>
-        </table>
+        <hr />
 
         <table>
             <tr>
@@ -146,77 +141,104 @@
         </table>
 
         <table>
-            <tr>
-                <th>QTY ORDERED</th>
-                @*<th>QTY RECEIVED</th>*@
-                <th>STOCK NO. / DESCRIPTION</th>
-                <th>UNIT PRICE</th>
-                <th>TOTAL</th>
-            </tr>
-            <tr>
-            <tr>
-
-
-                <td>
-                    <input name="CentralPurchaseOrderItems[0].QtyOrdered"
-                           value="@Model.CentralPurchaseOrderItems[0].QtyOrdered"
-                           class="input-no-border" readonly />
-                </td>
-                @*<td>
-                    <input name="PurchaseOrderItems[0].QtyReceived"
-                           value="0"
-                           class="input-no-border" />
-                </td>*@
-                <td>
-                    <input name="CentralPurchaseOrderItems[0].Description"
-                           value="@Model.CentralPurchaseOrderItems[0].Description"
-                           class="input-no-border" readonly />
-                </td>
-                <td>
-                    <input name="CentralPurchaseOrderItems[0].UnitPrice"
-                           value="@Model.CentralPurchaseOrderItems[0].UnitPrice"
-                           class="input-no-border" readonly />
-                </td>
-                <td>
-                    <input name="CentralPurchaseOrderItems[0].Total"
-                           value="@Model.CentralPurchaseOrderItems[0].Total"
-                           class="input-no-border" readonly />
-                </td>
-
-                @*<input type="hidden"
-                name="PurchaseOrderItems[0].VendorID"
-                value="@Model.PurchaseOrderItems[0].VendorEmail" />*@
-            </tr>
-
-
+            <thead>
+                <tr>
+                    <th>Specification</th>
+                    <th>Quantity</th>
+                    <th>Total (Including Taxes)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>As per Annexure</td>
+                    <td>@Model.TotalQuantity</td>
+                    <td>₹@Model.TotalCost</td>
+                </tr>
+            </tbody>
         </table>
 
-        @*<div class="form-group">
-            <label for="CertificationFile">Upload Certification Document</label>
-            <input type="file" name="CertificationFile" class="form-control" accept=".pdf,.doc,.docx" />
-        </div>*@
-
-        <div style="font-size: 13px; margin-top: 10px;">
-            <<p>
-                1. Please send
-                @Html.TextBoxFor(m => m.CopiesOfInvoice, new { type = "number", min = "1", style = "width: 60px; text-align: center;", required = "required" })
-                copies of your invoice.
-            </p>
-
-            <p>2. Order is to be entered in accordance with prices, delivery and specifications shown above.</p>
-            <p>3. Notify us immediately if you are unable to ship as specified.</p>
-        </div>
-
-
         <div class="signature">
-            <strong>AUTHORIZED BY</strong><br />
-            @Html.TextBoxFor(m => m.AuthorizedBy, new { @class = "input-no-border", placeholder = "Enter Name", required = "required" })
-            <br /><br />
-            ___________________________
+            <p>AUTHORIZED BY</p>
+            <strong>@Model.RequisitionedBy</strong>
+            <p>___________________________</p>
         </div>
 
-        <div class="text-center mt-3">
-            <button type="submit" class="btn btn-success">Send PO</button>
+        <div class="text-center mt-4">
+            <button type="button" class="btn btn-outline-primary" onclick="showAnnexure()">Next: Annexure</button>
+        </div>
+
+        <!-- ANNEXURE SECTION -->
+        <div id="annexureSection">
+            <h4 class="text-center">Annexure</h4>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Qty Ordered</th>
+                        <th>Unit Price (₹)</th>
+                        <th>Total (Including Taxes)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int index = 0;
+                        if (Model.PurchaseOrderItems != null)
+                        {
+                            foreach (var item in Model.PurchaseOrderItems)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.Hidden($"PurchaseOrderItems[{index}].Description", item.Description)
+                                        @item.Description
+                                    </td>
+                                    <td>
+                                        @Html.Hidden($"PurchaseOrderItems[{index}].QtyOrdered", item.QtyOrdered)
+                                        @item.QtyOrdered
+                                    </td>
+                                    <td>
+                                        @Html.Hidden($"PurchaseOrderItems[{index}].UnitPrice", item.UnitPrice)
+                                        @item.UnitPrice
+                                    </td>
+                                    <td>
+                                        @Html.Hidden($"PurchaseOrderItems[{index}].Total", item.Total)
+                                        @item.Total
+                                    </td>
+                                </tr>
+                                index++;
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+
+            <div class="text-center mt-4">
+                <button type="button" class="btn btn-outline-primary" onclick="showTerms()">Next: Terms & Conditions</button>
+            </div>
+        </div>
+
+        <!-- TERMS SECTION -->
+        <div id="termsSection">
+            <h5 class="text-center">Terms and Conditions</h5>
+            @Html.TextAreaFor(m => m.TermsConditions, new { @class = "form-control", rows = 6 })
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-success" formaction="@Url.Action("PreviewPO", "CentralPurchaseDepartment")">View and Send PO</button>
+
+        </div>
         </div>
     </div>
 }
+
+<script>
+    function showAnnexure() {
+        document.getElementById('annexureSection').style.display = 'block';
+        event.target.style.display = 'none';
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function showTerms() {
+        document.getElementById('termsSection').style.display = 'block';
+        event.target.style.display = 'none';
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+</script>

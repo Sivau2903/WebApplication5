@@ -18,6 +18,7 @@ namespace WebApplication5.Models
         public string UniversityAddress { get; set; }
         public DateTime PODate { get; set; }
 
+        public string AuditorID { get; set; }
         public string ShipTo { get; set; }
         public string RequisitionedBy { get; set; }
         public string WhenShip { get; set; }
@@ -30,7 +31,9 @@ namespace WebApplication5.Models
         //public int InvoiceCopies { get; set; }
 
         public string CertificationFileName { get; set; }
+        public HttpPostedFileBase MRVFile { get; set; }
         public string StoreUploads { get; set; }
+        public string MRVDetails { get; set; }
 
         public string PurchaseDepartmentUploads { get; set; }
 

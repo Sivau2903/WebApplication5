@@ -42,6 +42,9 @@ namespace WebApplication5.Models
         public string Statement { get; set; }
         public string SummarizerID { get; set; }
         public string CentralAccountantID { get; set; }
+        public string IUCDApprovalDoc { get; set; }
+        public Nullable<System.DateTime> IUCDDocUploadedDate { get; set; }
+        public string IUCDDocUploadedBy { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<CentralPurchaseOrderItem> CentralPurchaseOrderItems { get; set; }

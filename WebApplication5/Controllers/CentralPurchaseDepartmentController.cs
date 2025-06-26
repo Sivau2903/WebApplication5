@@ -20,8 +20,61 @@ namespace WebApplication5.Controllers
         // GET: CentralPurchaseDepartment
         public ActionResult CPDDashBoard()
         {
+            string userId = Session["UserID"]?.ToString();
+
+            var alerts = _db.PurchaseOrders
+                .Where(po => po.AuditorSentID == userId && po.Status.StartsWith("Sent Back"))
+                .ToList();
+
+            ViewBag.Alerts = alerts;
+
             return View();
         }
+
+        [HttpPost]
+        public ActionResult UploadCPDDocuments(string PONumber)
+        {
+            var po = _db.PurchaseOrders.FirstOrDefault(p => p.PONumber.ToString() == PONumber);
+            if (po == null)
+            {
+                return HttpNotFound("Purchase Order not found.");
+            }
+
+            foreach (string fileKey in Request.Files)
+            {
+                var file = Request.Files[fileKey];
+                if (file != null && file.ContentLength > 0)
+                {
+                    var fileName = Path.GetFileName(file.FileName);
+                    var uploadPath = Server.MapPath("~/UploadedDocs/");
+                    if (!Directory.Exists(uploadPath))
+                    {
+                        Directory.CreateDirectory(uploadPath);
+                    }
+
+                    var filePath = Path.Combine(uploadPath, fileName);
+                    file.SaveAs(filePath);
+                    var virtualPath = "~/UploadedDocs/" + fileName;
+
+                    // Store in correct field based on input name
+                    if (fileKey == "CommityApprovedDoc")
+                    {
+                        po.CommityApprovedDoc = virtualPath;
+                    }
+                    else if (fileKey == "InvoiceDetails")
+                    {
+                        po.InvoiceDetails = virtualPath;
+                    }
+
+                    po.Status = "Uploaded";
+                }
+            }
+
+            _db.SaveChanges();
+            TempData["UploadSuccess"] = "Documents uploaded successfully.";
+            return RedirectToAction("CPDDashBoard");
+        }
+
         public ActionResult RequestsRecevied()
         {
             string purchaseDepartmentID = (string)Session["UserID"];
@@ -41,6 +94,7 @@ namespace WebApplication5.Controllers
                                       MaterialName = request.Material,
                                       RequestedDate = request.RequestedDate,
                                       OrderQuantity = request.Order_Quantity,
+                                      IUCDApprovedQty = request.IUCDApprovedQty ?? 0, // Explicitly handle nullable int  
                                       PurchaseDepartmentUploads = request.PurchaseDepartmentUploads,
                                       CentralID = request.CentralID,
                                       Status = request.Status
@@ -75,179 +129,243 @@ namespace WebApplication5.Controllers
         }
 
 
-
-
-        public ActionResult CentralGeneratePO(string material, int qty, string vendorId, decimal price, decimal cost, string email)
+        [HttpGet]
+        public ActionResult CentralGeneratePO()
         {
-            Debug.WriteLine("==== CentralGeneratePO (GET) called ====");
-            Debug.WriteLine($"Incoming Params -> Material: {material}, Qty: {qty}, VendorId: {vendorId}, Price: {price}, Cost: {cost}, Email: {email}");
+            if (TempData["POViewModel"] is CentralGeneratePOViewModel model &&
+                TempData["University"] is University university &&
+                TempData["Central"] is CentralPurchaseDepartment user)
+            {
+                // Keep TempData alive for potential future reload
+                TempData.Keep("POViewModel");
+                TempData.Keep("University");
+                TempData.Keep("Central");
 
-            // Fetch user info from session
+                ViewBag.University = university;
+                ViewBag.Central = user;
+
+                return View("CentralGeneratePO", model);
+            }
+
+            return RedirectToAction("RequestsRecevied"); // Redirect to default if no data
+        }
+
+
+        [HttpPost]
+        public ActionResult CentralGeneratePO(
+        string UniversityName,
+        string VendorName,
+        string VendorEmail,
+        string VendorAddress,
+        string VendorGSTNo,
+        string GSTPercent,
+        string materialsJson)
+        {
+            Debug.WriteLine("==== CentralGeneratePO (POST) called ====");
+            Debug.WriteLine($"University: {UniversityName}, Vendor: {VendorName}");
+
+            // Fetch university
+            var university = _db.Universities.FirstOrDefault(u => u.UniversityName == UniversityName);
+            if (university == null)
+            {
+                Debug.WriteLine("University not found.");
+                return HttpNotFound("University not found");
+            }
+
+            // Fetch central department user
             string userId = (string)Session["UserID"];
-            Debug.WriteLine($"Session UserID: {userId}");
-
             var user = _db.CentralPurchaseDepartments.FirstOrDefault(u => u.CentralID == userId);
             if (user == null)
             {
-                Debug.WriteLine("User not found in CentralPurchaseDepartments table");
-                return HttpNotFound("User not found");
+                Debug.WriteLine("Central user not found.");
+                return HttpNotFound("Central user not found");
+            }
+            var decodedJson = HttpUtility.UrlDecode(materialsJson);
+            Debug.WriteLine("materialsJson: " + materialsJson);
+
+            // Deserialize materials list
+            List<PurchaseOrderItem> materials;
+            try
+            {
+               
+                materials = JsonConvert.DeserializeObject<List<PurchaseOrderItem>>(decodedJson);
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Deserialization error: " + ex.Message);
+                return new HttpStatusCodeResult(400, "Invalid materials data");
             }
 
-            Debug.WriteLine($"User found: {user.CentralDepartmentName}, Email: {user.CentralDepartmentEmail}");
+            // Generate requisition number
+            string requisitionNo = "REQ-" + DateTime.Now.ToString("yyyyMMddHHmmss") + "-" +
+                                   Guid.NewGuid().ToString("N").Substring(0, 5).ToUpper();
 
-            // Generate unique requisition number
-            string requisitionNo = "REQ-" + DateTime.Now.ToString("yyyyMMddHHmmss") + "-" + Guid.NewGuid().ToString("N").Substring(0, 5).ToUpper();
+            // Calculate total quantity and total cost
+            int totalQuantity = materials.Sum(m => m.QtyOrdered ?? 0);
+            decimal totalCost = materials.Sum(m => m.Total ?? 0);
+
+           
 
 
+            // Prepare view model
             var viewModel = new CentralGeneratePOViewModel
             {
-                VendorEmail = email,
+                UniversityName = university.UniversityName,
+                UniversityEmail = university.UniversityEmail,
+                UniversityPhone = university.UniversityPhone,
+                UniversityAddress = university.Address,
+                ShipTo = university.Address,
+                RequisitionNo = requisitionNo,
+
+
                 CentralDepartmentName = user.CentralDepartmentName,
                 CentralDepartmentPhone = user.CentralDepartmentPhone,
                 CentralDepartmentEmail = user.CentralDepartmentEmail,
                 CentralDepartmentAddress = user.CentralDepartmentAddress,
-                RequisitionedBy = user.CentralDepartmentName,
-                RequisitionNo = requisitionNo,
 
-                CentralPurchaseOrderItems = new List<CentralPurchaseOrderItem>
-        {
-            new CentralPurchaseOrderItem
-            {
-                Description = material,
-                QtyOrdered = qty,
-                UnitPrice = price,
-                Total = cost,
-                VendorEmail = email
-            }
-        }
+                VendorName = VendorName,
+                VendorEmail = VendorEmail,
+                VendorAddress = VendorAddress,
+                VendorGSTNo = VendorGSTNo,
+                VendorGSTPercent = GSTPercent,
+
+                RequisitionedBy = user.CentralDepartmentName,
+               
+
+                TotalQuantity = totalQuantity,
+                TotalCost = totalCost,
+
+                PurchaseOrderItems = materials
+
             };
 
-            Debug.WriteLine("PO ViewModel constructed successfully.");
-            Debug.WriteLine($"Item Count: {viewModel.CentralPurchaseOrderItems.Count}");
+            ViewBag.University = university;
+            ViewBag.Central = user;
 
-            ViewBag.University = user;
+            // Store model for GET reload
+            TempData["POViewModel"] = viewModel;
+            TempData["University"] = university;
+            TempData["Central"] = user;
 
-            return View(viewModel);
+            // Redirect to GET method
+            return RedirectToAction("CentralGeneratePO");
         }
 
 
+        [HttpGet]
+        public ActionResult PreviewPO()
+        {
+            if (TempData["POModel"] is CentralGeneratePOViewModel model)
+            {
+                TempData.Keep("POModel"); // Keep it for next reload if needed
+                return View(model);
+            }
+            return RedirectToAction("CentralGeneratePO"); // fallback if no model found
+        }
+
+        [HttpPost]
+        public ActionResult PreviewPO(CentralGeneratePOViewModel model)
+        {
+            TempData["POModel"] = model;
+            return View("PreviewPO", model); // POPreview.cshtml is the preview page
+        }
 
 
 
         [HttpPost]
-        public ActionResult CentralGeneratePO(CentralGeneratePOViewModel viewModel)
+        public ActionResult BulkPO(CentralGeneratePOViewModel model, string SerializedItems)
         {
+
+
             if (!ModelState.IsValid)
             {
-                return View(viewModel);
+                return View("CentralGeneratePO", model); // Fixed: Return the correct view
+            }
 
+            if (!string.IsNullOrEmpty(SerializedItems))
+            {
+                var decoded = HttpUtility.UrlDecode(SerializedItems);
+                model.PurchaseOrderItems = JsonConvert.DeserializeObject<List<PurchaseOrderItem>>(decoded);
             }
 
             try
             {
-                // Get current logged-in User ID
                 string userId = (string)Session["UserID"];
 
-                // Get UniversityID by current User (Assuming mapping exists)
-                var user = _db.CentralPurchaseDepartments.FirstOrDefault(u => u.CentralID == userId);
-                if (user == null)
+                var po = new PurchaseOrder
                 {
-                    ModelState.AddModelError("", "User not found.");
-                    return View(viewModel);
-                }
-
-                // Generate unique requisition number
-                string requisitionNo = "REQ-" + DateTime.Now.ToString("yyyyMMddHHmmss") + "-" + Guid.NewGuid().ToString("N").Substring(0, 5).ToUpper();
-
-                string filePath = null;
-
-                if (viewModel.CertificationFile != null && viewModel.CertificationFile.ContentLength > 0)
-                {
-                    string uploadsFolder = Server.MapPath("~/UploadedCertificates");
-                    if (!Directory.Exists(uploadsFolder))
-                        Directory.CreateDirectory(uploadsFolder);
-
-                    // Use the original filename as uploaded by the user
-                    string originalFileName = Path.GetFileName(viewModel.CertificationFile.FileName);
-                    string fullPath = Path.Combine(uploadsFolder, originalFileName);
-                    viewModel.CertificationFile.SaveAs(fullPath);
-
-                    // Save relative path in DB
-                    filePath = "~/UploadedCertificates/" + originalFileName;
-                }
-
-                // Save Master Table
-                var purchaseOrder = new CentralPurchaseOrder
-                {
+                    UniversityName = model.UniversityName,
+                    UniversityEmail = model.UniversityEmail,
+                    UniversityPhone = model.UniversityPhone,
+                    UniversityAddress = model.UniversityAddress,
                     PODate = DateTime.Now,
-                    //UniversityID = university.UniversityID,
-                    CentralDepartmentName = user.CentralDepartmentName,
-                    CentralDepartmentAddress = user.CentralDepartmentAddress,
-                    CentralDepartmentPhone = user.CentralDepartmentPhone,
-                    CentralDepartmentEmail = user.CentralDepartmentEmail,
-                    RequisitionNo = requisitionNo,
-                    ShipTo = viewModel.ShipTo,
-                    RequisitionedBy = user.CentralDepartmentName,
-                    WhenShip = viewModel.WhenShip,
-                    ShipVia = viewModel.ShipVia,
-                    FOBPoint = viewModel.FOBPoint,
-                    Terms = viewModel.Terms,
-                    
-                    CopiesOfInvoice = viewModel.CopiesOfInvoice,
-                    AuthorizedBy = viewModel.AuthorizedBy,
-                    CreatedBy = userId.ToString(),
-                    PurchaseDepartmentUploads = filePath,
-
-
+                    RequisitionNo = model.RequisitionNo,
+                    RequisitionedBy = model.RequisitionedBy,
+                    WhenShip = model.WhenShip,
+                    ShipVia = model.ShipVia,
+                    FOBPoint = model.FOBPoint,
+                    Terms = model.Terms,
+                    TermsConditions = model.TermsConditions,
+                    VendorName = model.VendorName,
+                    VendorEmail = model.VendorEmail,
+                    VendorAddress = model.VendorAddress,
+                    VendorGSTNo = model.VendorGSTNo,
+                    TotalQuantity = model.TotalQuantity,
+                    TotalCost = model.TotalCost,
+                    AuthorizedBy = model.RequisitionedBy,
+                    CreatedBy = userId,
                     Status = "Draft"
                 };
 
-                _db.CentralPurchaseOrders.Add(purchaseOrder);
-                _db.SaveChanges(); // This generates PONumber (Identity)
+                _db.PurchaseOrders.Add(po);
+                _db.SaveChanges(); // Generates PONumber
 
-                // Save Item Rows
-                if (viewModel.CentralPurchaseOrderItems != null)
+                if (model.PurchaseOrderItems != null)
                 {
-                    foreach (var item in viewModel.CentralPurchaseOrderItems)
+                    foreach (var item in model.PurchaseOrderItems)
                     {
-                        var poItem = new CentralPurchaseOrderItem
+                        var poItem = new PurchaseOrderItem
                         {
-                            PONumber = purchaseOrder.PONumber,
-                            QtyOrdered = item.QtyOrdered,
-                            QtyReceived = item.QtyReceived,
+                            PONumber = po.PONumber,
                             Description = item.Description,
+                            QtyOrdered = item.QtyOrdered,
                             UnitPrice = item.UnitPrice,
-                            Total = item.Total,
-                            VendorEmail = item.VendorEmail
+                            Total = item.Total
                         };
-                        _db.CentralPurchaseOrderItems.Add(poItem);
+
+                        _db.PurchaseOrderItems.Add(poItem);
                     }
                 }
                 else
                 {
                     ModelState.AddModelError("", "No purchase order items were submitted.");
-                    return View(viewModel);
+                    return View("CentralGeneratePO", model); // Fixed fallback
                 }
 
                 _db.SaveChanges();
                 TempData["Success"] = "PO Created Successfully!";
-                TempData["VendorEmail"] = viewModel.VendorEmail;
+                TempData["VendorEmail"] = model.VendorEmail;
 
-                return RedirectToAction("InitiatePOEmail", new { PONumber = purchaseOrder.PONumber });
+                return RedirectToAction("InitiatePOEmail", new { PONumber = po.PONumber });
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", "Error: " + ex.Message);
-                return View(viewModel); // fallback
+                return View("CentralGeneratePO", model); // Fixed fallback
             }
         }
+
+
+
+     
 
 
         public ActionResult SendMail(int PONumber)
         {
             Debug.WriteLine($"[DEBUG] Starting SendMail for PO: {PONumber}");
 
-            var po = _db.CentralPurchaseOrders.FirstOrDefault(p => p.PONumber == PONumber);
+            var po = _db.PurchaseOrders.FirstOrDefault(p => p.PONumber == PONumber);
             if (po == null)
             {
                 Debug.WriteLine("[ERROR] Purchase Order not found.");
@@ -256,7 +374,7 @@ namespace WebApplication5.Controllers
 
             Debug.WriteLine("[DEBUG] Purchase Order found.");
 
-            var items = _db.CentralPurchaseOrderItems.Where(i => i.PONumber == PONumber).ToList();
+            var items = _db.PurchaseOrderItems.Where(i => i.PONumber == PONumber).ToList();
             Debug.WriteLine($"[DEBUG] Retrieved {items.Count} purchase order items.");
 
 
@@ -265,32 +383,38 @@ namespace WebApplication5.Controllers
             var model = new CentralGeneratePOViewModel
             {
                 PONumber = po.PONumber.ToString(),
-                CentralDepartmentName = po.CentralDepartmentName,
-                CentralDepartmentAddress = po.CentralDepartmentAddress,
-                CentralDepartmentPhone = po.CentralDepartmentPhone,
-                CentralDepartmentEmail = po.CentralDepartmentEmail,
+                UniversityName = po.UniversityName,
+                UniversityEmail = po.UniversityEmail,
+                UniversityPhone = po.UniversityPhone,
+                UniversityAddress = po.UniversityAddress,
+
+                PODate = DateTime.Now,
                 RequisitionNo = po.RequisitionNo,
-                ShipTo = po.ShipTo,
                 RequisitionedBy = po.RequisitionedBy,
                 WhenShip = po.WhenShip,
                 ShipVia = po.ShipVia,
                 FOBPoint = po.FOBPoint,
                 Terms = po.Terms,
-                CopiesOfInvoice = (int)po.CopiesOfInvoice,
-                AuthorizedBy = po.AuthorizedBy,
+                TermsConditions = po.TermsConditions,
+                VendorName = po.VendorName,
+                VendorEmail = po.VendorEmail,
+                VendorAddress = po.VendorAddress,
+                VendorGSTNo = po.VendorGSTNo,
+                TotalQuantity = po.TotalQuantity??0,
+                TotalCost = po.TotalCost ?? 0,
+                AuthorizedBy = po.RequisitionedBy,
                 //PurchaseDepartmentUploads = po.PurchaseDepartmentUploads,
-                CentralPurchaseOrderItems = items.Select(item => new CentralPurchaseOrderItem
+                PurchaseOrderItems = items.Select(item => new PurchaseOrderItem
                 {
-                    QtyOrdered = item.QtyOrdered ?? 0,
-                    QtyReceived = 0,
                     Description = item.Description,
-                    UnitPrice = item.UnitPrice ?? 0,
-                    Total = (item.QtyOrdered ?? 0) * (item.UnitPrice ?? 0),
-                    VendorEmail = item.VendorEmail
+                    QtyOrdered = item.QtyOrdered,
+                    UnitPrice = item.UnitPrice,
+                    Total = item.Total
+                    //VendorEmail = item.VendorEmail
                 }).ToList()
             };
             Debug.WriteLine("[DEBUG] ViewModel for PDF created.");
-            Debug.WriteLine($"[DEBUG] CopiesOfInvoice in ViewModel = {model.CopiesOfInvoice}");
+            //Debug.WriteLine($"[DEBUG] CopiesOfInvoice in ViewModel = {model.CopiesOfInvoice}");
 
             Debug.WriteLine("[DEBUG] ViewModel for PDF created.");
 
@@ -303,6 +427,8 @@ namespace WebApplication5.Controllers
             Debug.WriteLine("[DEBUG] Generating PDF...");
             var pdfBytes = pdf.BuildFile(ControllerContext);
             Debug.WriteLine($"[DEBUG] PDF generated. Size: {pdfBytes.Length} bytes");
+
+            po.PODetails = pdfBytes;
 
             // Email Details
             string toEmail = TempData["VendorEmail"]?.ToString() ?? "default@vendor.com";
@@ -385,208 +511,7 @@ namespace WebApplication5.Controllers
             return View(viewModel);
         }
 
-        [HttpPost]
-        public ActionResult GenerateBulkPO(string vendorId, string email, string materials)
-        {
-            if (string.IsNullOrEmpty(materials))
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, "Materials data is missing.");
-            }
-
-            var materialList = JsonConvert.DeserializeObject<List<MaterialItem>>(materials);
-
-            string userId = (string)Session["UserID"];
-            var user = _db.CentralPurchaseDepartments.FirstOrDefault(u => u.CentralID == userId);
-            if (user == null) return HttpNotFound("User not found");
-
-            var university = _db.CentralPurchaseDepartments.FirstOrDefault(u => u.CentralID == user.CentralID);
-            if (university == null) return HttpNotFound("University not found");
-
-            string requisitionNo = "REQ-" + DateTime.Now.ToString("yyyyMMddHHmmss") + "-" + Guid.NewGuid().ToString("N").Substring(0, 5).ToUpper();
-
-            var viewModel = new CentralGeneratePOViewModel
-            {
-                VendorEmail = email,
-                CentralDepartmentName = university.CentralDepartmentName,
-                CentralDepartmentPhone = university.CentralDepartmentPhone,
-                CentralDepartmentEmail = university.CentralDepartmentEmail,
-                CentralDepartmentAddress = university.CentralDepartmentAddress,
-                RequisitionedBy = university.CentralDepartmentName,
-                AuthorizedBy = university.CentralDepartmentName,
-                RequisitionNo = requisitionNo,
-                CentralPurchaseOrderItems = materialList.Select(m => new CentralPurchaseOrderItem
-                {
-                    Description = m.MaterialName,
-                    QtyOrdered = m.QtyOrdered,
-                    UnitPrice = m.UnitPrice,
-                    Total = m.Total,
-                    //VendorID = Convert.ToInt32(vendorId),
-                    VendorEmail = email
-                }).ToList()
-            };
-
-            ViewBag.University = university;
-            return View("GenerateBulkPO", viewModel);
-        }
-
-
-        //[HttpPost]
-        //public ActionResult GenerateBulkPO( BulkPORequest request)
-        //{
-        //    if (request == null || request.Materials == null || !request.Materials.Any())
-        //    {
-        //        return new HttpStatusCodeResult(400, "Materials data is missing");
-        //    }
-
-        //    int userId = Convert.ToInt32(Session["UserID"]);
-        //    var user = _db.CentralPurchaseDepartments.FirstOrDefault(u => u.CentralID == userId);
-        //    if (user == null) return HttpNotFound("User not found");
-
-        //    string requisitionNo = "REQ-" + DateTime.Now.ToString("yyyyMMddHHmmss") + "-" + Guid.NewGuid().ToString("N").Substring(0, 5).ToUpper();
-
-        //    var viewModel = new CentralGeneratePOViewModel
-        //    {
-        //        VendorEmail = request.Email,
-        //        CentralDepartmentName = user.CentralDepartmentName,
-        //        CentralDepartmentPhone = user.CentralDepartmentPhone,
-        //        CentralDepartmentEmail = user.CentralDepartmentEmail,
-        //        CentralDepartmentAddress = user.CentralDepartmentAddress,
-        //        RequisitionedBy = user.CentralDepartmentName,
-        //        AuthorizedBy = user.CentralDepartmentName,
-        //        RequisitionNo = requisitionNo,
-        //        CentralPurchaseOrderItems = request.Materials.Select(m => new CentralPurchaseOrderItem
-        //        {
-        //            Description = m.MaterialName,
-        //            QtyOrdered = m.QtyOrdered,
-        //            UnitPrice = m.UnitPrice,
-        //            Total = m.Total,
-        //            VendorEmail = request.Email
-        //        }).ToList()
-        //    };
-
-        //    ViewBag.University = user;
-        //    return View("GenerateBulkPO", viewModel);
-        //}
-
-
-
-
-        [HttpPost]
-        public ActionResult GenerateBulkPO123(CentralGeneratePOViewModel viewModel)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(viewModel);
-            }
-
-            try
-            {
-                // Get current logged-in User ID
-                string userId = (string)Session["UserID"];
-
-                // Get UniversityID by current User (Assuming mapping exists)
-                var user = _db.CentralPurchaseDepartments.FirstOrDefault(u => u.CentralID == userId);
-                if (user == null)
-                {
-                    ModelState.AddModelError("", "User not found.");
-                    return View(viewModel);
-                }
-
-                var university = _db.CentralPurchaseDepartments.FirstOrDefault(u => u.CentralID == user.CentralID);
-                if (university == null)
-                {
-                    ModelState.AddModelError("", "University not found.");
-                    return View(viewModel);
-                }
-
-                string filePath = null;
-
-                if (viewModel.CertificationFile != null && viewModel.CertificationFile.ContentLength > 0)
-                {
-                    string uploadsFolder = Server.MapPath("~/UploadedCertificates");
-                    if (!Directory.Exists(uploadsFolder))
-                        Directory.CreateDirectory(uploadsFolder);
-
-                    // Use the original filename as uploaded by the user
-                    string originalFileName = Path.GetFileName(viewModel.CertificationFile.FileName);
-                    string fullPath = Path.Combine(uploadsFolder, originalFileName);
-                    viewModel.CertificationFile.SaveAs(fullPath);
-
-                    // Save relative path in DB
-                    filePath = "~/UploadedCertificates/" + originalFileName;
-                }
-
-                // Generate unique requisition number
-                string requisitionNo = "REQ-" + DateTime.Now.ToString("yyyyMMddHHmmss") + "-" + Guid.NewGuid().ToString("N").Substring(0, 5).ToUpper();
-                // Save Master Table
-                var purchaseOrder = new CentralPurchaseOrder
-                {
-                    PODate = DateTime.Now,
-                    //UniversityID = university.UniversityID,
-                    CentralDepartmentName = university.CentralDepartmentName,
-                    CentralDepartmentAddress = university.CentralDepartmentAddress,
-                    CentralDepartmentPhone = university.CentralDepartmentPhone,
-                    CentralDepartmentEmail = university.CentralDepartmentEmail,
-                    RequisitionNo = requisitionNo,
-                    ShipTo = viewModel.ShipTo,
-                    RequisitionedBy = university.CentralDepartmentName,
-                    WhenShip = viewModel.WhenShip,
-                    ShipVia = viewModel.ShipVia,
-                    FOBPoint = viewModel.FOBPoint,
-                    Terms = viewModel.Terms,
-                    //CopiesOfInvoice = model.CopiesOfInvoice,
-                    CopiesOfInvoice = viewModel.CopiesOfInvoice,
-                    AuthorizedBy = viewModel.AuthorizedBy,
-                    CreatedBy = userId.ToString(),
-                    //CreatedDateTime = DateTime.Now,
-                    //Remarks = null,
-                    PurchaseDepartmentUploads = filePath,
-                    Status = "Draft"
-                };
-
-                _db.CentralPurchaseOrders.Add(purchaseOrder);
-                _db.SaveChanges(); // This generates PONumber (Identity)
-
-                // Save Item Rows
-                foreach (var item in viewModel.CentralPurchaseOrderItems)
-                {
-                    var poItem = new CentralPurchaseOrderItem
-                    {
-                        PONumber = purchaseOrder.PONumber,
-                        QtyOrdered = item.QtyOrdered,
-                        QtyReceived = item.QtyReceived,
-                        Description = item.Description,
-                        UnitPrice = item.UnitPrice,
-                        Total = item.Total,
-                        VendorEmail = item.VendorEmail
-                    };
-                    _db.CentralPurchaseOrderItems.Add(poItem);
-                    // 🔁 Update TempSelectedMaterials status for this item
-                    //    var tempMaterial = _db.TempSelectedMaterials
-                    //                          .FirstOrDefault(t => t.UserID == userId &&
-                    //                                               t.MaterialSubCategory == item.Description &&
-                    //                                               t.Status == "New");
-
-                    //    if (tempMaterial != null)
-                    //    {
-                    //        tempMaterial.Status = "Sent";
-                    //        _db.Entry(tempMaterial).State = EntityState.Modified;
-                    //    }
-                }
-
-                _db.SaveChanges();
-                TempData["Success"] = "PO Created Successfully!";
-                TempData["VendorEmail"] = viewModel.VendorEmail;
-
-                return RedirectToAction("InitiatePOEmail", new { PONumber = purchaseOrder.PONumber });
-            }
-
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", "Error: " + ex.Message);
-                return View(viewModel); // fallback
-            }
-        }
+       
 
         public ActionResult InitiatePOEmail(int PONumber)
         {
@@ -669,6 +594,53 @@ namespace WebApplication5.Controllers
 
             ViewBag.Error = $"Invalid OTP. Attempt {attempts}/3.";
             return View("EnterOTP");
+        }
+
+        public ActionResult VendorMaster()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(VendorDetailViewModel vm)
+        {
+            if (ModelState.IsValid)
+            {
+                // Step 1: Generate new VendorID
+                int newVendorId = 1;
+                var lastVendor = _db.CentralVendorDetails
+                                    .OrderByDescending(v => v.VendorID)
+                                    .FirstOrDefault();
+                if (lastVendor != null)
+                {
+                    newVendorId = (int)(lastVendor.VendorID + 1);
+                }
+
+    
+
+                // Step 3: Map ViewModel to Entity and Save
+                var vendor = new CentralVendorDetail
+                {
+                    VendorID = newVendorId,
+                    VendorName = vm.VendorName,
+                   
+                    EmailID = vm.EmailID,
+                    PhoneNumber = vm.PhoneNumber,
+                    Material = string.Join(", ", vm.Materials),
+                    GSTNO = vm.GSTNO,
+                    PanNumber = vm.PanNumber,
+                    Address = vm.Address,
+                   
+                };
+
+                _db.CentralVendorDetails.Add(vendor);
+                _db.SaveChanges();
+                TempData["SuccessMessage"] = "Vendor details saved successfully.";
+                return RedirectToAction("VendorMaster");
+            }
+
+            return View(vm);
         }
 
     }

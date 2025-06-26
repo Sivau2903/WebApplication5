@@ -34,7 +34,7 @@
           <Property Name="LastName" Type="nvarchar" MaxLength="100" Nullable="false" />
           <Property Name="PhoneNumber" Type="nvarchar" MaxLength="15" />
           <Property Name="EmailID" Type="nvarchar" MaxLength="100" />
-          <Property Name="Budget" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="University" Type="varchar" MaxLength="500" />
         </EntityType>
         <EntityType Name="CentralPurchaseDepartment">
           <Key>
@@ -76,6 +76,9 @@
           <Property Name="Statement" Type="nvarchar" MaxLength="500" />
           <Property Name="SummarizerID" Type="nvarchar" MaxLength="50" />
           <Property Name="CentralAccountantID" Type="nvarchar" MaxLength="50" />
+          <Property Name="IUCDApprovalDoc" Type="nvarchar" MaxLength="500" />
+          <Property Name="IUCDDocUploadedDate" Type="datetime" />
+          <Property Name="IUCDDocUploadedBy" Type="nvarchar" MaxLength="100" />
         </EntityType>
         <EntityType Name="CentralPurchaseOrderItems">
           <Key>
@@ -105,14 +108,16 @@
             <PropertyRef Name="CVID" />
           </Key>
           <Property Name="CVID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="FirstName" Type="nvarchar" MaxLength="50" />
-          <Property Name="LastName" Type="nvarchar" MaxLength="50" />
           <Property Name="EmailID" Type="nvarchar" MaxLength="100" />
           <Property Name="PhoneNumber" Type="nvarchar" MaxLength="15" />
           <Property Name="Material" Type="nvarchar" MaxLength="100" />
           <Property Name="PricePerUnit" Type="decimal" Precision="10" Scale="2" />
           <Property Name="Address" Type="nvarchar" MaxLength="255" />
           <Property Name="VendorID" Type="int" />
+          <Property Name="GSTNO" Type="nvarchar" MaxLength="100" />
+          <Property Name="PanNumber" Type="nvarchar" MaxLength="100" />
+          <Property Name="VendorName" Type="varchar" MaxLength="100" />
+          <Property Name="GSTPercentage" Type="nvarchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="CIT">
           <Key>
@@ -220,6 +225,18 @@
           <Property Name="HODRequestID" Type="int" />
           <Property Name="AvailableQuantity" Type="int" />
         </EntityType>
+        <EntityType Name="IUCD ">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="SummarizerID" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="FirstName" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="LastName" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="PhoneNumber" Type="nvarchar" MaxLength="15" />
+          <Property Name="EmailID" Type="nvarchar" MaxLength="100" />
+          <Property Name="Budget" Type="decimal" Precision="18" Scale="2" />
+        </EntityType>
         <EntityType Name="LocalAccountant">
           <Key>
             <PropertyRef Name="LACCID" />
@@ -308,6 +325,7 @@
           <Property Name="Unit" Type="nvarchar" MaxLength="50" />
           <Property Name="Make" Type="nvarchar" MaxLength="100" />
           <Property Name="ExpiryDate" Type="date" />
+          <Property Name="AuditorID" Type="nvarchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="PurchaseOrders">
           <Key>
@@ -334,6 +352,22 @@
           <Property Name="Remarks" Type="nvarchar(max)" />
           <Property Name="StoreUploads" Type="nvarchar" MaxLength="500" />
           <Property Name="PurchaseDepartmentUploads" Type="nvarchar" MaxLength="500" />
+          <Property Name="VendorName" Type="varchar" MaxLength="100" />
+          <Property Name="VendorEmail" Type="nvarchar" MaxLength="100" />
+          <Property Name="VendorAddress" Type="nvarchar" MaxLength="500" />
+          <Property Name="VendorGSTNo" Type="nvarchar" MaxLength="100" />
+          <Property Name="VendorGSTPercent" Type="nvarchar" MaxLength="50" />
+          <Property Name="TotalQuantity" Type="int" />
+          <Property Name="TotalCost" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="TermsConditions" Type="nvarchar(max)" />
+          <Property Name="Specification" Type="varchar" MaxLength="100" />
+          <Property Name="PODetails" Type="varbinary(max)" />
+          <Property Name="MRVDetails" Type="nvarchar" MaxLength="500" />
+          <Property Name="IUCDApprovalDoc" Type="nvarchar" MaxLength="500" />
+          <Property Name="Statement" Type="nvarchar" MaxLength="500" />
+          <Property Name="AuditorSentID" Type="nvarchar" MaxLength="50" />
+          <Property Name="InvoiceDetails" Type="nvarchar" MaxLength="500" />
+          <Property Name="CommityApprovedDoc" Type="nvarchar" MaxLength="500" />
         </EntityType>
         <EntityType Name="Request">
           <Key>
@@ -356,17 +390,6 @@
           <Property Name="PendingQuantity" Type="int" />
           <Property Name="Remarks" Type="char" MaxLength="300" />
         </EntityType>
-        <EntityType Name="RequestsSummarizer">
-          <Key>
-            <PropertyRef Name="ID" />
-          </Key>
-          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="SummarizerID" Type="nvarchar" MaxLength="50" Nullable="false" />
-          <Property Name="FirstName" Type="nvarchar" MaxLength="100" Nullable="false" />
-          <Property Name="LastName" Type="nvarchar" MaxLength="100" Nullable="false" />
-          <Property Name="PhoneNumber" Type="nvarchar" MaxLength="15" />
-          <Property Name="EmailID" Type="nvarchar" MaxLength="100" />
-        </EntityType>
         <EntityType Name="SavetoCentral">
           <Key>
             <PropertyRef Name="ID" />
@@ -380,7 +403,9 @@
           <Property Name="RequestedDate" Type="datetime" Nullable="false" />
           <Property Name="Status" Type="nvarchar" MaxLength="50" />
           <Property Name="PurchaseDepartmentUploads" Type="nvarchar" MaxLength="500" />
-          <Property Name="AuditorID" Type="nvarchar" MaxLength="100" />
+          <Property Name="IUCDID" Type="nvarchar" MaxLength="100" />
+          <Property Name="IUCDApprovedQty" Type="int" />
+          <Property Name="IUCDApprovalDoc" Type="nvarchar" MaxLength="500" />
         </EntityType>
         <EntityType Name="StoreAdmin">
           <Key>
@@ -421,8 +446,6 @@
             <PropertyRef Name="VID" />
           </Key>
           <Property Name="VID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="FirstName" Type="nvarchar" MaxLength="50" />
-          <Property Name="LastName" Type="nvarchar" MaxLength="50" />
           <Property Name="EmailID" Type="nvarchar" MaxLength="100" />
           <Property Name="PhoneNumber" Type="nvarchar" MaxLength="15" />
           <Property Name="Material" Type="nvarchar" MaxLength="100" />
@@ -430,6 +453,10 @@
           <Property Name="Address" Type="nvarchar" MaxLength="255" />
           <Property Name="UniversityID" Type="int" />
           <Property Name="VendorID" Type="int" />
+          <Property Name="GSTNO" Type="nvarchar" MaxLength="100" />
+          <Property Name="PanNumber" Type="nvarchar" MaxLength="100" />
+          <Property Name="VendorName" Type="varchar" MaxLength="100" />
+          <Property Name="GSTPercentage" Type="nvarchar" MaxLength="50" />
         </EntityType>
         <Association Name="FK__LocalAcco__Unive__690797E6">
           <End Role="University" Type="Self.University" Multiplicity="1" />
@@ -630,6 +657,7 @@
           <EntitySet Name="HOD" EntityType="Self.HOD" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="HODIssueMaterials" EntityType="Self.HODIssueMaterials" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="HODRequest" EntityType="Self.HODRequest" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="IUCD " EntityType="Self.IUCD " Schema="dbo" store:Type="Tables" />
           <EntitySet Name="LocalAccountant" EntityType="Self.LocalAccountant" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="LocalPurchaseDepartment" EntityType="Self.LocalPurchaseDepartment" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Logins" EntityType="Self.Logins" Schema="dbo" store:Type="Tables" />
@@ -639,7 +667,6 @@
           <EntitySet Name="PurchaseOrderItems" EntityType="Self.PurchaseOrderItems" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="PurchaseOrders" EntityType="Self.PurchaseOrders" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Request" EntityType="Self.Request" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="RequestsSummarizer" EntityType="Self.RequestsSummarizer" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="SavetoCentral" EntityType="Self.SavetoCentral" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="StoreAdmin" EntityType="Self.StoreAdmin" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="TempSelectedMaterials" EntityType="Self.TempSelectedMaterials" Schema="dbo" store:Type="Tables" />
@@ -771,6 +798,9 @@
           <Property Name="Statement" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
           <Property Name="SummarizerID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="CentralAccountantID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="IUCDApprovalDoc" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="IUCDDocUploadedDate" Type="DateTime" Precision="3" />
+          <Property Name="IUCDDocUploadedBy" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="CentralPurchaseOrderItem">
           <Key>
@@ -795,20 +825,6 @@
           <Property Name="Statement" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="CentralAccountantID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-        </EntityType>
-        <EntityType Name="CentralVendorDetail">
-          <Key>
-            <PropertyRef Name="CVID" />
-          </Key>
-          <Property Name="CVID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="FirstName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="LastName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="EmailID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="PhoneNumber" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
-          <Property Name="Material" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="PricePerUnit" Type="Decimal" Precision="10" Scale="2" />
-          <Property Name="Address" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="VendorID" Type="Int32" />
         </EntityType>
         <EntityType Name="CIT">
           <Key>
@@ -960,6 +976,7 @@
           <Property Name="Unit" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Make" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="ExpiryDate" Type="DateTime" Precision="0" />
+          <Property Name="AuditorID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="PurchaseOrder">
           <Key>
@@ -987,6 +1004,22 @@
           <Property Name="StoreUploads" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
           <Property Name="PurchaseDepartmentUploads" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="PurchaseOrderItems" Relationship="Self.FK__PurchaseO__PONum__3BFFE745" FromRole="PurchaseOrders" ToRole="PurchaseOrderItems" />
+          <Property Name="VendorName" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="VendorEmail" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="VendorAddress" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="VendorGSTNo" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="VendorGSTPercent" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="TotalQuantity" Type="Int32" />
+          <Property Name="TotalCost" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="TermsConditions" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Specification" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="PODetails" Type="Binary" MaxLength="Max" FixedLength="false" />
+          <Property Name="MRVDetails" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="IUCDApprovalDoc" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="Statement" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="AuditorSentID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="InvoiceDetails" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="CommityApprovedDoc" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="StoreAdmin">
           <Key>
@@ -1019,23 +1052,7 @@
           <NavigationProperty Name="LocalAccountants" Relationship="Self.FK__LocalAcco__Unive__690797E6" FromRole="University" ToRole="LocalAccountant" />
           <NavigationProperty Name="LocalPurchaseDepartments" Relationship="Self.FK__LocalPurc__Unive__6442E2C9" FromRole="University" ToRole="LocalPurchaseDepartment" />
           <NavigationProperty Name="StoreAdmins" Relationship="Self.FK_StoreAdmin_University" FromRole="University" ToRole="StoreAdmin" />
-          <NavigationProperty Name="VendorDetails" Relationship="Self.FK_University1" FromRole="University" ToRole="VendorDetails" />
-        </EntityType>
-        <EntityType Name="VendorDetail">
-          <Key>
-            <PropertyRef Name="VID" />
-          </Key>
-          <Property Name="VID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="FirstName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="LastName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="EmailID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="PhoneNumber" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
-          <Property Name="Material" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="PricePerUnit" Type="Decimal" Precision="10" Scale="2" />
-          <Property Name="Address" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="UniversityID" Type="Int32" />
-          <Property Name="VendorID" Type="Int32" />
-          <NavigationProperty Name="University" Relationship="Self.FK_University1" FromRole="VendorDetails" ToRole="University" />
+          <NavigationProperty Name="VendorDetails" Relationship="ASPModel.FK_University1" FromRole="University" ToRole="VendorDetail" />
         </EntityType>
         <Association Name="FK_MaterialCategory_MaterialCategory">
           <End Role="AssetType" Type="Self.AssetType" Multiplicity="1" />
@@ -1209,25 +1226,12 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_University1">
-          <End Role="University" Type="Self.University" Multiplicity="0..1" />
-          <End Role="VendorDetails" Type="Self.VendorDetail" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="University">
-              <PropertyRef Name="UniversityId" />
-            </Principal>
-            <Dependent Role="VendorDetails">
-              <PropertyRef Name="UniversityID" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <EntityContainer Name="ASPEntities2" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="AssetTypes" EntityType="Self.AssetType" />
           <EntitySet Name="CentralAccountants" EntityType="Self.CentralAccountant" />
           <EntitySet Name="CentralPurchaseDepartments" EntityType="Self.CentralPurchaseDepartment" />
           <EntitySet Name="CentralPurchaseOrders" EntityType="Self.CentralPurchaseOrder" />
           <EntitySet Name="CentralPurchaseOrderItems" EntityType="Self.CentralPurchaseOrderItem" />
-          <EntitySet Name="CentralVendorDetails" EntityType="Self.CentralVendorDetail" />
           <EntitySet Name="CITs" EntityType="Self.CIT" />
           <EntitySet Name="Departments" EntityType="Self.Department" />
           <EntitySet Name="Employees" EntityType="Self.Employee" />
@@ -1242,7 +1246,6 @@
           <EntitySet Name="PurchaseOrders" EntityType="Self.PurchaseOrder" />
           <EntitySet Name="StoreAdmins" EntityType="Self.StoreAdmin" />
           <EntitySet Name="Universities" EntityType="Self.University" />
-          <EntitySet Name="VendorDetails" EntityType="Self.VendorDetail" />
           <AssociationSet Name="FK_MaterialCategory_MaterialCategory" Association="Self.FK_MaterialCategory_MaterialCategory">
             <End Role="AssetType" EntitySet="AssetTypes" />
             <End Role="MaterialCategory" EntitySet="MaterialCategories" />
@@ -1299,18 +1302,20 @@
             <End Role="University" EntitySet="Universities" />
             <End Role="StoreAdmin" EntitySet="StoreAdmins" />
           </AssociationSet>
-          <AssociationSet Name="FK_University1" Association="Self.FK_University1">
-            <End Role="University" EntitySet="Universities" />
-            <End Role="VendorDetails" EntitySet="VendorDetails" />
-          </AssociationSet>
           <EntitySet Name="EmployeeIssueMaterials" EntityType="ASPModel.EmployeeIssueMaterial" />
           <EntitySet Name="Requests" EntityType="ASPModel.Request" />
           <EntitySet Name="HODRequests" EntityType="ASPModel.HODRequest" />
           <EntitySet Name="HODIssueMaterials" EntityType="ASPModel.HODIssueMaterial" />
           <EntitySet Name="TempSelectedMaterials" EntityType="ASPModel.TempSelectedMaterial" />
-          <EntitySet Name="SavetoCentrals" EntityType="ASPModel.SavetoCentral" />
+          <EntitySet Name="CentralVendorDetails" EntityType="ASPModel.CentralVendorDetail" />
+          <EntitySet Name="VendorDetails" EntityType="ASPModel.VendorDetail" />
+          <AssociationSet Name="FK_University1" Association="ASPModel.FK_University1">
+            <End Role="University" EntitySet="Universities" />
+            <End Role="VendorDetail" EntitySet="VendorDetails" />
+          </AssociationSet>
+          <EntitySet Name="IUCD_" EntityType="ASPModel.IUCD_" />
           <EntitySet Name="CentralAuditors" EntityType="ASPModel.CentralAuditor" />
-          <EntitySet Name="RequestsSummarizers" EntityType="ASPModel.RequestsSummarizer" />
+          <EntitySet Name="SavetoCentrals" EntityType="ASPModel.SavetoCentral" />
         </EntityContainer>
         <EntityType Name="EmployeeIssueMaterial">
           <Key>
@@ -1403,6 +1408,76 @@
           <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="UniversityID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
+        <EntityType Name="CentralVendorDetail">
+          <Key>
+            <PropertyRef Name="CVID" />
+          </Key>
+          <Property Name="CVID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="EmailID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNumber" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
+          <Property Name="Material" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="PricePerUnit" Type="Decimal" Precision="10" Scale="2" />
+          <Property Name="Address" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="VendorID" Type="Int32" />
+          <Property Name="GSTNO" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="PanNumber" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="VendorName" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="GSTPercentage" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="VendorDetail">
+          <Key>
+            <PropertyRef Name="VID" />
+          </Key>
+          <Property Name="VID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="EmailID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNumber" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
+          <Property Name="Material" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="PricePerUnit" Type="Decimal" Precision="10" Scale="2" />
+          <Property Name="Address" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="UniversityID" Type="Int32" />
+          <Property Name="VendorID" Type="Int32" />
+          <Property Name="GSTNO" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="PanNumber" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="VendorName" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="University" Relationship="ASPModel.FK_University1" FromRole="VendorDetail" ToRole="University" />
+          <Property Name="GSTPercentage" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <Association Name="FK_University1">
+          <End Type="ASPModel.University" Role="University" Multiplicity="0..1" />
+          <End Type="ASPModel.VendorDetail" Role="VendorDetail" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="University">
+              <PropertyRef Name="UniversityId" />
+            </Principal>
+            <Dependent Role="VendorDetail">
+              <PropertyRef Name="UniversityID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="IUCD_">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="SummarizerID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="FirstName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="LastName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNumber" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
+          <Property Name="EmailID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Budget" Type="Decimal" Precision="18" Scale="2" />
+        </EntityType>
+        <EntityType Name="CentralAuditor">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="AuditorID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="FirstName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="LastName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNumber" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
+          <Property Name="EmailID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="University" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+        </EntityType>
         <EntityType Name="SavetoCentral">
           <Key>
             <PropertyRef Name="ID" />
@@ -1416,30 +1491,9 @@
           <Property Name="RequestedDate" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="PurchaseDepartmentUploads" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
-          <Property Name="AuditorID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-        </EntityType>
-        <EntityType Name="CentralAuditor">
-          <Key>
-            <PropertyRef Name="ID" />
-          </Key>
-          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="AuditorID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="FirstName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="LastName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="PhoneNumber" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
-          <Property Name="EmailID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="Budget" Type="Decimal" Precision="18" Scale="2" />
-        </EntityType>
-        <EntityType Name="RequestsSummarizer">
-          <Key>
-            <PropertyRef Name="ID" />
-          </Key>
-          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="SummarizerID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="FirstName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="LastName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="PhoneNumber" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
-          <Property Name="EmailID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="IUCDID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="IUCDApprovedQty" Type="Int32" />
+          <Property Name="IUCDApprovalDoc" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -1486,6 +1540,9 @@
           <EntitySetMapping Name="CentralPurchaseOrders">
             <EntityTypeMapping TypeName="ASPModel.CentralPurchaseOrder">
               <MappingFragment StoreEntitySet="CentralPurchaseOrder">
+                <ScalarProperty Name="IUCDDocUploadedBy" ColumnName="IUCDDocUploadedBy" />
+                <ScalarProperty Name="IUCDDocUploadedDate" ColumnName="IUCDDocUploadedDate" />
+                <ScalarProperty Name="IUCDApprovalDoc" ColumnName="IUCDApprovalDoc" />
                 <ScalarProperty Name="CentralAccountantID" ColumnName="CentralAccountantID" />
                 <ScalarProperty Name="SummarizerID" ColumnName="SummarizerID" />
                 <ScalarProperty Name="Statement" ColumnName="Statement" />
@@ -1532,21 +1589,6 @@
                 <ScalarProperty Name="Total" ColumnName="Total" />
                 <ScalarProperty Name="VendorEmail" ColumnName="VendorEmail" />
                 <ScalarProperty Name="Remarks" ColumnName="Remarks" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="CentralVendorDetails">
-            <EntityTypeMapping TypeName="ASPModel.CentralVendorDetail">
-              <MappingFragment StoreEntitySet="CentralVendorDetails">
-                <ScalarProperty Name="CVID" ColumnName="CVID" />
-                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
-                <ScalarProperty Name="LastName" ColumnName="LastName" />
-                <ScalarProperty Name="EmailID" ColumnName="EmailID" />
-                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
-                <ScalarProperty Name="Material" ColumnName="Material" />
-                <ScalarProperty Name="PricePerUnit" ColumnName="PricePerUnit" />
-                <ScalarProperty Name="Address" ColumnName="Address" />
-                <ScalarProperty Name="VendorID" ColumnName="VendorID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -1678,6 +1720,7 @@
           <EntitySetMapping Name="PurchaseOrderItems">
             <EntityTypeMapping TypeName="ASPModel.PurchaseOrderItem">
               <MappingFragment StoreEntitySet="PurchaseOrderItems">
+                <ScalarProperty Name="AuditorID" ColumnName="AuditorID" />
                 <ScalarProperty Name="ExpiryDate" ColumnName="ExpiryDate" />
                 <ScalarProperty Name="Make" ColumnName="Make" />
                 <ScalarProperty Name="Unit" ColumnName="Unit" />
@@ -1699,6 +1742,22 @@
           <EntitySetMapping Name="PurchaseOrders">
             <EntityTypeMapping TypeName="ASPModel.PurchaseOrder">
               <MappingFragment StoreEntitySet="PurchaseOrders">
+                <ScalarProperty Name="CommityApprovedDoc" ColumnName="CommityApprovedDoc" />
+                <ScalarProperty Name="InvoiceDetails" ColumnName="InvoiceDetails" />
+                <ScalarProperty Name="AuditorSentID" ColumnName="AuditorSentID" />
+                <ScalarProperty Name="Statement" ColumnName="Statement" />
+                <ScalarProperty Name="IUCDApprovalDoc" ColumnName="IUCDApprovalDoc" />
+                <ScalarProperty Name="MRVDetails" ColumnName="MRVDetails" />
+                <ScalarProperty Name="PODetails" ColumnName="PODetails" />
+                <ScalarProperty Name="Specification" ColumnName="Specification" />
+                <ScalarProperty Name="TermsConditions" ColumnName="TermsConditions" />
+                <ScalarProperty Name="TotalCost" ColumnName="TotalCost" />
+                <ScalarProperty Name="TotalQuantity" ColumnName="TotalQuantity" />
+                <ScalarProperty Name="VendorGSTPercent" ColumnName="VendorGSTPercent" />
+                <ScalarProperty Name="VendorGSTNo" ColumnName="VendorGSTNo" />
+                <ScalarProperty Name="VendorAddress" ColumnName="VendorAddress" />
+                <ScalarProperty Name="VendorEmail" ColumnName="VendorEmail" />
+                <ScalarProperty Name="VendorName" ColumnName="VendorName" />
                 <ScalarProperty Name="PONumber" ColumnName="PONumber" />
                 <ScalarProperty Name="PODate" ColumnName="PODate" />
                 <ScalarProperty Name="UniversityName" ColumnName="UniversityName" />
@@ -1746,22 +1805,6 @@
                 <ScalarProperty Name="Address" ColumnName="Address" />
                 <ScalarProperty Name="UniversityPhone" ColumnName="UniversityPhone" />
                 <ScalarProperty Name="UniversityEmail" ColumnName="UniversityEmail" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="VendorDetails">
-            <EntityTypeMapping TypeName="ASPModel.VendorDetail">
-              <MappingFragment StoreEntitySet="VendorDetails">
-                <ScalarProperty Name="VID" ColumnName="VID" />
-                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
-                <ScalarProperty Name="LastName" ColumnName="LastName" />
-                <ScalarProperty Name="EmailID" ColumnName="EmailID" />
-                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
-                <ScalarProperty Name="Material" ColumnName="Material" />
-                <ScalarProperty Name="PricePerUnit" ColumnName="PricePerUnit" />
-                <ScalarProperty Name="Address" ColumnName="Address" />
-                <ScalarProperty Name="UniversityID" ColumnName="UniversityID" />
-                <ScalarProperty Name="VendorID" ColumnName="VendorID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -1861,10 +1904,73 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="CentralVendorDetails">
+            <EntityTypeMapping TypeName="ASPModel.CentralVendorDetail">
+              <MappingFragment StoreEntitySet="CentralVendorDetails">
+                <ScalarProperty Name="GSTPercentage" ColumnName="GSTPercentage" />
+                <ScalarProperty Name="VendorName" ColumnName="VendorName" />
+                <ScalarProperty Name="PanNumber" ColumnName="PanNumber" />
+                <ScalarProperty Name="GSTNO" ColumnName="GSTNO" />
+                <ScalarProperty Name="VendorID" ColumnName="VendorID" />
+                <ScalarProperty Name="Address" ColumnName="Address" />
+                <ScalarProperty Name="PricePerUnit" ColumnName="PricePerUnit" />
+                <ScalarProperty Name="Material" ColumnName="Material" />
+                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+                <ScalarProperty Name="EmailID" ColumnName="EmailID" />
+                <ScalarProperty Name="CVID" ColumnName="CVID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="VendorDetails">
+            <EntityTypeMapping TypeName="ASPModel.VendorDetail">
+              <MappingFragment StoreEntitySet="VendorDetails">
+                <ScalarProperty Name="GSTPercentage" ColumnName="GSTPercentage" />
+                <ScalarProperty Name="VendorName" ColumnName="VendorName" />
+                <ScalarProperty Name="PanNumber" ColumnName="PanNumber" />
+                <ScalarProperty Name="GSTNO" ColumnName="GSTNO" />
+                <ScalarProperty Name="VendorID" ColumnName="VendorID" />
+                <ScalarProperty Name="UniversityID" ColumnName="UniversityID" />
+                <ScalarProperty Name="Address" ColumnName="Address" />
+                <ScalarProperty Name="PricePerUnit" ColumnName="PricePerUnit" />
+                <ScalarProperty Name="Material" ColumnName="Material" />
+                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+                <ScalarProperty Name="EmailID" ColumnName="EmailID" />
+                <ScalarProperty Name="VID" ColumnName="VID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="IUCD_">
+            <EntityTypeMapping TypeName="ASPModel.IUCD_">
+              <MappingFragment StoreEntitySet="IUCD ">
+                <ScalarProperty Name="Budget" ColumnName="Budget" />
+                <ScalarProperty Name="EmailID" ColumnName="EmailID" />
+                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+                <ScalarProperty Name="LastName" ColumnName="LastName" />
+                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
+                <ScalarProperty Name="SummarizerID" ColumnName="SummarizerID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="CentralAuditors">
+            <EntityTypeMapping TypeName="ASPModel.CentralAuditor">
+              <MappingFragment StoreEntitySet="CentralAuditor">
+                <ScalarProperty Name="University" ColumnName="University" />
+                <ScalarProperty Name="EmailID" ColumnName="EmailID" />
+                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+                <ScalarProperty Name="LastName" ColumnName="LastName" />
+                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
+                <ScalarProperty Name="AuditorID" ColumnName="AuditorID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="SavetoCentrals">
             <EntityTypeMapping TypeName="ASPModel.SavetoCentral">
               <MappingFragment StoreEntitySet="SavetoCentral">
-                <ScalarProperty Name="AuditorID" ColumnName="AuditorID" />
+                <ScalarProperty Name="IUCDApprovalDoc" ColumnName="IUCDApprovalDoc" />
+                <ScalarProperty Name="IUCDApprovedQty" ColumnName="IUCDApprovedQty" />
+                <ScalarProperty Name="IUCDID" ColumnName="IUCDID" />
                 <ScalarProperty Name="PurchaseDepartmentUploads" ColumnName="PurchaseDepartmentUploads" />
                 <ScalarProperty Name="Status" ColumnName="Status" />
                 <ScalarProperty Name="RequestedDate" ColumnName="RequestedDate" />
@@ -1873,31 +1979,6 @@
                 <ScalarProperty Name="CentralID" ColumnName="CentralID" />
                 <ScalarProperty Name="UniversityID" ColumnName="UniversityID" />
                 <ScalarProperty Name="LocalID" ColumnName="LocalID" />
-                <ScalarProperty Name="ID" ColumnName="ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="CentralAuditors">
-            <EntityTypeMapping TypeName="ASPModel.CentralAuditor">
-              <MappingFragment StoreEntitySet="CentralAuditor">
-                <ScalarProperty Name="Budget" ColumnName="Budget" />
-                <ScalarProperty Name="EmailID" ColumnName="EmailID" />
-                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
-                <ScalarProperty Name="LastName" ColumnName="LastName" />
-                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
-                <ScalarProperty Name="AuditorID" ColumnName="AuditorID" />
-                <ScalarProperty Name="ID" ColumnName="ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="RequestsSummarizers">
-            <EntityTypeMapping TypeName="ASPModel.RequestsSummarizer">
-              <MappingFragment StoreEntitySet="RequestsSummarizer">
-                <ScalarProperty Name="EmailID" ColumnName="EmailID" />
-                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
-                <ScalarProperty Name="LastName" ColumnName="LastName" />
-                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
-                <ScalarProperty Name="SummarizerID" ColumnName="SummarizerID" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
               </MappingFragment>
             </EntityTypeMapping>

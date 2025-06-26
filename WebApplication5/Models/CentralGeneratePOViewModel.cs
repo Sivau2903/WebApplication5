@@ -38,8 +38,20 @@ namespace WebApplication5.Models
 
 
         public string PurchaseDepartmentUploads { get; set; }
-        public List<CentralPurchaseOrderItem> CentralPurchaseOrderItems { get; set; }
-        public List<CentralPurchaseOrder> CentralPurchaseOrder { get; set; }
+        public List<PurchaseOrderItem> PurchaseOrderItems { get; set; }
+        public List<PurchaseOrder> PurchaseOrder { get; set; }
+        public string UniversityName { get; set; }
+        public string UniversityEmail { get;  set; }
+        public string UniversityPhone { get;  set; }
+        public string UniversityAddress { get;  set; }
+        public string VendorName { get; set; }
+        public string VendorAddress { get;  set; }
+        public string VendorGSTNo { get; set; }
+        public string VendorGSTPercent { get; set; }
+        public int TotalQuantity { get; set; }
+        public decimal TotalCost { get; set; }
+        public string TermsConditions { get; set; }
+
 
         //public static implicit operator GeneratePOViewModel(GeneratePOViewModel v)
         //{

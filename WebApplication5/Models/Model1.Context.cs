@@ -30,7 +30,6 @@ namespace WebApplication5.Models
         public virtual DbSet<CentralPurchaseDepartment> CentralPurchaseDepartments { get; set; }
         public virtual DbSet<CentralPurchaseOrder> CentralPurchaseOrders { get; set; }
         public virtual DbSet<CentralPurchaseOrderItem> CentralPurchaseOrderItems { get; set; }
-        public virtual DbSet<CentralVendorDetail> CentralVendorDetails { get; set; }
         public virtual DbSet<CIT> CITs { get; set; }
         public virtual DbSet<Department> Departments { get; set; }
         public virtual DbSet<Employee> Employees { get; set; }
@@ -45,14 +44,15 @@ namespace WebApplication5.Models
         public virtual DbSet<PurchaseOrder> PurchaseOrders { get; set; }
         public virtual DbSet<StoreAdmin> StoreAdmins { get; set; }
         public virtual DbSet<University> Universities { get; set; }
-        public virtual DbSet<VendorDetail> VendorDetails { get; set; }
         public virtual DbSet<EmployeeIssueMaterial> EmployeeIssueMaterials { get; set; }
         public virtual DbSet<Request> Requests { get; set; }
         public virtual DbSet<HODRequest> HODRequests { get; set; }
         public virtual DbSet<HODIssueMaterial> HODIssueMaterials { get; set; }
         public virtual DbSet<TempSelectedMaterial> TempSelectedMaterials { get; set; }
-        public virtual DbSet<SavetoCentral> SavetoCentrals { get; set; }
+        public virtual DbSet<CentralVendorDetail> CentralVendorDetails { get; set; }
+        public virtual DbSet<VendorDetail> VendorDetails { get; set; }
+        public virtual DbSet<IUCD_> IUCD_ { get; set; }
         public virtual DbSet<CentralAuditor> CentralAuditors { get; set; }
-        public virtual DbSet<RequestsSummarizer> RequestsSummarizers { get; set; }
+        public virtual DbSet<SavetoCentral> SavetoCentrals { get; set; }
     }
 }

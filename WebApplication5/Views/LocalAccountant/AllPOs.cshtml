@@ -1,97 +1,95 @@
-﻿@model dynamic
+﻿@model IEnumerable<IGrouping<string, WebApplication5.Models.PurchaseOrder>>
+
 @{
+
     Layout = "~/Views/Shared/_LocalAccountant.cshtml";
-    ViewBag.Title = "All Purchase Orders";
-    var draftPOs = ViewBag.DraftPOs as List<WebApplication5.Models.PurchaseOrder>;
-    var deliveredPOs = ViewBag.DeliveredPOs as List<WebApplication5.Models.PurchaseOrder>;
+    ViewBag.Title = "Auditor Dashboard";
 }
 
+<!-- Bootstrap Styles -->
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
 <style>
-    .po-wrapper {
-        display: flex;
-        gap: 40px;
-        padding: 20px;
+    .card-header {
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
     }
 
-    .po-section {
-        flex: 1;
-        color: darkblue;
-        border: 1px solid #ccc;
-        padding: 15px;
-        height: 80vh;
-        overflow-y: auto;
-    }
-
-        .po-section h3 {
-            color: mediumvioletred;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 15px;
+        .card-header:hover {
+            background-color: #0056b3;
         }
+
+    .card-body {
+        background-color: #f8f9fa;
+    }
 
     .po-link {
         display: block;
         padding: 10px;
-        margin-bottom: 8px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
+        border-bottom: 1px solid #dee2e6;
         text-decoration: none;
         color: #333;
-        background-color: #f9f9f9;
+        transition: background-color 0.2s ease;
     }
 
         .po-link:hover {
-            background-color: #e6f0ff;
-            border-color: #337ab7;
+            background-color: #e2e6ea;
+            text-decoration: none;
         }
 
-    .po-number {
-        font-weight: bold;
-        color: darkblue;
+    .card {
+        margin-bottom: 20px;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+    }
+    footer
+    {
+        position:fixed;
+    }
+    .university-name {
+        font-size: 1.2rem;
+        font-weight: 600;
     }
 
-    .po-date {
-        font-size: 12px;
-        color: gray;
+    .icon {
+        margin-right: 8px;
     }
 </style>
 
-<div class="po-wrapper">
-    <!-- Not Delivered Section -->
-    <div class="po-section">
-        <h3>Not Delivered</h3>
-        @if (draftPOs.Any())
-        {
-            foreach (var po in draftPOs)
-            {
-                <a class="po-link" href="@Url.Action("PODetails", "LocalAccountant", new { poNumber = po.PONumber })">
-                    <div class="po-number">PO No: @po.PONumber</div>
-                    <div class="po-date">Date: @po.PODate</div>
-                </a>
-            }
-        }
-        else
-        {
-            <p>No Draft POs found.</p>
-        }
-    </div>
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Audited PO'S</h2>
 
-    <!-- Delivered Section -->
-    <div class="po-section">
-        <h3>Delivered</h3>
-        @if (deliveredPOs.Any())
-        {
-            foreach (var po in deliveredPOs)
-            {
-                <a class="po-link" href="@Url.Action("PODetails", "LocalAccountant", new { poNumber = po.PONumber })">
-                    <div class="po-number">PO No: @po.PONumber</div>
-                    <div class="po-date">Date: @po.PODate</div>
-                </a>
-            }
-        }
-        else
-        {
-            <p>No Delivered POs found.</p>
-        }
-    </div>
+    @foreach (var group in Model)
+    {
+        var collapseId = "collapse_" + group.Key.Replace(" ", "").Replace(".", "").Replace("&", "");
+        <div class="card">
+            <div class="card-header" data-toggle="collapse" data-target="#@collapseId" aria-expanded="false" aria-controls="@collapseId">
+                <span class="university-name"><i class="fas fa-university icon"></i>@group.Key</span>
+            </div>
+            <div id="@collapseId" class="collapse">
+                <div class="card-body">
+                    @if (!group.Any())
+                    {
+                        <p>No PO Numbers found.</p>
+                    }
+                    else
+                    {
+                        foreach (var po in group)
+                        {
+                            <a class="po-link" href="@Url.Action("PODetails", "LocalAccountant", new { poNumber = po.PONumber })">
+                                <i class="fas fa-file-alt icon"></i>PO Number: <strong>@po.PONumber</strong>
+                            </a>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    }
 </div>
+
+<!-- Font Awesome for icons -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>

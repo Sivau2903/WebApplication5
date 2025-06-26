@@ -13,6 +13,7 @@ namespace WebApplication5.Models
         public string MaterialName { get; set; }
         public DateTime RequestedDate { get; set; }
         public int OrderQuantity { get; set; }
+        public int IUCDApprovedQty { get; set; }
         public string CentralID { get; set; }
         public string Status { get; set; }
         public string PurchaseDepartmentUploads { get; set; }
