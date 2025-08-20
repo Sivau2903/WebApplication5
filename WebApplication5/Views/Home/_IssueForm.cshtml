@@ -1,4 +1,4 @@
-﻿@model WebApplication5.Models.EmployeeIssueMaterial
+﻿@model WebApplication5.Models.Request
 
 <div class="container p-3">
     <h4 class="mb-4 text-primary">Issue Material</h4>
@@ -6,18 +6,21 @@
 
     @using (Html.BeginForm("IssueMaterial", "Home", FormMethod.Post, new { @class = "needs-validation", @novalidate = "novalidate" }))
     {
+        @* ✅ Hidden fields required for POST binding *@
         @Html.HiddenFor(m => m.RequestID)
         @Html.HiddenFor(m => m.EmpID)
         @Html.HiddenFor(m => m.HODID)
         @Html.HiddenFor(m => m.AssetType)
         @Html.HiddenFor(m => m.MaterialCategory)
-        @Html.HiddenFor(m => m.MaterialSubCategory)
+        @Html.HiddenFor(m => m.MSubCategory)
         @Html.HiddenFor(m => m.AvailableQuantity)
         @Html.HiddenFor(m => m.IssuedBy)
+        @Html.HiddenFor(m => m.ApprovedQuantity)
+        
 
         <div class="mb-3">
             <label for="RequestingQuantity" class="form-label text-dark">Requesting Quantity</label>
-            @Html.TextBoxFor(m => m.RequestingQuantity, new { @class = "form-control", type = "number", min = "0", id = "RequestingQuantity", required = "required" })
+            @Html.TextBoxFor(m => m.RequestingQuantity, new { @class = "form-control", type = "number", min = "0", id = "RequestingQuantity", required = "required", @readonly = "readonly" })
             <div class="invalid-feedback">
                 Please enter the requesting quantity.
             </div>
@@ -25,28 +28,25 @@
 
         <div class="mb-3">
             <label for="ApprovedQuantity" class="form-label text-dark">Approved Quantity</label>
-            @Html.TextBoxFor(m => m.ApprovedQuantity, new { @class = "form-control", type = "number", min = "0", id = "ApprovedQuantity", required = "required" })
+            @Html.TextBoxFor(m => m.ApprovedQuantity, new { @class = "form-control", type = "number", min = "0", id = "ApprovedQuantity", required = "required", @readonly = "readonly" })
             <div class="invalid-feedback">
                 Please enter the approved quantity.
             </div>
         </div>
 
         <div class="mb-3">
-            <label for="AvailableQuantity" class="form-label text-dark">Available Quantity</label>
-            <input class="form-control" type="text" value="@Model.AvailableQuantity" disabled id="AvailableQuantity" />
+            <label for="AvailableQuantityDisplay" class="form-label text-dark">Available Quantity</label>
+            <input class="form-control" type="number" value="@Model.AvailableQuantity" disabled id="AvailableQuantityDisplay" />
         </div>
 
         <div class="mb-3">
-            <label for="IssuingQuantity" class="form-label text-dark">Previously Issued </label>
-            @Html.TextBoxFor(m => m.IssuingQuantity, new { @class = "form-control", type = "number", min = "0", id = "IssuingQuantity", @readonly = "Readonly" })
-            @*<div class="invalid-feedback">
-                Please enter the issuing quantity.
-            </div>*@
+            <label for="IssuingQuantityDisplay" class="form-label text-dark">Previously Issued</label>
+            @Html.TextBoxFor(m => m.IssuingQuantity, new { @class = "form-control", type = "number", min = "0", id = "IssuingQuantityDisplay", @readonly = "readonly" })
         </div>
 
         <div class="mb-3">
-            <label for="IssuingQuantity" class="form-label text-dark">Issuing Quantity</label>
-            @Html.TextBoxFor(m => m.Issue, new { @class = "form-control", value = "0",type = "number", min = "0", id = "IssuingQuantity", required = "required" })
+            <label for="Issue" class="form-label text-dark">Issuing Quantity</label>
+            @Html.TextBoxFor(m => m.Issue, new { @class = "form-control", value = "0", type = "number", min = "0", id = "Issue", required = "required" })
             <div class="invalid-feedback">
                 Please enter the issuing quantity.
             </div>
@@ -60,10 +60,9 @@
     (function () {
         'use strict'
 
-        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        // Bootstrap form validation
         var forms = document.querySelectorAll('.needs-validation')
 
-        // Loop over them and prevent submission
         Array.prototype.slice.call(forms)
             .forEach(function (form) {
                 form.addEventListener('submit', function (event) {
@@ -77,4 +76,3 @@
             })
     })()
 </script>
-

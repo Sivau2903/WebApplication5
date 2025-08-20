@@ -166,7 +166,7 @@
             $('#materialSubCategory').empty().append('<option value="">Select Subcategory</option>');
 
             $.ajax({
-                url: '/Home/GetMaterialCategoriesByAssetType', // Updated URL
+                url: '@Url.Action("GetMaterialCategoriesByAssetType", "Home")', // Updated URL
                 type: 'GET',
                 data: { assetType: assetType },
                 dataType: 'json',
@@ -191,7 +191,7 @@
             $('#materialSubCategory').empty().append('<option value="">Select Subcategory</option>');
 
             if (materialCategory && assetType) {
-                $.get('/Home/GetMaterialSubCategories1', { assetType: assetType, materialCategory: materialCategory }, function (data) {
+                $.get('@Url.Action("GetMaterialSubCategories1", "Home")', { assetType: assetType, materialCategory: materialCategory }, function (data) {
                     console.log("Subcategories:", data); // Debugging
                     $.each(data, function (index, subCategory) {
                         $('#materialSubCategory').append('<option value="' + subCategory + '">' + subCategory + '</option>');
@@ -219,7 +219,7 @@
         }
 
         $.ajax({
-            url: '/Home/RaiseRequestAction', // Controller method to handle request
+            url: '@Url.Action("RaiseRequestAction", "Home")', // Controller method to handle request
             type: 'POST',
             data: {
                 assetType: assetType,
@@ -251,7 +251,7 @@
             };
 
             $.ajax({
-                url: '/Home/RaiseRequestAction',
+                url: '@Url.Action("RaiseRequestAction", "Home")',
                 type: 'POST',
                 data: formData,
                 success: function (response) {

@@ -117,21 +117,21 @@ namespace WebApplication5.Controllers
             System.Diagnostics.Debug.WriteLine($"[DEBUG] Found Request => ID={request.RequestID}, AssetType={request.AssetType}, ApprovedQuantity={request.ApprovedQuantity}, AvailableQuantity={availableQuantity}");
 
             // ✅ 5. Create the EmployeeIssueMaterial model
-            var issuingModel = new EmployeeIssueMaterial
+            var issuingModel = new Request
             {
                 RequestID = request.RequestID??0,
                 EmpID = request.EmpID,
                 HODID = request.HODID,
                 AssetType = request.AssetType,
                 MaterialCategory = request.MaterialCategory,
-                MaterialSubCategory = request.MSubCategory,
+                MSubCategory = request.MSubCategory,
                 RequestingQuantity = request.RequestingQuantity,
                 ApprovedQuantity = request.ApprovedQuantity ?? 0, // Ensure non-null
                 AvailableQuantity = availableQuantity,  // ✅ Fetching directly from Request table
                 IssuingQuantity = issuingQuantity, // Pre-fill existing IssuingQuantity
-                PreviousIssuingQuantity = issuingQuantity, // Add this property to help in validation
+                //PreviousIssuingQuantity = issuingQuantity, // Add this property to help in validation
                 ClosingQuantity = 0,
-                Issue = 0,
+                //Issue = 0,
                 IssuedBy = storeAdmin.StoreAdminID.ToString() // ✅ Correct assignment
             };
 
@@ -143,65 +143,68 @@ namespace WebApplication5.Controllers
 
 
         [HttpPost]
-        public ActionResult IssueMaterial(EmployeeIssueMaterial model)
+        public ActionResult IssueMaterial(Request model)
         {
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] IssueMaterial => RequestID={model.RequestID}, IssuingQty={model.IssuingQuantity}");
+            System.Diagnostics.Debug.WriteLine("========== [POST] IssueMaterial START ==========");
+            System.Diagnostics.Debug.WriteLine("[DEBUG] Received RequestID from model = " + model.RequestID);
+            System.Diagnostics.Debug.WriteLine("[DEBUG] Model.Issue = " + model.Issue);
+            System.Diagnostics.Debug.WriteLine("[DEBUG] Model.IssuedBy = " + model.IssuedBy);
+            System.Diagnostics.Debug.WriteLine("[DEBUG] Model.AssetType = " + model.AssetType);
+            System.Diagnostics.Debug.WriteLine("[DEBUG] Model.MaterialCategory = " + model.MaterialCategory);
+            System.Diagnostics.Debug.WriteLine("[DEBUG] Model.MSubCategory = " + model.MSubCategory);
 
             try
             {
-                var request = _db.Requests.FirstOrDefault(m => m.RequestID == model.RequestID);
+                var request = _db.Requests.FirstOrDefault(m => m.RequestID == model.RequestID &&
+    m.MSubCategory == model.MSubCategory);
                 if (request == null)
                 {
+                    System.Diagnostics.Debug.WriteLine("[ERROR] Request not found in DB for RequestID = " + model.RequestID);
                     TempData["ErrorMessage"] = "Request not found.";
                     return RedirectToAction("EmployeeRequests", "Home");
                 }
 
+                System.Diagnostics.Debug.WriteLine("[DEBUG] DB Request found: ApprovedQty = " + request.ApprovedQuantity + ", IssuingQty = " + request.IssuingQuantity + ", AvailableQty = " + request.AvailableQuantity);
+
                 int approvedQty = request.ApprovedQuantity ?? 0;
                 int previousIssuedQty = request.IssuingQuantity ?? 0;
-
-                // Add the new issue to previousIssuedQty
                 int newIssueInput = model.Issue ?? 0;
                 int totalIssuingQty = previousIssuedQty + newIssueInput;
 
+                System.Diagnostics.Debug.WriteLine("[DEBUG] Calculated totalIssuingQty = " + totalIssuingQty);
+
                 if (totalIssuingQty > approvedQty)
                 {
+                    System.Diagnostics.Debug.WriteLine("[WARNING] totalIssuingQty > approvedQty => " + totalIssuingQty + " > " + approvedQty);
                     TempData["ErrorMessage"] = $"Total issuing quantity ({totalIssuingQty}) exceeds approved quantity ({approvedQty}).";
                     return RedirectToAction("EmployeeRequests", "Home");
                 }
 
                 if (newIssueInput > request.AvailableQuantity)
                 {
+                    System.Diagnostics.Debug.WriteLine("[WARNING] newIssueInput > availableQty => " + newIssueInput + " > " + request.AvailableQuantity);
                     TempData["ErrorMessage"] = $"New issuing quantity ({newIssueInput}) exceeds available stock ({request.AvailableQuantity}).";
                     return RedirectToAction("EmployeeRequests", "Home");
                 }
 
                 int closingQty = (request.AvailableQuantity ?? 0) - newIssueInput;
+                System.Diagnostics.Debug.WriteLine("[DEBUG] Calculated closingQty = " + closingQty);
 
-                // 🔍 UPDATE existing record in EmployeeIssueMaterial table
-                var existingIssue = _db.EmployeeIssueMaterials.FirstOrDefault(e => e.RequestID == model.RequestID);
-                if (existingIssue != null)
-                {
-                    existingIssue.IssuingQuantity = totalIssuingQty;
-                    existingIssue.ClosingQuantity = closingQty;
-                    existingIssue.IssuedDate = DateTime.Now;
-                    existingIssue.Status = "Issued";
-                    existingIssue.IssuedBy = model.IssuedBy;
-                }
-                else
-                {
-                    // If record not found, create new one (fallback)
-                    model.IssuingQuantity = totalIssuingQty;
-                    model.ClosingQuantity = closingQty;
-                    model.IssuedDate = DateTime.Now;
-                    model.Status = "Issued";
-                    _db.EmployeeIssueMaterials.Add(model);
-                }
+                // 🔄 Update Request
+                request.IssuingQuantity = totalIssuingQty;
+                request.ClosingQuantity = closingQty;
+                request.IssuedDate = DateTime.Now;
+                request.IssuedBy = model.IssuedBy;
+                request.Status = (request.IssuingQuantity == request.RequestingQuantity) ? "Issued" : "Ongoing";
+                request.AvailableQuantity = closingQty;
 
-                // Update MaterialMasterList
+                System.Diagnostics.Debug.WriteLine("[DEBUG] Updated Request - IssuingQty = " + request.IssuingQuantity + ", ClosingQty = " + request.ClosingQuantity + ", Status = " + request.Status);
+
+                // 📦 Update MaterialMasterList
                 var masterItem = _db.MaterialMasterLists.FirstOrDefault(m =>
                     m.AssetType == model.AssetType &&
                     m.MaterialCategory == model.MaterialCategory &&
-                    m.MaterialSubCategory == model.MaterialSubCategory
+                    m.MaterialSubCategory == model.MSubCategory
                 );
 
                 if (masterItem != null)
@@ -209,14 +212,18 @@ namespace WebApplication5.Controllers
                     masterItem.AvailableQuantity = closingQty;
                     masterItem.MaterialUpdatedDate = DateTime.Now;
                     masterItem.UpdatedBy = model.IssuedBy;
+
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Updated MaterialMasterList for " + masterItem.MaterialSubCategory + " with new AvailableQty = " + masterItem.AvailableQuantity);
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("[WARNING] No MaterialMasterList item found for provided category/subcategory.");
                 }
 
-                // Update Request table
-                request.IssuingQuantity = totalIssuingQty;
-                request.AvailableQuantity = closingQty;
-                request.Status = (request.IssuingQuantity == request.RequestingQuantity) ? "Issued" : "Ongoing";
-
                 _db.SaveChanges();
+
+                System.Diagnostics.Debug.WriteLine("[SUCCESS] Material issued and changes saved to DB.");
+                System.Diagnostics.Debug.WriteLine("========== [POST] IssueMaterial END ==========");
 
                 TempData["SuccessMessage"] = "Material issued successfully!";
                 return RedirectToAction("EmployeeRequests", "Home");
@@ -227,7 +234,7 @@ namespace WebApplication5.Controllers
                 {
                     foreach (var ve in eve.ValidationErrors)
                     {
-                        System.Diagnostics.Debug.WriteLine($"- Property: \"{ve.PropertyName}\", Error: \"{ve.ErrorMessage}\"");
+                        System.Diagnostics.Debug.WriteLine($"[VALIDATION ERROR] Property: \"{ve.PropertyName}\", Error: \"{ve.ErrorMessage}\"");
                     }
                 }
 
@@ -235,9 +242,6 @@ namespace WebApplication5.Controllers
                 throw;
             }
         }
-
-
-
 
 
         public ActionResult HODIssueForm(int hodrequestId, string msubCategory)
@@ -453,14 +457,36 @@ namespace WebApplication5.Controllers
                 .ToList();
 
             // Apply filters
+            //if (fromDate.HasValue)
+            //{
+            //    query = query.Where(r => r.RequestDate >= fromDate.Value).ToList();
+            //}
+            //if (toDate.HasValue)
+            //{
+            //    query = query.Where(r => r.RequestDate <= toDate.Value).ToList();
+            //}
             if (fromDate.HasValue)
             {
-                query = query.Where(r => r.RequestDate >= fromDate.Value).ToList();
+                query = query.Where(r => r.RequestDate >= fromDate.Value.Date).ToList();
             }
+
             if (toDate.HasValue)
             {
-                query = query.Where(r => r.RequestDate <= toDate.Value).ToList();
+                DateTime inclusiveToDate = toDate.Value.Date.AddDays(1).AddTicks(-1);
+                query = query.Where(r => r.RequestDate <= inclusiveToDate).ToList();
             }
+
+            //if (fromDate.HasValue)
+            //{
+            //    query = query.Where(r => r.RequestDate >= fromDate.Value.Date);
+            //}
+
+            //if (toDate.HasValue)
+            //{
+            //    DateTime inclusiveToDate = toDate.Value.Date.AddDays(1).AddTicks(-1);
+            //    query = query.Where(r => r.RequestDate <= inclusiveToDate);
+            //}
+
 
             // Pagination
             int totalRequests = query.Count();
@@ -482,7 +508,7 @@ namespace WebApplication5.Controllers
 
         } 
         
-        public ActionResult IssuedRequest()
+        public ActionResult IssuedRequest(DateTime? fromDate, DateTime? toDate)
         {
 
             var userID = Session["UserID"] as string;
@@ -518,11 +544,20 @@ namespace WebApplication5.Controllers
                 })
                 .ToList();
 
+            if (fromDate.HasValue)
+            {
+                groupedData = groupedData.Where(r => r.RequestDate >= fromDate.Value.Date).ToList();
+            }
+
+            if (toDate.HasValue)
+            {
+                DateTime inclusiveToDate = toDate.Value.Date.AddDays(1).AddTicks(-1);
+                groupedData = groupedData.Where(r => r.RequestDate <= inclusiveToDate).ToList();
+            }
+
             return View(groupedData);
         }
 
-
-        
 
         public ActionResult HODRequests(DateTime? fromDate, DateTime? toDate, string requestType = "Employee", int page = 1, int pageSize = 10)
         {
@@ -642,7 +677,7 @@ return View(model);
         }
 
 
-        public ActionResult IssuedRequests()
+        public ActionResult IssuedRequests(DateTime? fromDate, DateTime? toDate)
         {
 
 
@@ -679,6 +714,18 @@ return View(model);
                     Materials = g.ToList() // All materials under this RequestID
                 })
                 .ToList();
+
+            if (fromDate.HasValue)
+            {
+                groupedData = groupedData.Where(r => r.RequestDate >= fromDate.Value.Date).ToList();
+            }
+
+            if (toDate.HasValue)
+            {
+                DateTime inclusiveToDate = toDate.Value.Date.AddDays(1).AddTicks(-1);
+                groupedData = groupedData.Where(r => r.RequestDate <= inclusiveToDate).ToList();
+            }
+
 
             return View(groupedData);
         }
@@ -830,173 +877,7 @@ public JsonResult GetMaterialSubCategories(string categoryName)
         
 
 
-//        public ActionResult AddAssetType()
-//        {
-
-//            return View();
-//        }
-
-//        // POST: AssetType/Create
-//        [HttpPost]
-//        [ValidateAntiForgeryToken]
-//        public ActionResult AssetTypeView(AssetType model)
-//        {
-//            if (ModelState.IsValid)
-//            {
-//                try
-//                {
-//                    AssetType assetType = new AssetType
-//                    {
-//                        AssetType1 = model.AssetType1?.Trim() // Ensure no null or whitespace issues
-//                    };
-
-//                    _db.AssetTypes.Add(assetType);
-//                    _db.SaveChanges();
-
-//                    TempData["SuccessMessage"] = "Asset Type added successfully!";
-//                    return RedirectToAction("AddAssetType"); // Redirect to avoid duplicate submissions
-//                }
-//                catch (DbEntityValidationException ex)
-//                {
-//                    foreach (var validationErrors in ex.EntityValidationErrors)
-//                    {
-//                        foreach (var validationError in validationErrors.ValidationErrors)
-//                        {
-//                            ModelState.AddModelError(validationError.PropertyName, validationError.ErrorMessage);
-//                        }
-//                    }
-//                }
-//            }
-
-//            return View(model);
-//        }
-//public ActionResult AddMaterialCategory()
-//        {
-//            ViewBag.AssetTypeID = new SelectList(_db.AssetTypes, "AssetTypeID", "AssetType1"); // Populate dropdown
-
-//            return View();
-//        }
-
-
-//        [HttpPost]
-//        [ValidateAntiForgeryToken]
-//        public ActionResult MaterialCategoryView(int AssetTypeID, string[] MCategoryNames)
-//        {
-//            try
-//            {
-//                if (MCategoryNames == null || MCategoryNames.Length == 0)
-//                {
-//                    ModelState.AddModelError("", "Please enter at least one material category.");
-//                    ViewBag.AssetTypeID = new SelectList(_db.AssetTypes, "AssetTypeID", "AssetType1", AssetTypeID);
-//                    return View();
-//                }
-
-//                // Trim and filter out empty category names
-//                var validCategories = MCategoryNames
-//                    .Select(name => name?.Trim())
-//                    .Where(name => !string.IsNullOrWhiteSpace(name))
-//                    .Distinct(StringComparer.OrdinalIgnoreCase) // Remove duplicate entries from input
-//                    .ToList();
-
-//                if (validCategories.Count == 0)
-//                {
-//                    ModelState.AddModelError("", "Please enter valid material categories.");
-//                    ViewBag.AssetTypeID = new SelectList(_db.AssetTypes, "AssetTypeID", "AssetType1", AssetTypeID);
-//                    return View();
-//                }
-
-//                // Get existing categories for the selected AssetType
-//                var existingCategories = _db.MaterialCategories
-//                    .Where(mc => mc.AssetTypeID == AssetTypeID)
-//                    .Select(mc => mc.MaterialCategory1.ToLower())
-//                    .ToHashSet(); // Optimized lookup
-
-//                List<string> skippedCategories = new List<string>();
-
-//                foreach (var categoryName in validCategories)
-//                {
-//                    string lowerCategory = categoryName.ToLower();
-
-//                    if (existingCategories.Contains(lowerCategory))
-//                    {
-//                        skippedCategories.Add(categoryName);
-//                        continue;
-//                    }
-
-//                    MaterialCategory newCategory = new MaterialCategory
-//                    {
-//                        AssetTypeID = AssetTypeID,
-//                        MaterialCategory1 = categoryName
-//                    };
-
-//                    _db.MaterialCategories.Add(newCategory);
-//                }
-
-//                _db.SaveChanges();
-
-//                if (skippedCategories.Any())
-//                {
-//                    TempData["WarningMessage"] = "Some categories were skipped because they already exist: " + string.Join(", ", skippedCategories);
-//                }
-
-//                TempData["SuccessMessage"] = "Material categories added successfully!";
-//                return RedirectToAction("AddMaterialCategory");
-//            }
-//            catch (Exception ex)
-//            {
-//                ModelState.AddModelError("", "An error occurred while saving categories: " + ex.Message);
-//            }
-
-//            ViewBag.AssetTypeID = new SelectList(_db.AssetTypes, "AssetTypeID", "AssetType1", AssetTypeID);
-//            return View();
-//        }
-    
-
-
-
-//        public ActionResult AddMaterialSubCategory()
-//        {
-//            ViewBag.AssetTypeID = new SelectList(_db.AssetTypes, "AssetTypeID", "AssetType1");
-//            ViewBag.MID = new SelectList(Enumerable.Empty<SelectListItem>(), "MID", "MCategoryName"); // Initially empty dropdown
-
-//            var existingSubcategories = _db.MaterialSubCategories.ToList(); // Fetch existing subcategories
-//            return View(existingSubcategories);
-
-//        }
-
-
-
-//        [HttpPost]
-//        public JsonResult MaterialSubCategoryView(int MID, int PurchaseDepartment, List<string> MSubCategoryNames)
-//        {
-//            try
-//            {
-//                if (MSubCategoryNames == null || MSubCategoryNames.Count == 0)
-//                {
-//                    return Json(new { success = false, message = "No subcategories provided." });
-//                }
-
-//                foreach (var subcategoryName in MSubCategoryNames)
-//                {
-//                    var newSubCategory = new MaterialSubCategory
-//                    {
-//                        MID = MID,
-//                        //PDNo = PurchaseDepartment,
-//                        MaterialSubCategory1 = subcategoryName.Trim()
-//                    };
-
-//                    _db.MaterialSubCategories.Add(newSubCategory);
-//                }
-
-//                _db.SaveChanges();
-
-//                return Json(new { success = true, message = "Subcategories saved successfully!" });
-//            }
-//            catch (Exception ex)
-//            {
-//                return Json(new { success = false, message = "Error: " + ex.Message });
-//            }
-//        }
+//       
 
         //Fetch Material Categories based on selected Asset Type(AJAX)
         public JsonResult GetMaterialCategories1(int assetTypeID)
@@ -1021,163 +902,7 @@ public JsonResult GetMaterialSubCategories(string categoryName)
 
 
 
-        //public ActionResult RaiseRequest(string assetType, string materialCategory, string materialSubCategory, DateTime? fromDate, DateTime? toDate)
-        //{
-        //    var requests = _db.RequiredMaterials
-        //                      .Where(r => r.Status == "New") // Filter only "New" status
-        //                      .AsQueryable();
-
-        //    // Ensure ViewBag variables are always initialized
-        //    ViewBag.AssetTypes = _db.RequiredMaterials
-        //                            .Where(r => r.Status == "New")
-        //                            .Select(r => r.AssetType)
-        //                            .Distinct()
-        //                            .ToList();
-
-        //    ViewBag.MaterialCategories = _db.RequiredMaterials
-        //                                    .Where(r => r.Status == "New")
-        //                                    .Select(r => r.MaterialCategory)
-        //                                    .Distinct()
-        //                                    .ToList();
-
-        //    ViewBag.MaterialSubCategories = _db.RequiredMaterials
-        //                                       .Where(r => r.Status == "New")
-        //                                       .Select(r => r.MaterialSubCategory)
-        //                                       .Distinct()
-        //                                       .ToList();
-
-        //    if (!string.IsNullOrEmpty(assetType))
-        //    {
-        //        requests = requests.Where(r => r.AssetType == assetType);
-        //        ViewBag.SelectedAssetType = assetType;
-        //    }
-        //    if (!string.IsNullOrEmpty(materialCategory))
-        //    {
-        //        requests = requests.Where(r => r.MaterialCategory == materialCategory);
-        //        ViewBag.SelectedMaterialCategory = materialCategory;
-        //    }
-        //    if (!string.IsNullOrEmpty(materialSubCategory))
-        //    {
-        //        requests = requests.Where(r => r.MaterialSubCategory == materialSubCategory);
-        //        ViewBag.SelectedMaterialSubCategory = materialSubCategory;
-        //    }
-
-        //    // Calculate total requested quantity for "New" status
-        //    int totalRequestedQuantity = requests.Sum(r => (int?)r.RequiredQuantity) ?? 0;
-        //    ViewBag.TotalRequestedQuantity = totalRequestedQuantity;
-
-        //    var requestList = requests.ToList();
-        //    return View(requestList);
-        //}
-
-
-
-
-
-
-
-        //public ActionResult GetMaterialCategoriesByAssetType(string assetType)
-        //{
-        //    var categories = _db.RequiredMaterials
-        //                        .Where(r => r.AssetType == assetType)
-        //                        .Select(r => r.MaterialCategory)
-        //                        .Distinct()
-        //                        .ToList();
-
-        //    return Json(categories, JsonRequestBehavior.AllowGet);
-        //}
-
-
-
-        //public ActionResult GetMaterialSubCategories1(string assetType, string materialCategory)
-        //{
-        //    var subCategories = _db.RequiredMaterials
-        //                           .Where(r => r.AssetType == assetType && r.MaterialCategory == materialCategory)
-        //                           .Select(r => r.MaterialSubCategory)
-        //                           .Distinct()
-        //                           .ToList();
-
-        //    return Json(subCategories, JsonRequestBehavior.AllowGet);
-        //}
-
-
-
-        //[HttpPost]
-        //public ActionResult RaiseRequestAction(string AssetType, string MaterialCategory, string MaterialSubCategory, int TotalRequestedQuantity)
-        //{
-        //    try
-        //    {
-        //        System.Diagnostics.Debug.WriteLine("RaiseRequestAction called.");
-
-        //        if (string.IsNullOrEmpty(AssetType) || string.IsNullOrEmpty(MaterialCategory) || string.IsNullOrEmpty(MaterialSubCategory))
-        //        {
-        //            ViewBag.ErrorMessage = "Invalid request data.";
-        //            return RedirectToAction("RaiseRequest");
-        //        }
-
-        //        System.Diagnostics.Debug.WriteLine($"Request Data - AssetType: {AssetType}, MaterialCategory: {MaterialCategory}, MaterialSubCategory: {MaterialSubCategory}, RequestingQuantity: {TotalRequestedQuantity}");
-
-        //        int storeAdminID = Convert.ToInt32(Session["UserID"]);
-        //        var storeAdmin = _db.StoreAdmins.FirstOrDefault(s => int.Parse(s.StoreAdminID) == storeAdminID);
-        //        int universityID = storeAdmin?.UniversityID ?? 0;
-
-        //        var requiredMaterials = _db.RequiredMaterials
-        //            .Where(r => r.AssetType == AssetType
-        //                     && r.MaterialCategory == MaterialCategory
-        //                     && r.MaterialSubCategory == MaterialSubCategory
-        //                     && r.Status == "New")
-        //            .ToList();
-
-        //        if (!requiredMaterials.Any())
-        //        {
-        //            ViewBag.ErrorMessage = "No pending requests found.";
-        //            return RedirectToAction("RaiseRequest");
-        //        }
-
-        //        foreach (var item in requiredMaterials)
-        //        {
-        //            item.Status = "Raised";
-        //        }
-        //        _db.SaveChanges();
-
-        //        RequestingMaterial newRequest = new RequestingMaterial
-        //        {
-        //            AssetType = AssetType,
-        //            MaterialCategory = MaterialCategory,
-        //            MaterialSubCategory = MaterialSubCategory,
-        //            RequestingQuantity = TotalRequestedQuantity,
-        //            Status = "Raised",
-        //            RequestedDate = DateTime.Now,
-        //            StoreAdminID = storeAdminID,
-        //            UniversityID = universityID,
-        //            PurchaseDepartmentID = 0,
-        //            VendorID = 0
-        //        };
-
-        //        _db.RequestingMaterials.Add(newRequest);
-        //        _db.SaveChanges();
-
-        //        TempData["SuccessMessage"] = "Request successfully raised!";
-        //        return RedirectToAction("RaiseRequest");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        TempData["ErrorMessage"] = "Error: " + ex.Message;
-        //        return RedirectToAction("RaiseRequest");
-        //    }
-        //}
-
-
-        //public ActionResult MyRequests()
-        //{
-        //    int storeAdminID = Convert.ToInt32(Session["UserID"]);
-        //    var raisedRequests = _db.RequiredMaterials
-        //        .Where(r => r.StoreAdminID == storeAdminID && r.Status == "Raised")
-        //        .OrderByDescending(r => r.RequestedDate) // Sort by Requested Date (Latest First)
-        //        .ToList();
-
-        //    return View(raisedRequests);
-        //}
+       
 
         protected override void OnActionExecuting(ActionExecutingContext filterContext)
         {
@@ -1392,156 +1117,7 @@ public JsonResult GetMaterialSubCategories(string categoryName)
         }
 
 
-        //public ActionResult CentralPODetails()
-        //{
-        //    if (TempData["SuccessMessage"] != null)
-        //    {
-        //        ViewBag.SuccessMessage = TempData["SuccessMessage"].ToString();
-        //    }
-
-        //    return View(); // just the empty search form initially
-        //}
-
-        //[HttpPost]
-        //public ActionResult CentralPODetails(string poNumber)
-        //{
-        //    if (string.IsNullOrEmpty(poNumber))
-        //    {
-        //        ViewBag.Error = "Please enter a PO Number.";
-        //        return View("PODetails");
-        //    }
-
-        //    var po = _db.CentralPurchaseOrders.FirstOrDefault(p => p.PONumber.ToString() == poNumber);
-        //    if (po == null)
-        //    {
-        //        ViewBag.Error = $"No Purchase Order found with PO Number {poNumber}.";
-        //        return View("PODetails");
-        //    }
-
-        //    var items = _db.CentralPurchaseOrderItems.Where(i => i.PONumber.ToString() == poNumber).ToList();
-
-
-        //    var viewModel = new CentralGeneratePOViewModel
-        //    {
-        //        PONumber = po.PONumber.ToString(),
-        //        PODate = (DateTime)po.PODate,
-        //        CentralDepartmentName = po.CentralDepartmentName,
-        //        CentralDepartmentAddress = po.CentralDepartmentAddress,
-        //        CentralDepartmentPhone = po.CentralDepartmentPhone,
-        //        CentralDepartmentEmail = po.CentralDepartmentEmail,
-        //        RequisitionNo = po.RequisitionNo,
-        //        ShipTo = po.ShipTo,
-        //        RequisitionedBy = po.RequisitionedBy,
-        //        WhenShip = po.WhenShip,
-        //        ShipVia = po.ShipVia,
-        //        FOBPoint = po.FOBPoint,
-        //        Terms = po.Terms,
-        //        CopiesOfInvoice = po.CopiesOfInvoice ?? 0,
-        //        AuthorizedBy = po.AuthorizedBy,
-        //        StoreUploads = po.StoreUploads,
-
-        //        PurchaseOrderItems = items.Select(item => new PurchaseOrderItem
-        //        {
-        //            POItemID = item.POItemID,
-        //            QtyOrdered = item.QtyOrdered ?? 0,
-        //            QtyReceived = item.QtyReceived,
-        //            AcceptedQty = item.AcceptedQty,
-        //            RejectedQty = item.RejectedQty,
-        //            Description = item.Description,
-        //            UnitPrice = item.UnitPrice ?? 0,
-        //            Total = item.Total,
-        //            Remarks = item.Remarks,
-        //            VendorEmail = item.VendorEmail,
-        //             Unit = item.Unit,
-        //            Make = item.Make,
-        //            ExpiryDate = item.ExpiryDate
-
-        //        }).ToList()
-        //    };
-        //    return View(viewModel);
-        //}
-
-        //[HttpPost]
-        //public ActionResult CentralUpdatePOItems(CentralGeneratePOViewModel model)
-        //{
-        //    if (model.PurchaseOrderItems != null && model.PurchaseOrderItems.Count > 0)
-        //    {
-        //        foreach (var item in model.PurchaseOrderItems)
-        //        {
-        //            var existingItem = _db.CentralPurchaseOrderItems.FirstOrDefault(p => p.POItemID == item.POItemID);
-
-        //            if (existingItem != null)
-        //            {
-        //                existingItem.QtyReceived = item.QtyReceived;
-        //                existingItem.Remarks = item.Remarks;
-        //                existingItem.RejectedQty = item.RejectedQty;
-        //                existingItem.AcceptedQty = item.AcceptedQty;
-        //                existingItem.Make = item.Make;
-        //                existingItem.ExpiryDate = item.ExpiryDate;
-        //                existingItem.Unit = item.Unit;
-
-
-        //                // Update TotalCost based on ReceivedQty * UnitPrice
-        //                existingItem.Total = (item.AcceptedQty ?? 0) * (existingItem.UnitPrice ?? 0);
-
-        //                // ✅ Update AvailableQuantity for each unique material in the PO
-        //                var material = _db.MaterialMasterLists
-        //                    .FirstOrDefault(m => m.MaterialSubCategory == existingItem.Description);
-
-        //                if (material != null && item.AcceptedQty.HasValue)
-        //                {
-        //                    material.AvailableQuantity += item.AcceptedQty.Value;
-        //                    material.IsLowStockAlertSent = false; // allow future alerts
-        //                    material.Units = existingItem.Unit;
-        //                    material.Make = existingItem.Make;
-        //                    material.ExpiryDate = existingItem.ExpiryDate;
-        //                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Updated Material: {material.MaterialSubCategory}, New AvailableQty: {material.AvailableQuantity}, Unit: {item.Unit},Make: {item.Make},ExpiryDate:{item.ExpiryDate}");
-        //                }
-        //            }
-        //            else
-        //            {
-        //                // Log or debug to make sure this is not null
-        //                System.Diagnostics.Debug.WriteLine($"POItemID {item.POItemID} not found!");
-        //            }
-        //            // ✅ Update the PO status to Delivered
-        //            var po = _db.CentralPurchaseOrders.FirstOrDefault(p => p.PONumber.ToString() == model.PONumber);
-        //            if (po != null)
-        //            {
-        //                po.Status = "Delivered";
-        //           }
-
-        //        }
-        //            // ✅ Save certification file
-        //            // Save Certification file
-        //            if (model.CertificationFile != null && model.CertificationFile.ContentLength > 0)
-        //            {
-        //                string fileName = Path.GetFileName(model.CertificationFile.FileName);
-        //                string path = Path.Combine(Server.MapPath("~/UploadedCertificates/"), fileName);
-        //                model.CertificationFile.SaveAs(path);
-        //                var po = _db.CentralPurchaseOrders.FirstOrDefault(p => p.PONumber.ToString() == model.PONumber);
-
-        //                if (po != null)
-        //                {
-        //                    po.StoreUploads = "/UploadedCertificates/" + fileName;
-        //                }
-        //            }
-
-
-        //        foreach (var item in model.PurchaseOrderItems)
-        //        {
-        //            System.Diagnostics.Debug.WriteLine($"POItemID: {item.POItemID}, Received: {item.QtyReceived}, Remarks: {item.Remarks},Accepted: {item.AcceptedQty},Rejected: {item.RejectedQty}");
-        //        }
-
-        //        _db.SaveChanges();
-        //        TempData["SuccessMessage"] = "Purchase Order items updated successfully.";
-        //    }
-        //    else
-        //    {
-        //        TempData["ErrorMessage"] = "No items received to update.";
-        //    }
-
-        //    return RedirectToAction("CentralPODetails", new { poNumber = model.PONumber });
-        //}
+      
 
         [HttpGet]
         public ActionResult Report(DateTime? startDate, DateTime? endDate)
@@ -1549,24 +1125,24 @@ public JsonResult GetMaterialSubCategories(string categoryName)
             if (startDate == null || endDate == null)
             {
                 TempData["Error"] = "Please select both start and end dates.";
-                return View(new ReportViewModel()); // empty model
+                return View(new ReportViewModel()); // empty model  
             }
 
             DateTime fromDate = startDate.Value.Date;
             DateTime toDate = endDate.Value.Date.AddDays(1).AddSeconds(-1);
 
-            // Fetch detailed data
-            var employeeData = _db.EmployeeIssueMaterials
+            // Fetch detailed data  
+            var employeeData = _db.Requests
                 .Where(e => e.IssuedDate >= fromDate && e.IssuedDate <= toDate)
                 .Select(e => new MaterialIssueReportViewModel
                 {
-                    MaterialName = e.MaterialSubCategory,
-                    IssuedDate = e.IssuedDate,
+                    MaterialName = e.MSubCategory,
+                    IssuedDate = e.IssuedDate ?? DateTime.MinValue, // Explicit conversion to handle nullable DateTime  
                     RequestedQuantity = e.RequestingQuantity,
-                    IssuedQuantity = e.IssuingQuantity,
-                    ClosingQuantity = e.ClosingQuantity,
+                    IssuedQuantity = e.IssuingQuantity ?? 0,
+                    ClosingQuantity = e.ClosingQuantity ?? 0,
                     IssuedTo = e.EmpID,
-                    Role= "Employee"
+                    Role = "Employee"
                 });
 
             var hodData = _db.HODIssueMaterials
@@ -1574,12 +1150,12 @@ public JsonResult GetMaterialSubCategories(string categoryName)
                 .Select(h => new MaterialIssueReportViewModel
                 {
                     MaterialName = h.MaterialSubCategory,
-                    IssuedDate = (DateTime)h.IssuedDate,
+                    IssuedDate = h.IssuedDate ?? DateTime.MinValue, // Explicit conversion to handle nullable DateTime  
                     RequestedQuantity = h.RequestingQuantity ?? 0,
                     IssuedQuantity = h.IssuingQuantity ?? 0,
                     ClosingQuantity = h.ClosingQuantity ?? 0,
                     IssuedTo = h.HODID,
-                    Role ="HOD"
+                    Role = "HOD"
                 });
 
             var detailedList = employeeData
@@ -1588,7 +1164,7 @@ public JsonResult GetMaterialSubCategories(string categoryName)
                 .ThenBy(x => x.MaterialName)
                 .ToList();
 
-            // Generate summary
+            // Generate summary  
             var summaryList = detailedList
                 .GroupBy(x => x.MaterialName)
                 .Select(g => new MaterialSummaryViewModel

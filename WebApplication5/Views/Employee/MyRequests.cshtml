@@ -19,6 +19,25 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
+    <form method="get" action="@Url.Action("MyRequests", "Employee")">
+        <div class="d-flex justify-content-center align-items-center mb-3">
+            <div class="form-group me-2">
+                <label for="fromDate" class="form-label">From Date:</label>
+                <input type="date" id="fromDate" name="fromDate" class="form-control"
+                       value="@Request.QueryString["fromDate"]" />
+            </div>
+
+            <div class="form-group me-2">
+                <label for="toDate" class="form-label">To Date:</label>
+                <input type="date" id="toDate" name="toDate" class="form-control"
+                       value="@Request.QueryString["toDate"]" />
+            </div>
+
+            <div class="form-group mt-4">
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+        </div>
+    </form>
 
     <div class="container mt-4">
         <h3 class="text-center">My Requests</h3>
@@ -50,6 +69,7 @@
                                         <th>Sub-Category</th>
                                         <th>Available Quantity</th>
                                         <th>Requesting Quantity</th>
+                                        <th>Approved Quantity</th>
                                         <th>Issuing Quantity</th>
                                         <th>Pending Quantity</th>
                                         <th>Remarks</th>
@@ -64,6 +84,7 @@
                                             <td>@asset.MSubCategory</td>
                                             <td>@asset.AvailableQuantity</td>
                                             <td>@asset.RequestingQuantity</td>
+                                            <td>@asset.ApprovedQuantity</td>
                                             <td>@asset.IssuingQuantity</td>
                                             <td>@asset.PendingQuantity</td>
                                             <td>@asset.Remarks</td>

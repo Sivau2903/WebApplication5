@@ -39,7 +39,6 @@
         <AssociationConnector Association="ASPModel.FK__PurchaseO__PONum__3BFFE745" ManuallyRouted="false" />
         <AssociationConnector Association="ASPModel.FK_StoreAdmin_University" ManuallyRouted="false" />
         <EntityTypeShape EntityType="ASPModel.EmployeeIssueMaterial" Width="1.5" PointX="14.375" PointY="18.75" />
-        <EntityTypeShape EntityType="ASPModel.Request" Width="1.5" PointX="17.375" PointY="0.75" />
         <EntityTypeShape EntityType="ASPModel.HODRequest" Width="1.5" PointX="10.375" PointY="10.75" />
         <EntityTypeShape EntityType="ASPModel.HODIssueMaterial" Width="1.5" PointX="16.375" PointY="18.75" />
         <EntityTypeShape EntityType="ASPModel.TempSelectedMaterial" Width="1.5" PointX="18.375" PointY="18.75" />
@@ -49,6 +48,7 @@
         <EntityTypeShape EntityType="ASPModel.IUCD_" Width="1.5" PointX="12.375" PointY="9.75" />
         <EntityTypeShape EntityType="ASPModel.CentralAuditor" Width="1.5" PointX="0.75" PointY="3.75" />
         <EntityTypeShape EntityType="ASPModel.SavetoCentral" Width="1.5" PointX="14.375" PointY="14.75" />
+        <EntityTypeShape EntityType="ASPModel.Request" Width="1.5" PointX="17.375" PointY="0.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

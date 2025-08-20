@@ -465,7 +465,6 @@
     <Content Include="Views\CentralPurchaseDepartment\POPDFView.cshtml" />
     <Content Include="Views\CentralPurchaseDepartment\SendMailConfirmation.cshtml" />
     <Content Include="Views\CentralAccountant\PODetails.cshtml" />
-    <Content Include="Views\Home\CentralPODetails.cshtml" />
     <Content Include="Views\CentralAccountant\AllPOs.cshtml" />
     <Content Include="Views\LocalAccountant\AllPOs.cshtml" />
     <Content Include="Views\CentralPurchaseDepartment\GenerateBulkPO.cshtml" />

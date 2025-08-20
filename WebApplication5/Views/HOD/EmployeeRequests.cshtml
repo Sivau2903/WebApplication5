@@ -159,6 +159,21 @@
     {
         <p>No ongoing requests.</p>
     }
+
+    <div class="modal fade" id="pastRequestsModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Past Requests</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="pastRequestsBody">
+                    <!-- AJAX content -->
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <!-- APPROVED REQUESTS -->
@@ -321,7 +336,7 @@
                                         <th>Available Quantity</th>
                                         <th>Requesting Quantity</th>
 
-                                        <th>Approved Quantity</th>
+                                        @*<th>Approved Quantity</th>*@
                                         <th>Remarks</th>
 
 
@@ -338,7 +353,7 @@
                                             <td>@req.MSubCategory</td>
                                             <td>@req.AvailableQuantity</td>
                                             <td>@req.RequestingQuantity</td>
-                                            <td>@req.ApprovedQuantity</td>
+                                            @*<td>@req.ApprovedQuantity</td>*@
                                             <td>@req.Remarks</td>
 
                                         </tr>
@@ -404,30 +419,34 @@
 
         // Expand/Collapse Request Details on Click
         $(document).on("click", ".toggle-details", function () {
-            var requestId = $(this).data("requestid");
-            var detailsRow = $("#details-" + requestId);
+            const id = $(this).data("requestid");
+            console.log("Clicked ID:", id);
 
-            console.log("Request ID Clicked:", requestId); // Debugging
+            const detailsRow = $("#details-" + id);
+            console.log("Found rows:", detailsRow.length);
 
-            if (detailsRow.length === 0) {
-                console.error("Error: No details row found for Request ID:", requestId);
+            if (!detailsRow.length) {
+                console.error("Missing details row for:", id);
                 return;
             }
-
-            $(".details-row").not(detailsRow).hide(); // Hide other rows
-            detailsRow.toggle(); // Toggle visibility
+            $(".details-row").not(detailsRow).hide();
+            detailsRow.toggle();
         });
+
+
 
         // ✅ View Past Requests
         $(".viewPast").click(function () {
-            let empId = $(this).data("empid");
-            $.get("/HOD/GetPastRequests", { empId: empId }, function (data) {
-                $("#pastRequestsBody").html(data);
-                $("#pastRequestsModal").modal("show");
-            }).fail(function () {
-                alert("Error fetching past requests.");
-            });
-        });
+  let empId = $(this).data("empid");
+  let url = '@Url.Action("GetPastRequests", "HOD")';
+
+  $.get(url, { empId: empId }, function (html) {
+    $("#pastRequestsBody").html(html);
+    $("#pastRequestsModal").modal("show");
+  }).fail(function () {
+    alert("Error fetching past requests.");
+  });
+});
 
         // ✅ Restrict Approving Quantity
         $(".approvingQuantity").on("change", function () {
@@ -480,7 +499,8 @@
             console.log("Updating request:", requestId, msubCategory, approvingQuantity, actionType, remarks); // Debugging
 
             $.ajax({
-                url: "/HOD/UpdateRequest",
+
+                url: "@Url.Action("UpdateRequest", "HOD")",
                 type: "POST",
                 data: {
                     requestId: requestId,

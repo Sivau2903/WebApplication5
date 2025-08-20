@@ -39,8 +39,19 @@ namespace WebApplication5.Models
                         string body = $"Material '{material.MaterialSubCategory}' is low in stock.\nAvailable: {material.AvailableQuantity}, Limit: {material.MinimumLimit}";
 
                         // Example: Send to Stock Incharge and Local Purchase Dept
-                        SendEmail("kurmalapravallika@gmail.com", subject, body);
-                        SendEmail("flute0782@gmail.com", subject, body);
+                        var storeAdmin = db.StoreAdmins.FirstOrDefault(sa => sa.StoreAdminID == material.UpdatedBy);
+
+                        if (storeAdmin != null && !string.IsNullOrEmpty(storeAdmin.EmailID))
+                        {
+                            // Step 3: Send email to StoreAdmin
+                            SendEmail(storeAdmin.EmailID, subject, body);
+                        }
+                        else
+                        {
+                            // Optional: Log or handle case where no StoreAdmin found
+                            Console.WriteLine($"No email found for StoreAdminID: {material.UpdatedBy}");
+                        }
+
 
                         // Mark as alert sent
                         material.IsLowStockAlertSent = true;

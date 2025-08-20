@@ -133,7 +133,7 @@
         });
 
         $.ajax({
-            url: '/IUCD/UpdateOrderQuantitiesWithDocument',
+            url: '@Url.Action("UpdateOrderQuantitiesWithDocument", "IUCD")',
             type: 'POST',
             data: formData,
             processData: false,

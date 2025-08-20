@@ -389,6 +389,10 @@
           <Property Name="AvailableQuantity" Type="int" />
           <Property Name="PendingQuantity" Type="int" />
           <Property Name="Remarks" Type="char" MaxLength="300" />
+          <Property Name="ClosingQuantity" Type="int" />
+          <Property Name="IssuedDate" Type="datetime" />
+          <Property Name="IssuedBy" Type="nvarchar" MaxLength="100" />
+          <Property Name="Issue" Type="int" />
         </EntityType>
         <EntityType Name="SavetoCentral">
           <Key>
@@ -1303,7 +1307,6 @@
             <End Role="StoreAdmin" EntitySet="StoreAdmins" />
           </AssociationSet>
           <EntitySet Name="EmployeeIssueMaterials" EntityType="ASPModel.EmployeeIssueMaterial" />
-          <EntitySet Name="Requests" EntityType="ASPModel.Request" />
           <EntitySet Name="HODRequests" EntityType="ASPModel.HODRequest" />
           <EntitySet Name="HODIssueMaterials" EntityType="ASPModel.HODIssueMaterial" />
           <EntitySet Name="TempSelectedMaterials" EntityType="ASPModel.TempSelectedMaterial" />
@@ -1316,6 +1319,7 @@
           <EntitySet Name="IUCD_" EntityType="ASPModel.IUCD_" />
           <EntitySet Name="CentralAuditors" EntityType="ASPModel.CentralAuditor" />
           <EntitySet Name="SavetoCentrals" EntityType="ASPModel.SavetoCentral" />
+          <EntitySet Name="Requests" EntityType="ASPModel.Request" />
         </EntityContainer>
         <EntityType Name="EmployeeIssueMaterial">
           <Key>
@@ -1338,27 +1342,6 @@
           <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="PreviousIssuingQuantity" Type="Int32" />
           <Property Name="Issue" Type="Int32" />
-        </EntityType>
-        <EntityType Name="Request">
-          <Key>
-            <PropertyRef Name="SNO" />
-          </Key>
-          <Property Name="SNO" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="EmpID" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="AssetType" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="MaterialCategory" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="MSubCategory" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="RequestingQuantity" Type="Int32" Nullable="false" />
-          <Property Name="ApprovedQuantity" Type="Int32" />
-          <Property Name="IssuingQuantity" Type="Int32" />
-          <Property Name="RequestDate" Type="DateTime" Precision="3" />
-          <Property Name="HODID" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="StoreAdminID" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="RequestID" Type="Int32" />
-          <Property Name="AvailableQuantity" Type="Int32" />
-          <Property Name="PendingQuantity" Type="Int32" />
-          <Property Name="Remarks" Type="String" MaxLength="300" FixedLength="true" Unicode="false" />
         </EntityType>
         <EntityType Name="HODRequest">
           <Key>
@@ -1494,6 +1477,31 @@
           <Property Name="IUCDID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="IUCDApprovedQty" Type="Int32" />
           <Property Name="IUCDApprovalDoc" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="Request">
+          <Key>
+            <PropertyRef Name="SNO" />
+          </Key>
+          <Property Name="SNO" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="EmpID" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="AssetType" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="MaterialCategory" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="MSubCategory" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="RequestingQuantity" Type="Int32" Nullable="false" />
+          <Property Name="ApprovedQuantity" Type="Int32" />
+          <Property Name="IssuingQuantity" Type="Int32" />
+          <Property Name="RequestDate" Type="DateTime" Precision="3" />
+          <Property Name="HODID" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="StoreAdminID" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="RequestID" Type="Int32" />
+          <Property Name="AvailableQuantity" Type="Int32" />
+          <Property Name="PendingQuantity" Type="Int32" />
+          <Property Name="Remarks" Type="String" MaxLength="300" FixedLength="true" Unicode="false" />
+          <Property Name="ClosingQuantity" Type="Int32" />
+          <Property Name="IssuedDate" Type="DateTime" Precision="3" />
+          <Property Name="IssuedBy" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Issue" Type="Int32" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -1831,28 +1839,6 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="Requests">
-            <EntityTypeMapping TypeName="ASPModel.Request">
-              <MappingFragment StoreEntitySet="Request">
-                <ScalarProperty Name="Remarks" ColumnName="Remarks" />
-                <ScalarProperty Name="PendingQuantity" ColumnName="PendingQuantity" />
-                <ScalarProperty Name="AvailableQuantity" ColumnName="AvailableQuantity" />
-                <ScalarProperty Name="RequestID" ColumnName="RequestID" />
-                <ScalarProperty Name="StoreAdminID" ColumnName="StoreAdminID" />
-                <ScalarProperty Name="Status" ColumnName="Status" />
-                <ScalarProperty Name="HODID" ColumnName="HODID" />
-                <ScalarProperty Name="RequestDate" ColumnName="RequestDate" />
-                <ScalarProperty Name="IssuingQuantity" ColumnName="IssuingQuantity" />
-                <ScalarProperty Name="ApprovedQuantity" ColumnName="ApprovedQuantity" />
-                <ScalarProperty Name="RequestingQuantity" ColumnName="RequestingQuantity" />
-                <ScalarProperty Name="MSubCategory" ColumnName="MSubCategory" />
-                <ScalarProperty Name="MaterialCategory" ColumnName="MaterialCategory" />
-                <ScalarProperty Name="AssetType" ColumnName="AssetType" />
-                <ScalarProperty Name="EmpID" ColumnName="EmpID" />
-                <ScalarProperty Name="SNO" ColumnName="SNO" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="HODRequests">
             <EntityTypeMapping TypeName="ASPModel.HODRequest">
               <MappingFragment StoreEntitySet="HODRequest">
@@ -1980,6 +1966,32 @@
                 <ScalarProperty Name="UniversityID" ColumnName="UniversityID" />
                 <ScalarProperty Name="LocalID" ColumnName="LocalID" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Requests">
+            <EntityTypeMapping TypeName="ASPModel.Request">
+              <MappingFragment StoreEntitySet="Request">
+                <ScalarProperty Name="Issue" ColumnName="Issue" />
+                <ScalarProperty Name="IssuedBy" ColumnName="IssuedBy" />
+                <ScalarProperty Name="IssuedDate" ColumnName="IssuedDate" />
+                <ScalarProperty Name="ClosingQuantity" ColumnName="ClosingQuantity" />
+                <ScalarProperty Name="Remarks" ColumnName="Remarks" />
+                <ScalarProperty Name="PendingQuantity" ColumnName="PendingQuantity" />
+                <ScalarProperty Name="AvailableQuantity" ColumnName="AvailableQuantity" />
+                <ScalarProperty Name="RequestID" ColumnName="RequestID" />
+                <ScalarProperty Name="StoreAdminID" ColumnName="StoreAdminID" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="HODID" ColumnName="HODID" />
+                <ScalarProperty Name="RequestDate" ColumnName="RequestDate" />
+                <ScalarProperty Name="IssuingQuantity" ColumnName="IssuingQuantity" />
+                <ScalarProperty Name="ApprovedQuantity" ColumnName="ApprovedQuantity" />
+                <ScalarProperty Name="RequestingQuantity" ColumnName="RequestingQuantity" />
+                <ScalarProperty Name="MSubCategory" ColumnName="MSubCategory" />
+                <ScalarProperty Name="MaterialCategory" ColumnName="MaterialCategory" />
+                <ScalarProperty Name="AssetType" ColumnName="AssetType" />
+                <ScalarProperty Name="EmpID" ColumnName="EmpID" />
+                <ScalarProperty Name="SNO" ColumnName="SNO" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

@@ -8,6 +8,9 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
 using WebApplication5.Models;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 
 namespace WebApplication5.Controllers
 {
@@ -24,9 +27,17 @@ namespace WebApplication5.Controllers
 
 
         [HttpPost]
-        public ActionResult Login(Loginviewmodel model)
+        public ActionResult Login(Loginviewmodel model, string CaptchaInput)
         {
             Debug.WriteLine("Login attempt started.");
+
+            // Validate CAPTCHA
+            string captchaStored = Session["Captcha"] as string;
+            if (captchaStored == null || CaptchaInput == null || !captchaStored.Equals(CaptchaInput, StringComparison.OrdinalIgnoreCase))
+            {
+                ViewBag.Message = "Invalid CAPTCHA. Please try again.";
+                return View(model);
+            }
 
             if (ModelState.IsValid)
             {
@@ -131,32 +142,46 @@ namespace WebApplication5.Controllers
         }
 
 
-        //public ActionResult Logout()
-        //{
-        //    // Clear all session data
-        //    Session.Clear();
-        //    Session.Abandon();
-        //    Session.RemoveAll();
+        public ActionResult CaptchaImage()
+        {
+            string captchaText = GenerateCaptchaText(5);
+            Session["Captcha"] = captchaText;
 
-        //    // Remove authentication cookie
-        //    if (Request.Cookies[".AspNet.ApplicationCookie"] != null)
-        //    {
-        //        var cookie = new HttpCookie(".AspNet.ApplicationCookie")
-        //        {
-        //            Expires = DateTime.Now.AddDays(-1),
-        //            Value = null
-        //        };
-        //        Response.Cookies.Set(cookie);
-        //    }
+            byte[] imageBytes = GenerateCaptchaImage(captchaText);
+            return File(imageBytes, "image/png");
+        }
 
-        //    // Disable browser caching to prevent back navigation
-        //    Response.Cache.SetCacheability(HttpCacheability.NoCache);
-        //    Response.Cache.SetExpires(DateTime.UtcNow.AddMinutes(-1));
-        //    Response.Cache.SetNoStore();
+        private string GenerateCaptchaText(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var random = new Random();
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
 
-        //    // Redirect to login page
-        //    return RedirectToAction("Loginpage", "Login");
-        //}
+        private byte[] GenerateCaptchaImage(string captchaText)
+        {
+            using (var bitmap = new Bitmap(130, 40))
+            using (var g = Graphics.FromImage(bitmap))
+            using (var font = new System.Drawing.Font("Arial", 20, FontStyle.Bold)) // ✅ Fix for ambiguity
+            {
+                g.Clear(Color.White);
+                g.DrawString(captchaText, font, Brushes.Black, new PointF(10, 5));
+
+                var pen = new Pen(Color.Gray);
+                var rand = new Random();
+                for (int i = 0; i < 4; i++)
+                {
+                    g.DrawLine(pen, rand.Next(0, 130), rand.Next(0, 40), rand.Next(0, 130), rand.Next(0, 40));
+                }
+
+                using (var ms = new MemoryStream())
+                {
+                    bitmap.Save(ms, ImageFormat.Png); // ✅ Requires using System.Drawing.Imaging;
+                    return ms.ToArray();
+                }
+            }
+        }
 
         public ActionResult Logout()
         {

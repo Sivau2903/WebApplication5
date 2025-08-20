@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Validation;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
-using Newtonsoft.Json;
-
 using System.Web;
 using System.Web.Mvc;
+using Newtonsoft.Json;
 using WebApplication4.Models;
 using WebApplication5.Models;
-using System.Data.Entity.Validation;
 
 namespace WebApplication5.Controllers
 {
@@ -511,7 +510,8 @@ namespace WebApplication5.Controllers
                             Description = item.Description,
                             QtyOrdered = item.QtyOrdered,
                             UnitPrice = item.UnitPrice,
-                            Total = item.Total
+                            Total = item.Total,
+                            VendorEmail = item.VendorEmail,
                         };
 
                         _db.PurchaseOrderItems.Add(poItem);
@@ -876,7 +876,7 @@ namespace WebApplication5.Controllers
         //        return View(viewModel); // fallback
         //    }
         //}
-         
+
         //public ActionResult InitiatePOEmail(int PONumber)
         //{
         //    string userId = (string)Session["UserID"];
@@ -929,7 +929,7 @@ namespace WebApplication5.Controllers
         //        return RedirectToAction("Materials"); // fallback
         //    }
 
-           
+
         //}
 
 
@@ -1060,38 +1060,139 @@ namespace WebApplication5.Controllers
         //    }
         //}
 
+        //public ActionResult VendorMaster()
+        //{
+        //    //ViewBag.AssetTypes = _db.AssetTypes.Select(a => a.AssetType1).Distinct().ToList();
+
+        //    var assetTypes = _db.AssetTypes
+        //         .Select(a => new SelectListItem
+        //         {
+        //             Value = a.AssetTypeID.ToString(),
+        //             Text = a.AssetType1
+        //         })
+        //         .ToList();
+
+        //    ViewBag.AssetType = new SelectList(assetTypes, "Value", "Text");
+        //    ViewBag.MaterialCategories = new SelectList(new List<SelectListItem>());
+        //    ViewBag.MaterialSubCategories = new SelectList(new List<SelectListItem>());
+
+        //    return View();
+        //}
+
+        //public JsonResult GetCategoriesByAssetType(int assetTypeId)
+        //{
+        //    var categories = _db.MaterialCategories
+        //        .Where(c => c.AssetTypeID == assetTypeId)
+        //        .Select(c => new { MID = c.MID, MCategoryName = c.MaterialCategory1 })
+        //        .ToList();
+
+        //    return Json(categories, JsonRequestBehavior.AllowGet);
+        //}
+
+        //public JsonResult GetSubCategoriesByCategory(int categoryId)
+        //{
+        //    var subCategories = _db.MaterialSubCategories
+        //        .Where(sc => sc.MID == categoryId)
+        //        .Select(sc => new { MSubCategoryID = sc.MSubCategoryID, MSubCategoryName = sc.MaterialSubCategory1 })
+        //        .ToList();
+
+        //    return Json(subCategories, JsonRequestBehavior.AllowGet);
+        //}
+
+
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public ActionResult Create(VendorDetailViewModel vm)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        // Step 1: Get UniversityID from Session
+        //        string userId = Session["UserID"]?.ToString();
+        //        if (string.IsNullOrEmpty(userId))
+        //        {
+        //            System.Diagnostics.Debug.WriteLine("[DEBUG] No UserID in session.");
+        //            return View("VendorMaster");
+        //        }
+
+        //        var localPD = _db.LocalPurchaseDepartments.FirstOrDefault(x => x.LocalID == userId);
+        //        if (localPD == null)
+        //        {
+        //            System.Diagnostics.Debug.WriteLine($"[DEBUG] No LocalPurchaseDepartment found for UserID: {userId}");
+        //            return View("VendorMaster");
+        //        }
+
+        //        int universityId = localPD.UniversityID;
+
+        //        // Step 2: Parse MaterialsString: "Chair||18,Table||12.5"
+        //        if (string.IsNullOrWhiteSpace(vm.MaterialsString))
+        //        {
+        //            TempData["ErrorMessage"] = "Please add at least one material with GST percentage.";
+        //            return View("VendorMaster", vm);
+        //        }
+
+        //        string[] materialsArray = vm.MaterialsString.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+        //        int newVendorId = 1;
+        //        var lastVendor = _db.VendorDetails.OrderByDescending(v => v.VendorID).FirstOrDefault();
+        //        if (lastVendor != null)
+        //        {
+        //            newVendorId = lastVendor.VendorID + 1 ??0;
+        //        }
+
+        //        foreach (var entry in materialsArray)
+        //        {
+        //            var parts = entry.Split(new[] { "||" }, StringSplitOptions.None);
+        //            if (parts.Length != 2)
+        //                continue;
+
+        //            string material = parts[0].Trim();
+        //            string gstPercent = parts[1].Trim();
+
+        //            var vendor = new VendorDetail
+        //            {
+        //                VendorID = newVendorId++,
+        //                VendorName = vm.VendorName,
+        //                EmailID = vm.EmailID,
+        //                PhoneNumber = vm.PhoneNumber,
+        //                Material = material,               // Store only MaterialSubCategory
+        //                GSTNO = vm.GSTNO,
+        //                PanNumber = vm.PanNumber,
+        //                Address = vm.Address,
+        //                UniversityID = universityId,
+        //                GSTPercentage = gstPercent
+        //            };
+
+        //            _db.VendorDetails.Add(vendor);
+        //        }
+
+        //        _db.SaveChanges();
+        //        TempData["SuccessMessage"] = "Vendor details saved successfully.";
+        //        return RedirectToAction("VendorMaster");
+        //    }
+
+        //    return View(vm);
+        //}
+
+
         public ActionResult VendorMaster()
         {
-            return View();
+            ViewBag.AssetTypes = _db.AssetTypes.ToList();
+            //ViewBag.Universities = _db.Universities.ToList();
+            return View(new VendorDetailViewModel { Materials = new List<MaterialSelection> { new MaterialSelection() } });
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(VendorDetailViewModel vm)
+        public ActionResult VendorMaster1(VendorDetailViewModel model)
         {
             if (ModelState.IsValid)
             {
-                // Step 1: Generate new VendorID
-                int newVendorId = 1;
-                var lastVendor = _db.VendorDetails
-                                    .OrderByDescending(v => v.VendorID)
-                                    .FirstOrDefault();
-                if (lastVendor != null)
-                {
-                    newVendorId = (int)(lastVendor.VendorID + 1);
-                }
-
-                // Step 2: Get UniversityID from Session UserID
-                string userId = (string)Session["UserID"];
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] Session UserID: {userId}");
-
-                if (userId == null)
+                string userId = Session["UserID"]?.ToString();
+                if (string.IsNullOrEmpty(userId))
                 {
                     System.Diagnostics.Debug.WriteLine("[DEBUG] No UserID in session.");
                     return View("VendorMaster");
                 }
 
-                // Step 2: Get UniversityID from LocalPurchaseDepartment table based on UserID
                 var localPD = _db.LocalPurchaseDepartments.FirstOrDefault(x => x.LocalID == userId);
                 if (localPD == null)
                 {
@@ -1100,30 +1201,71 @@ namespace WebApplication5.Controllers
                 }
 
                 int universityId = localPD.UniversityID;
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] Found UniversityID: {universityId} for UserID: {userId}");
 
-                // Step 3: Map ViewModel to Entity and Save
-                var vendor = new VendorDetail
+                int newVendorId = 1;
+                var lastVendor = _db.VendorDetails.OrderByDescending(v => v.VendorID).FirstOrDefault();
+                if (lastVendor != null)
                 {
-                    VendorID = newVendorId,
-                    VendorName = vm.VendorName,
-                   
-                    EmailID = vm.EmailID,
-                    PhoneNumber = vm.PhoneNumber,
-                    Material = string.Join(", ", vm.Materials),
-                    GSTNO = vm.GSTNO,
-                    PanNumber = vm.PanNumber,
-                    Address = vm.Address,
-                    UniversityID = universityId
-                };
+                    newVendorId = lastVendor.VendorID + 1 ?? 0;
+                }
 
-                _db.VendorDetails.Add(vendor);
+                foreach (var material in model.Materials)
+                {
+                    var subCategory = _db.MaterialSubCategories.Find(material.MaterialSubCategoryID);
+
+                    VendorDetail vendor = new VendorDetail
+                    {
+                        VendorID = newVendorId,
+                        VendorName = model.VendorName,
+                        EmailID = model.EmailID,
+                        PhoneNumber = model.PhoneNumber,
+                        GSTNO = model.GSTNO,
+                        PanNumber = model.PanNumber,
+                        UniversityID = universityId,
+                        PricePerUnit = material.PricePerUnit,
+                        Address = model.Address,
+                        Material = subCategory?.MaterialSubCategory1, // Only MaterialSubCategory saved
+                        GSTPercentage = material.GSTPercentage
+                    };
+                    _db.VendorDetails.Add(vendor);
+                }
+
                 _db.SaveChanges();
-                TempData["SuccessMessage"] = "Vendor details saved successfully.";
+                TempData["Success"] = "Vendor saved successfully.";
                 return RedirectToAction("VendorMaster");
             }
 
-            return View(vm);
+            // Reload dropdowns
+            ViewBag.AssetTypes = _db.AssetTypes.ToList();
+            ViewBag.Universities =  _db.Universities.ToList();
+            return View(model);
+        }
+
+        public JsonResult GetCategoriesByAssetType(int assetTypeId)
+        {
+            var categories = _db.MaterialCategories
+                .Where(c => c.AssetTypeID == assetTypeId)
+                .Select(c => new {
+                    id = c.MID,                    // ✅ return MID as id
+                    name = c.MaterialCategory1     // ✅ return name
+                })
+                .ToList();
+
+            return Json(categories, JsonRequestBehavior.AllowGet);
+        }
+
+
+        public JsonResult GetSubCategoriesByCategory(int categoryId)
+        {
+            var subCategories = _db.MaterialSubCategories
+                .Where(sc => sc.MID == categoryId)
+                .Select(sc => new {
+                    id = sc.MSubCategoryID,             // ✅ use proper ID
+                    name = sc.MaterialSubCategory1      // ✅ use proper name
+                })
+                .ToList();
+
+            return Json(subCategories, JsonRequestBehavior.AllowGet);
         }
 
 

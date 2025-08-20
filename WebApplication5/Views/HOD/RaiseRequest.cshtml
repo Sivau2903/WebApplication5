@@ -150,7 +150,8 @@
                 let availableQtyInput = item.find(".availableQuantity");  // Correct selector
 
                 if (assetType && category && subCategory) {
-                    $.getJSON('/HOD/GetAvailableQuantity', {
+                    $.getJSON('@Url.Action("GetAvailableQuantity", "HOD")', {
+
                         assetTypeId: assetType,
                         categoryId: category,
                         subCategoryId: subCategory
@@ -175,7 +176,8 @@
                 let categoryDropdown = item.find(".categoryDropdown");
                 let subCategoryDropdown = item.find(".subCategoryDropdown");
 
-                $.getJSON('/HOD/GetCategoriesByAssetType', { assetTypeId }, function (data) {
+                $.getJSON('@Url.Action("GetCategoriesByAssetType", "HOD")', { assetTypeId }, function (data) {
+                    
                     categoryDropdown.empty().append('<option value="">Select Category</option>');
                     subCategoryDropdown.empty().append('<option value="">Select Sub-Category</option>').prop("disabled", true);
 
@@ -196,7 +198,7 @@
                 let item = $(this).closest(".request-item");
                 let subCategoryDropdown = item.find(".subCategoryDropdown");
 
-                $.getJSON('/HOD/GetSubCategoriesByCategory', { categoryId }, function (data) {
+                $.getJSON('@Url.Action("GetSubCategoriesByCategory", "HOD")', { categoryId }, function (data) {
                     subCategoryDropdown.empty().append('<option value="">Select Sub-Category</option>');
 
                     $.each(data, function (index, item) {
@@ -223,7 +225,7 @@
                 let requestingQtyInput = item.find("input[name$='RequestingQuantity']");
 
                 if (assetType && category && subCategory) {
-                    $.getJSON('/HOD/GetAvailableQuantity', {
+                    $.getJSON('@Url.Action("GetAvailableQuantity", "HOD")', {
                         assetTypeId: item.find(".assetTypeDropdown").val(),
                         categoryId: item.find(".categoryDropdown").val(),
                         subCategoryId: $(this).val()

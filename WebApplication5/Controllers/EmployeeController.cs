@@ -239,7 +239,7 @@ namespace WebApplication5.Controllers
             }
         }
 
-        public ActionResult MyRequests(int? page)
+        public ActionResult MyRequests(int? page, DateTime? fromDate, DateTime? toDate)
         {
             string userID = Session["UserID"] as string;
 
@@ -282,8 +282,18 @@ namespace WebApplication5.Controllers
                     }).ToList()
                 }).ToList();
 
-            int pageSize = 5;
+            int pageSize = 9;
             int pageNumber = page ?? 1;
+            if (fromDate.HasValue)
+            {
+                myrequests = myrequests.Where(r => r.RequestDate >= fromDate.Value.Date).ToList();
+            }
+
+            if (toDate.HasValue)
+            {
+                DateTime inclusiveToDate = toDate.Value.Date.AddDays(1).AddTicks(-1);
+                myrequests = myrequests.Where(r => r.RequestDate <= inclusiveToDate).ToList();
+            }
 
             return View(myrequests.ToPagedList(pageNumber, pageSize));
         }

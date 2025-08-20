@@ -105,7 +105,7 @@
 <script>
     $(document).ready(function () {
         // Load budget
-        $.get("/LocalPurchaseDepartment/GetAvailableBudget", function (data) {
+        $.get("@Url.Action("GetAvailableBudget", "LocalPurchaseDepartment")", function (data) {
             $("#availableBudget").text(data);
         }).fail(function () {
             $("#availableBudget").text("Error fetching budget");
@@ -142,7 +142,7 @@
             formData.append("certificateUpload", fileInput.files[0]);
 
             $.ajax({
-                url: "/LocalPurchaseDepartment/SendToCentral",
+                url: "@Url.Action("SendToCentral", "LocalPurchaseDepartment")",
                 type: "POST",
                 data: formData,
                 processData: false,
@@ -157,7 +157,7 @@
         // View Vendors Modal
         $(document).on('click', '.viewLocal', function () {
             var material = $(this).data("material").trim().toLowerCase();
-            $.get("/LocalPurchaseDepartment/GetVendors", { materialSubCategory: material }, function (data) {
+            $.get("@Url.Action("GetVendors", "LocalPurchaseDepartment")", { materialSubCategory: material }, function (data) {
                 $("#vendorModalBody").html(data);
                 new bootstrap.Modal(document.getElementById('vendorModal')).show();
             }).fail(function () {

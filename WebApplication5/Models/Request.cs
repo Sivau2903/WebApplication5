@@ -30,5 +30,9 @@ namespace WebApplication5.Models
         public Nullable<int> AvailableQuantity { get; set; }
         public Nullable<int> PendingQuantity { get; set; }
         public string Remarks { get; set; }
+        public Nullable<int> ClosingQuantity { get; set; }
+        public Nullable<System.DateTime> IssuedDate { get; set; }
+        public string IssuedBy { get; set; }
+        public Nullable<int> Issue { get; set; }
     }
 }

@@ -598,49 +598,96 @@ namespace WebApplication5.Controllers
 
         public ActionResult VendorMaster()
         {
-            return View();
+            ViewBag.AssetTypes = _db.AssetTypes.ToList();
+            //ViewBag.Universities = _db.Universities.ToList();
+            return View(new VendorDetailViewModel { Materials = new List<MaterialSelection> { new MaterialSelection() } });
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(VendorDetailViewModel vm)
+        public ActionResult VendorMaster1(VendorDetailViewModel model)
         {
             if (ModelState.IsValid)
             {
-                // Step 1: Generate new VendorID
+                string userId = Session["UserID"]?.ToString();
+                //if (string.IsNullOrEmpty(userId))
+                //{
+                //    System.Diagnostics.Debug.WriteLine("[DEBUG] No UserID in session.");
+                //    return View("VendorMaster");
+                //}
+
+                //var localPD = _db.CentralPurchaseDepartments.FirstOrDefault(x => x.C == userId);
+                //if (localPD == null)
+                //{
+                //    System.Diagnostics.Debug.WriteLine($"[DEBUG] No LocalPurchaseDepartment found for UserID: {userId}");
+                //    return View("VendorMaster");
+                //}
+
+                //int universityId = localPD.UniversityID;
+
                 int newVendorId = 1;
-                var lastVendor = _db.CentralVendorDetails
-                                    .OrderByDescending(v => v.VendorID)
-                                    .FirstOrDefault();
+                var lastVendor = _db.CentralVendorDetails.OrderByDescending(v => v.VendorID).FirstOrDefault();
                 if (lastVendor != null)
                 {
-                    newVendorId = (int)(lastVendor.VendorID + 1);
+                    newVendorId = lastVendor.VendorID + 1 ?? 0;
                 }
 
-    
-
-                // Step 3: Map ViewModel to Entity and Save
-                var vendor = new CentralVendorDetail
+                foreach (var material in model.Materials)
                 {
-                    VendorID = newVendorId,
-                    VendorName = vm.VendorName,
-                   
-                    EmailID = vm.EmailID,
-                    PhoneNumber = vm.PhoneNumber,
-                    Material = string.Join(", ", vm.Materials),
-                    GSTNO = vm.GSTNO,
-                    PanNumber = vm.PanNumber,
-                    Address = vm.Address,
-                   
-                };
+                    var subCategory = _db.MaterialSubCategories.Find(material.MaterialSubCategoryID);
 
-                _db.CentralVendorDetails.Add(vendor);
+                    CentralVendorDetail vendor = new CentralVendorDetail
+                    {
+                        VendorID = newVendorId,
+                        VendorName = model.VendorName,
+                        EmailID = model.EmailID,
+                        PhoneNumber = model.PhoneNumber,
+                        GSTNO = model.GSTNO,
+                        PanNumber = model.PanNumber,
+                        //UniversityID = universityId,
+                        PricePerUnit = material.PricePerUnit,
+                        Address = model.Address,
+                        Material = subCategory?.MaterialSubCategory1, // Only MaterialSubCategory saved
+                        GSTPercentage = material.GSTPercentage
+                    };
+                    _db.CentralVendorDetails.Add(vendor);
+                }
+
                 _db.SaveChanges();
-                TempData["SuccessMessage"] = "Vendor details saved successfully.";
+                TempData["Success"] = "Vendor saved successfully.";
                 return RedirectToAction("VendorMaster");
             }
 
-            return View(vm);
+            // Reload dropdowns
+            ViewBag.AssetTypes = _db.AssetTypes.ToList();
+            ViewBag.Universities = _db.Universities.ToList();
+            return View(model);
+        }
+
+        public JsonResult GetCategoriesByAssetType(int assetTypeId)
+        {
+            var categories = _db.MaterialCategories
+                .Where(c => c.AssetTypeID == assetTypeId)
+                .Select(c => new {
+                    id = c.MID,                    // ✅ return MID as id
+                    name = c.MaterialCategory1     // ✅ return name
+                })
+                .ToList();
+
+            return Json(categories, JsonRequestBehavior.AllowGet);
+        }
+
+
+        public JsonResult GetSubCategoriesByCategory(int categoryId)
+        {
+            var subCategories = _db.MaterialSubCategories
+                .Where(sc => sc.MID == categoryId)
+                .Select(sc => new {
+                    id = sc.MSubCategoryID,             // ✅ use proper ID
+                    name = sc.MaterialSubCategory1      // ✅ use proper name
+                })
+                .ToList();
+
+            return Json(subCategories, JsonRequestBehavior.AllowGet);
         }
 
     }

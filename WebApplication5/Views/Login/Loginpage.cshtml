@@ -12,6 +12,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title</title>
     <style>
+       
+        .captcha-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .captcha-input {
+            width: 80%;
+        }
+
+        .captcha-image {
+            height: 40px;
+            width:30%
+        }
+
+        .refresh-icon {
+            cursor: pointer;
+            font-size: 24px;
+            color: #b22222;
+            margin-left: 1px;
+            transition: transform 0.2s;
+        }
+
+            .refresh-icon:hover {
+                transform: rotate(90deg);
+            }
+   
 
         * {
             margin: 0;
@@ -175,26 +205,38 @@
                     </div>
                 }
 
-                <form action="@Url.Action("Login","Login")" method="post">
-                    @Html.AntiForgeryToken()
+            <form action="@Url.Action("Login","Login")" method="post">
+                @Html.AntiForgeryToken()
 
-                    <div class="form-group">
-                        <label for="userID">&#128100; Username</label>
-                        <input type="text" id="userID" name="UserID" class="form-control" placeholder="UserID" required />
-                        @Html.ValidationMessageFor(m => m.UserID, "", new { @class = "text-danger" })
-                    </div>
+                <div class="form-group">
+                    <label for="userID">&#128100; Username</label>
+                    <input type="text" id="userID" name="UserID" class="form-control" placeholder="UserID" required />
+                    @Html.ValidationMessageFor(m => m.UserID, "", new { @class = "text-danger" })
+                </div>
 
-                    <div class="form-group">
-                        <label for="password">&#128274; Password</label>
-                        <input type="password" id="password" name="Password" class="form-control" placeholder="Password" required />
-                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
-                    </div>
+                <div class="form-group">
+                    <label for="password">&#128274; Password</label>
+                    <input type="password" id="password" name="Password" class="form-control" placeholder="Password" required />
+                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                </div>
 
-                    <a href="@Url.Action("ForgotPassword", "Login")" class="forgot-password">Reset Password?</a>
+                <div class="captcha-row" style="width:115%">
+                    <input type="text" class="form-control captcha-input" name="CaptchaInput" placeholder="Enter CAPTCHA" required />
+                    <img src="@Url.Action("CaptchaImage", "Login")" id="captchaImage" alt="CAPTCHA" class="captcha-image" />
+                    <span id="refreshCaptcha" class="refresh-icon">&#x21bb;</span> <!-- Unicode for refresh arrow -->
+                </div>
+
+                <script>
+    document.getElementById("refreshCaptcha").addEventListener("click", function () {
+        document.getElementById("captchaImage").src = '@Url.Action("CaptchaImage", "Login")' + '?' + new Date().getTime();
+    });
+                </script>
+
+                <a href="@Url.Action("ForgotPassword", "Login")" class="forgot-password">Reset Password?</a>
 
 
-                    <button type="submit" class="btn">Login</button>
-                </form>
+                <button type="submit" class="btn">Login</button>
+            </form>
             </div>
         </div>
     </div>

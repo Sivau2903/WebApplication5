@@ -16,24 +16,44 @@ namespace WebApplication5
     {
         public void Configuration(IAppBuilder app)
         {
-            // Setup Hangfire with SQL Server
             GlobalConfiguration.Configuration
-                .UseSqlServerStorage("HangfireConnection"); // Your connection string
+                .UseSqlServerStorage("HangfireConnection");
 
-            // Enable Hangfire Dashboard and Server
             app.UseHangfireDashboard("/hangfire");
             app.UseHangfireServer();
 
-            // Register recurring job
-            RecurringJob.AddOrUpdate<StockAlertService>(
-                "low-stock-check",
-                x => x.CheckLowStock(),
-                 //Cron.Hourly // or Cron.Minutely
-                 "0 10 * * *"
+            // Time zone detection (cross-platform)
+            var istTimeZone = GetISTTimeZone();
 
-                  //"30 4 * * *" // This runs at 10:00 AM IST
-                  // TimeZoneInfo.FindSystemTimeZoneById("India Standard Time") // Runs at 10 AM IST
+            // ✅ Updated usage
+            RecurringJob.AddOrUpdate<StockAlertService>(
+                recurringJobId: "low-stock-check",
+                methodCall: x => x.CheckLowStock(),
+                cronExpression: "0 10 * * *", // 10 AM every day
+                options: new RecurringJobOptions
+                {
+                    TimeZone = istTimeZone
+                }
             );
         }
+
+        // Helper to support both Windows and Linux
+        private TimeZoneInfo GetISTTimeZone()
+        {
+            try
+            {
+                if (Environment.OSVersion.Platform == PlatformID.Unix ||
+                    Environment.OSVersion.Platform == PlatformID.MacOSX)
+                {
+                    return TimeZoneInfo.FindSystemTimeZoneById("Asia/Kolkata");
+                }
+                return TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                return TimeZoneInfo.Local; // Fallback if timezone is unavailable
+            }
+        }
+
     }
 }

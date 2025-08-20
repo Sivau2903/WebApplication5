@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
 using System.Diagnostics;
@@ -63,7 +64,7 @@ namespace WebApplication5.Controllers
                         ApprovedQuantity = r.ApprovedQuantity ?? 0,
 
                         //IssuingQuantity = r.IssuingQuantity ?? 0,
-                        //PendingQuantity = r.PendingQuantity ?? 0
+                        PendingQuantity = r.PendingQuantity ?? 0,
                     }).ToList()
                 })
                 .ToList();
@@ -71,11 +72,13 @@ namespace WebApplication5.Controllers
             // Apply filters
             if (fromDate.HasValue)
             {
-                query = query.Where(r => r.RequestDate >= fromDate.Value).ToList();
+                query = query.Where(r => r.RequestDate >= fromDate.Value.Date).ToList();
             }
+
             if (toDate.HasValue)
             {
-                query = query.Where(r => r.RequestDate <= toDate.Value).ToList();
+                DateTime inclusiveToDate = toDate.Value.Date.AddDays(1).AddTicks(-1);
+                query = query.Where(r => r.RequestDate <= inclusiveToDate).ToList();
             }
 
             // Pagination
@@ -214,70 +217,75 @@ namespace WebApplication5.Controllers
             }
         }
 
-        
+
 
         // Add this at the top
 
         [HttpGet]
-    public ActionResult EmployeeRequests( DateTime? fromDate, DateTime? toDate)
-    {
-        // Validate HOD
-        string userID = Session["UserID"] as string;
-        string userRole = Session["UserRole"] as string;
-        if (string.IsNullOrEmpty(userID) || userRole != "HOD")
+        public ActionResult EmployeeRequests(DateTime? fromDate, DateTime? toDate)
         {
-            TempData["ErrorMessage"] = "Unauthorized access.";
-            return RedirectToAction("HODDashboard");
+            // Validate HOD
+            string userID = Session["UserID"] as string;
+            string userRole = Session["UserRole"] as string;
+            if (string.IsNullOrEmpty(userID) || userRole != "HOD")
+            {
+                TempData["ErrorMessage"] = "Unauthorized access.";
+                return RedirectToAction("HODDashboard");
+            }
+
+            // Find HOD
+            var hod = db.HODs.FirstOrDefault(h => h.HODID.ToString() == userID);
+            if (hod == null)
+            {
+                TempData["ErrorMessage"] = "HOD details not found.";
+                return RedirectToAction("HODDashboard");
+            }
+
+            // Base query: requests for this HOD excluding "New" status
+            var allRequests = db.Requests
+                .Where(r => r.HODID == hod.HODID && r.Status != "New");
+
+            if (fromDate.HasValue)
+            {
+                allRequests = allRequests.Where(r => r.RequestDate >= fromDate.Value.Date);
+            }
+
+            if (toDate.HasValue)
+            {
+                DateTime inclusiveToDate = toDate.Value.Date.AddDays(1).AddTicks(-1);
+                allRequests = allRequests.Where(r => r.RequestDate <= inclusiveToDate);
+            }
+
+            // Sort each status group descending by date
+            var ongoing = allRequests
+                .Where(r => r.Status == "Ongoing")
+                .OrderByDescending(r => r.RequestDate)
+                .ToList();
+
+            var approved = allRequests
+                .Where(r => r.Status == "Approved")
+                .OrderByDescending(r => r.RequestDate)
+                .ToList();
+
+            var rejected = allRequests
+                .Where(r => r.Status == "Rejected")
+                .OrderByDescending(r => r.RequestDate)
+                .ToList();
+
+            var model = new HODViewRequestsViewModel
+            {
+                OngoingRequests = ongoing,
+                ApprovedRequests = approved,
+                RejectedRequests = rejected
+            };
+
+            return View(model);
         }
 
-        // Find HOD
-        var hod = db.HODs.FirstOrDefault(h => h.HODID.ToString() == userID);
-        if (hod == null)
-        {
-            TempData["ErrorMessage"] = "HOD details not found.";
-            return RedirectToAction("HODDashboard");
-        }
-
-        // Show requests for this HOD with statuses other than "New"
-        var allRequests = db.Requests
-            .Where(r => r.HODID == hod.HODID && r.Status != "New");
-
-        if (fromDate.HasValue)
-        {
-            allRequests = allRequests.Where(r => r.RequestDate >= fromDate.Value);
-        }
-        if (toDate.HasValue)
-        {
-            allRequests = allRequests.Where(r => r.RequestDate <= toDate.Value);
-        }
-
-        // Debugging: Count requests by status
-        int ongoingCount = allRequests.Count(r => r.Status == "Ongoing");
-        int approvedCount = allRequests.Count(r => r.Status == "Approved");
-        int rejectedCount = allRequests.Count(r => r.Status == "Rejected");
-
-        Debug.WriteLine($"Ongoing Requests: {ongoingCount}");
-        Debug.WriteLine($"Approved Requests: {approvedCount}");
-        Debug.WriteLine($"Rejected Requests: {rejectedCount}");
-
-        // Optional: Store counts in TempData to display in View
-        TempData["OngoingCount"] = ongoingCount;
-        TempData["ApprovedCount"] = approvedCount;
-        TempData["RejectedCount"] = rejectedCount;
-
-        var model = new HODViewRequestsViewModel
-        {
-            OngoingRequests = allRequests.Where(r => r.Status == "Ongoing").ToList(),
-            ApprovedRequests = allRequests.Where(r => r.Status == "Approved").ToList(),
-            RejectedRequests = allRequests.Where(r => r.Status == "Rejected").ToList()
-        };
-
-        return View(model);
-    }
 
 
-    // GET: HOD
-    [HttpGet]
+        // GET: HOD
+        [HttpGet]
         public ActionResult RaiseRequest()
         {
             Debug.WriteLine($"RaiseRequest method hit! Time: {DateTime.Now}");
@@ -574,7 +582,7 @@ namespace WebApplication5.Controllers
                 return 1;
             }
         }
-        public ActionResult MyRequests()
+        public ActionResult MyRequests(DateTime? fromDate, DateTime? toDate)
         {
             string userID = Session["UserID"] as string;
 
@@ -615,6 +623,17 @@ namespace WebApplication5.Controllers
                     }).ToList()
                 })
                 .ToList();
+
+            if (fromDate.HasValue)
+            {
+                myrequests = myrequests.Where(r => r.RequestedDate >= fromDate.Value.Date).ToList();
+            }
+
+            if (toDate.HasValue)
+            {
+                DateTime inclusiveToDate = toDate.Value.Date.AddDays(1).AddTicks(-1);
+                myrequests = myrequests.Where(r => r.RequestedDate <= inclusiveToDate).ToList();
+            }
 
             return View(myrequests);
         }

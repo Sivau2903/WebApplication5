@@ -33,7 +33,7 @@
     </style>
 </head>
 <body>
-    <form method="get" action="@Url.Action("StoreAdminDasboard", "Home")">
+    <form method="get" action="@Url.Action("EmployeeRequests", "Home")">
         <div class="d-flex justify-content-center align-items-center mb-3">
             <div class="form-group me-2">
                 <label for="fromDate" class="form-label">From Date:</label>
@@ -70,7 +70,7 @@
         {
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 @TempData["WarningMessage"]
-                <button type="button" class="btn-close"  data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         }
 
@@ -186,55 +186,49 @@
 
 
     <!-- Include Bootstrap CSS & JS (if not already included) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 
 
 
     <script>
-    $(document).ready(function () {
-        console.log("StoreAdmin Dashboard scripts loaded"); // Debugging
+$(document).ready(function () {
+  console.log("StoreAdmin Dashboard scripts loaded");
 
-        // ✅ Toggle request details on clicking Request ID
-        $(".request-id").click(function () {
-            let requestID = $(this).data("id");
-            $("#details-" + requestID).toggle();
-        });
+  // Toggle request details
+  $(".request-id").click(function () {
+    let requestID = $(this).data("id");
+    $("#details-" + requestID).toggle();
+  });
 
-
-
-       $(".issue-btn").click(function () {
+  // Improved issue button handler
+  $(".issue-btn").click(function () {
     var requestId = $(this).data("requestid");
-    var msubCategory = $(this).data("msubcategory");
+    var msubCategory = $(this).data("msubcategory").trim(); // Remove any trailing spaces
 
-    console.log("Issue Button Clicked - RequestID:", requestId, "MSubCategory:", msubCategory); // Debugging
+    console.log("Issue Button Clicked:", requestId, msubCategory);
 
-    $.get('@Url.Action("IssueForm", "Home")', { requestId: requestId, msubCategory: msubCategory }, function (data) {
+    $.ajax({
+      url: '@Url.Action("IssueForm", "Home")',
+      method: 'GET',
+      data: { requestId: requestId, msubCategory: msubCategory },
+      success: function (data) {
         $("#issueModalContent").html(data);
         $("#issueModal").modal("show");
-    }).fail(function () {
-        alert("Failed to load issue form.");
-        $(document).ready(function () {
-            toastr.options = {
-                closeButton: true,
-                progressBar: true,
-                positionClass: "toast-top-center",
-                showDuration: "300",
-                hideDuration: "1000",
-                timeOut: "5000"
-            };
-
-            // Example Success Notification
-            toastr.success("Issued successfully!");
-        });
+      },
+      error: function (xhr, status, error) {
+        console.error("AJAX error:", status, error, xhr.responseText);
+        alert("Failed to load issue form:\n" + error);
+      }
     });
+  });
 });
-
-    });
     </script>
+
+
 
 
 

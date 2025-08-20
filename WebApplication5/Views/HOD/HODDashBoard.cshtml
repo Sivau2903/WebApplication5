@@ -113,8 +113,10 @@
 
                                             </td>
                                             <td>
-                                                <button class="btn btn-info btn-sm viewPast" data-empid="@request.EmpID">Past</button>
-
+                                                @*<button class="btn btn-info btn-sm viewPast" data-empid="@request.EmpID">Past</button>*@
+                                                <button class="viewPast btn btn-primary" data-empid="@request.EmpID">
+                                                    View Past
+                                                </button>
                                                 <div class="dropdown d-inline-block">
 
                                                     <select class="form-select action-select"
@@ -169,17 +171,19 @@
         </div>
 
         <div class="modal fade" id="pastRequestsModal" tabindex="-1" role="dialog">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Past Requests</h5>
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body" id="pastRequestsBody">
+                        <!-- AJAX content -->
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
     <div class="modal fade" id="remarksModal" tabindex="-1" role="dialog">
         <div class="modal-dialog">
@@ -218,15 +222,19 @@
     });
 
     // ✅ View Past Requests
-    $(".viewPast").click(function () {
-    let empId = $(this).data("empid");
-    $.get("/HOD/GetPastRequests", { empId: empId }, function (data) {
-    $("#pastRequestsBody").html(data);
+$(".viewPast").click(function () {
+  let empId = $(this).data("empid");
+  let url = '@Url.Action("GetPastRequests", "HOD")';
+
+  $.get(url, { empId: empId }, function (html) {
+    $("#pastRequestsBody").html(html);
     $("#pastRequestsModal").modal("show");
-    }).fail(function () {
+  }).fail(function () {
     alert("Error fetching past requests.");
-    });
-    });
+  });
+});
+
+
 
     // ✅ Restrict Approving Quantity
     window.validateQuantity = function (input, maxQty) { // Making function accessible globally
@@ -266,7 +274,7 @@
     });
 
     // ✅ Submit Remarks Modal
- 
+
 
         // Example: On Reject click
         $("#submitRemarks").click(function () {
@@ -290,7 +298,8 @@
             console.log("Updating request:", requestId, msubCategory, approvingQuantity, actionType, remarks); // Debugging
 
             $.ajax({
-                url: "/HOD/UpdateRequest",
+            url: "@Url.Action("UpdateRequest", "HOD")",
+
                 type: "POST",
                 data: {
                     requestId: requestId,

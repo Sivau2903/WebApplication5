@@ -63,21 +63,23 @@
     }
 </style>
 
-<h2 class="mb-4">📦 Central Purchase Requests Grouped by University</h2>
+<h2 class="mb-4">📦 University Based Requets</h2>
 
 <div class="accordion" id="universityAccordion">
     @{
         var groupedByUniversity = Model.GroupBy(m => m.UniversityName);
-        int index = 0;
+        int index = 0;  
     }
 
     @foreach (var universityGroup in groupedByUniversity)
     {
         var groupId = $"collapseUniversity{index}";
         <div class="card university-card">
-            <div class="university-header" data-bs-toggle="collapse" data-bs-target="#@groupId">
-                🏫 @universityGroup.Key
+            <div class="university-header d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#@groupId">
+                <span>🏫 @universityGroup.Key</span>
+                <span class="badge bg-light text-dark px-3 py-1">📌 Click to view details</span>
             </div>
+
 
             <div id="@groupId" class="collapse" data-bs-parent="#universityAccordion">
                 <div class="university-body">
@@ -124,8 +126,8 @@
                                                 <div class="mt-2">
                                                     @*<button class="btn btn-sm btn-success generatePOBtn">Generate PO</button>*@
                                                     @*<button class="btn btn-sm btn-view-vendor viewVendorBtn" type="button" data-material="@item.MaterialName">
-                    View Vendors
-                </button>*@
+                                                    View Vendors
+                                                </button>*@
                                                 </div>
                                             </div>
                                         </td>
@@ -134,32 +136,32 @@
                                             <input type="number" name="IUCDApprovedQty" class="form-control approvedQty" min="1" value="@item.IUCDApprovedQty" />
                                         </td>
                                         <!--<td>
-                                            <input type="file" class="form-control mb-1" name="ApprovalDocument" />-->
-                                            @*<input type="file" class="form-control" name="QuotationDocument" />*@
+                                    <input type="file" class="form-control mb-1" name="ApprovalDocument" />-->
+                                        @*<input type="file" class="form-control" name="QuotationDocument" />*@
                                         <!--</td>-->
-                                    <td>
-                                        <form method="get" action="/CentralPurchaseDepartment/CentralGeneratePO">
-                                            <input type="hidden" name="UniversityName" value="@item.UniversityName" />
-                                            <input type="hidden" name="VendorName" class="poVendorName" />
-                                            <input type="hidden" name="VendorEmail" class="poVendorEmail" />
-                                            <input type="hidden" name="VendorAddress" class="poVendorAddress" />
-                                            <input type="hidden" name="VendorGSTNo" class="poVendorGST" />
-                                            <input type="hidden" name="GSTPercent" class="poGSTPercent" />
+                                        <td>
+                                            <form method="get" action="/CentralPurchaseDepartment/CentralGeneratePO">
+                                                <input type="hidden" name="UniversityName" value="@item.UniversityName" />
+                                                <input type="hidden" name="VendorName" class="poVendorName" />
+                                                <input type="hidden" name="VendorEmail" class="poVendorEmail" />
+                                                <input type="hidden" name="VendorAddress" class="poVendorAddress" />
+                                                <input type="hidden" name="VendorGSTNo" class="poVendorGST" />
+                                                <input type="hidden" name="GSTPercent" class="poGSTPercent" />
 
-                                            <input type="hidden" name="Material" value="@item.MaterialName" />
-                                            <input type="hidden" name="Qty" class="poQty" />
-                                            <input type="hidden" name="Price" class="poPrice" />
-                                            <input type="hidden" name="Cost" class="poCost" />
+                                                <input type="hidden" name="Material" value="@item.MaterialName" />
+                                                <input type="hidden" name="Qty" class="poQty" />
+                                                <input type="hidden" name="Price" class="poPrice" />
+                                                <input type="hidden" name="Cost" class="poCost" />
 
-                                            @*<button class="btn btn-success generatePOBtn" type="submit">Generate PO</button>*@
-                                            <button class="btn btn-sm btn-view-vendor viewVendorBtn" type="button" data-material="@item.MaterialName">
-                                                View Vendors
-                                            </button>
-                                        </form>
-                                        @*<button class="btn btn-sm btn-view-vendor viewVendorBtn" type="button" data-material="@item.MaterialName">
+                                                @*<button class="btn btn-success generatePOBtn" type="submit">Generate PO</button>*@
+                                                <button class="btn btn-sm btn-view-vendor viewVendorBtn" type="button" data-material="@item.MaterialName">
+                                                    View Vendors
+                                                </button>
+                                            </form>
+                                            @*<button class="btn btn-sm btn-view-vendor viewVendorBtn" type="button" data-material="@item.MaterialName">
                                             View Vendors
                                         </button>*@
-                                    </td>
+                                        </td>
                                     </tr>
                                 }
                             </tbody>
@@ -200,7 +202,7 @@
             $("#vendorModal").data("material", material);
 
             // Load vendor partial
-            $.get("/CentralPurchaseDepartment/GetVendors", { material: material }, function (data) {
+            $.get("@Url.Action("GetVendors", "CentralPurchaseDepartment")", { material: material }, function (data) {
                 $("#vendorModalBody").html(data);
                 $("#vendorModal").modal("show");
             });
@@ -350,7 +352,7 @@
             // Redirect with query parameters
             const form = $('<form>', {
                 method: 'POST',
-                action: '/CentralPurchaseDepartment/CentralGeneratePO'
+                action: '@Url.Action("CentralGeneratePO", "CentralPurchaseDepartment")'
             });
 
             form.append($('<input>', { type: 'hidden', name: 'UniversityName', value: university }));
